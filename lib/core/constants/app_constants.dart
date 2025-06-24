@@ -11,7 +11,7 @@ class AppConstants {
   static const String nodeVersion = '20.10.0';
   
   // 数据库版本
-  static const int databaseVersion = 4;
+  static const int databaseVersion = 5;
   static const String databaseName = 'mcp_hub.db';
   
   // 默认配置

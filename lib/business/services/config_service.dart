@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:path/path.dart' as path;
 import 'package:path_provider/path_provider.dart';
-
 import '../../core/constants/path_constants.dart';
 import '../../core/models/mcp_server.dart';
 import '../../infrastructure/database/database_service.dart';
@@ -176,6 +175,8 @@ class ConfigService {
         'timeout_seconds': 30,
         'enable_cors': true,
         'log_level': 'info',
+        'server_mode': 'sse', // 'sse' 或 'streamable'
+        'streamable_port': 3001, // streamable模式的端口
       },
       'servers': <Map<String, dynamic>>[],
       'settings': {
@@ -403,5 +404,133 @@ class ConfigService {
       'error_message': server.errorMessage,
       'log_level': server.logLevel,
     };
+  }
+
+  /// 获取MCP服务器运行模式 (从数据库)
+  Future<String> getMcpServerMode() async {
+    return await _getConfigFromDatabase('hub_server_mode', 'sse');
+  }
+
+  /// 设置MCP服务器运行模式 (保存到数据库)
+  Future<void> setMcpServerMode(String mode) async {
+    await _setConfigToDatabase('hub_server_mode', mode, 'string', 'Hub服务器运行模式', 'hub');
+    
+    // 记录配置变更事件
+    await _recordConfigChangeEvent('hub_server_mode', mode, 'MCP Hub服务器模式更改为: $mode');
+  }
+
+  /// 获取Streamable模式端口 (从数据库)
+  Future<int> getStreamablePort() async {
+    final port = await _getConfigFromDatabase('hub_streamable_port', '3001');
+    return int.tryParse(port) ?? 3001;
+  }
+
+  /// 设置Streamable模式端口 (保存到数据库)
+  Future<void> setStreamablePort(int port) async {
+    await _setConfigToDatabase('hub_streamable_port', port.toString(), 'integer', 'Streamable模式端口', 'hub');
+  }
+
+  /// 从数据库获取配置
+  Future<String> _getConfigFromDatabase(String key, String defaultValue) async {
+    try {
+      final db = await _databaseService.database;
+      final results = await db.query(
+        'app_config',
+        where: 'key = ?',
+        whereArgs: [key],
+      );
+      
+      if (results.isNotEmpty) {
+        return results.first['value'] as String;
+      }
+      
+      return defaultValue;
+    } catch (e) {
+      print('❌ Error getting config from database: $e');
+      return defaultValue;
+    }
+  }
+
+  /// 保存配置到数据库
+  Future<void> _setConfigToDatabase(String key, String value, String valueType, String description, String category) async {
+    try {
+      final db = await _databaseService.database;
+      final now = DateTime.now().millisecondsSinceEpoch;
+      
+      // 检查配置是否已存在
+      final existing = await db.query(
+        'app_config',
+        where: 'key = ?',
+        whereArgs: [key],
+      );
+      
+      if (existing.isNotEmpty) {
+        // 更新现有配置
+        await db.update(
+          'app_config',
+          {
+            'value': value,
+            'value_type': valueType,
+            'description': description,
+            'category': category,
+            'updated_at': now,
+          },
+          where: 'key = ?',
+          whereArgs: [key],
+        );
+      } else {
+        // 插入新配置
+        await db.insert('app_config', {
+          'key': key,
+          'value': value,
+          'value_type': valueType,
+          'description': description,
+          'category': category,
+          'created_at': now,
+          'updated_at': now,
+        });
+      }
+      
+      print('✅ Configuration saved to database: $key = $value');
+    } catch (e) {
+      print('❌ Error saving config to database: $e');
+      rethrow;
+    }
+  }
+
+  /// 记录配置变更事件
+  Future<void> _recordConfigChangeEvent(String configKey, String newValue, String message) async {
+    try {
+      final db = await _databaseService.database;
+      await db.insert('system_events', {
+        'id': '${DateTime.now().millisecondsSinceEpoch}_config_$configKey',
+        'event_type': 'config_updated',
+        'event_level': 'info',
+        'message': message,
+        'details': 'Configuration key: $configKey, New value: $newValue',
+        'metadata': jsonEncode({
+          'config_key': configKey,
+          'new_value': newValue,
+          'source': 'settings_page',
+        }),
+        'timestamp': DateTime.now().millisecondsSinceEpoch,
+      });
+    } catch (e) {
+      print('⚠️ Could not record config change event: $e');
+    }
+  }
+
+  /// 保存配置到文件
+  Future<void> _saveConfig() async {
+    if (_config == null) return;
+    
+    final configFilePath = await configPath;
+    final configFile = File(configFilePath);
+    
+    // 确保目录存在
+    await configFile.parent.create(recursive: true);
+    
+    // 写入配置文件
+    await configFile.writeAsString(jsonEncode(_config));
   }
 } 

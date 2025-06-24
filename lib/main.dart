@@ -32,6 +32,15 @@ void main() async {
     await windowManager.focus();
   });
 
+  // 先启动UI，避免黑屏
+  runApp(const ProviderScope(child: McpHubApp()));
+
+  // 🏗️ 在后台初始化服务，避免阻塞UI线程
+  _initializeServicesInBackground();
+}
+
+/// 后台初始化服务，避免阻塞UI线程
+Future<void> _initializeServicesInBackground() async {
   // 🏗️ 初始化运行时环境
   print('🏗️ Initializing runtime environment...');
   try {
@@ -66,12 +75,10 @@ void main() async {
   try {
     final hubService = McpHubService.instance;
     await hubService.startHub();
-    print('✅ MCP Hub Server started successfully on port 3000');
+    print('✅ MCP Hub Server started successfully');
   } catch (e) {
     print('❌ Failed to start MCP Hub Server: $e');
   }
-
-  runApp(const ProviderScope(child: McpHubApp()));
 }
 
 class McpHubApp extends StatelessWidget {

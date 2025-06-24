@@ -1,6 +1,6 @@
 /// 数据库模式定义
 class DatabaseSchema {
-  static const int currentVersion = 4;
+  static const int currentVersion = 5;
 
   /// 创建MCP服务器表
   static const String createMcpServersTable = '''
@@ -113,6 +113,19 @@ class DatabaseSchema {
     )
   ''';
 
+  /// 创建应用配置表
+  static const String createAppConfigTable = '''
+    CREATE TABLE IF NOT EXISTS app_config (
+      key TEXT PRIMARY KEY,
+      value TEXT NOT NULL,
+      value_type TEXT NOT NULL DEFAULT 'string',
+      description TEXT,
+      category TEXT NOT NULL DEFAULT 'general',
+      created_at INTEGER NOT NULL,
+      updated_at INTEGER NOT NULL
+    )
+  ''';
+
   /// 所有表创建脚本
   static const List<String> createTableScripts = [
     createMcpServersTable,
@@ -121,6 +134,7 @@ class DatabaseSchema {
     createServerLogsTable,
     createMcpRequestsTable,
     createSystemEventsTable,
+    createAppConfigTable,
   ];
 }
 
@@ -161,6 +175,10 @@ class DatabaseIndexes {
     'CREATE INDEX IF NOT EXISTS idx_system_events_type ON system_events (event_type)',
     'CREATE INDEX IF NOT EXISTS idx_system_events_level ON system_events (event_level)',
     'CREATE INDEX IF NOT EXISTS idx_system_events_timestamp ON system_events (timestamp)',
+    
+    // 应用配置索引
+    'CREATE INDEX IF NOT EXISTS idx_app_config_category ON app_config (category)',
+    'CREATE INDEX IF NOT EXISTS idx_app_config_updated_at ON app_config (updated_at)',
   ];
 }
 

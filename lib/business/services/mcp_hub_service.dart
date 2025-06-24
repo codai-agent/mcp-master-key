@@ -9,8 +9,10 @@ import '../../core/models/mcp_server.dart' as models;
 import '../../infrastructure/repositories/mcp_server_repository.dart';
 import '../../infrastructure/runtime/runtime_manager.dart';
 import '../../infrastructure/mcp/mcp_tools_aggregator.dart';
+import '../../infrastructure/mcp/streamable_mcp_hub.dart';
 import '../managers/mcp_process_manager.dart';
 import 'mcp_server_service.dart';
+import 'config_service.dart';
 
 /// 子服务器连接信息
 class ChildServerInfo {
@@ -75,8 +77,10 @@ class McpHubService {
   mcp_dart.McpServer? _mcpServer;
   HttpServer? _httpServer;
   SseServerManager? _sseManager;
+  StreamableMcpHub? _streamableHub;
   bool _isRunning = false;
   int _port = 3000;
+  String _serverMode = 'sse'; // 'sse' 或 'streamable'
   
   // 子服务器管理
   final Map<String, ChildServerInfo> _childServers = {};
@@ -87,6 +91,7 @@ class McpHubService {
   Set<String> _lastRunningServerIds = <String>{};
   bool _isInitializationComplete = false; // 标记初始化是否完成
   final Mutex _monitorLock = Mutex(); // 监控锁
+  final Map<String, DateTime> _lastProcessedTime = {}; // 记录服务器最后处理时间
 
   /// 启动MCP Hub服务器
   Future<void> startHub({int port = 3000}) async {
@@ -101,40 +106,19 @@ class McpHubService {
       // 首先清理服务器状态（应用重启时的状态恢复）
       await _cleanupServerStatesOnStartup();
       
-      // 初始化HTTP服务器
-      _httpServer = await HttpServer.bind(InternetAddress.anyIPv4, port);
+      // 获取配置的服务器模式
+      final configService = ConfigService.instance;
+      _serverMode = await configService.getMcpServerMode();
       
-      // 创建MCP服务器实例
-      _mcpServer = mcp_dart.McpServer(
-        Implementation(name: "mcp-hub", version: "1.0.0"),
-        options: ServerOptions(
-          capabilities: ServerCapabilities(
-            tools: ServerCapabilitiesTools(),
-            resources: ServerCapabilitiesResources(),
-            prompts: ServerCapabilitiesPrompts(),
-          ),
-        ),
-      );
-
-      // 注册工具和资源
-      _registerTools();
-      _registerResources();
-      
-      // 初始化SSE管理器
-      _sseManager = SseServerManager(_mcpServer!);
-      
-      // 处理HTTP请求
-      _httpServer!.listen((request) {
-        _handleHttpRequest(request);
-      });
+      if (_serverMode == 'streamable') {
+        // 启动Streamable模式
+        await _startStreamableMode(port);
+      } else {
+        // 启动SSE模式（默认）
+        await _startSseMode(port);
+      }
 
       _isRunning = true;
-      
-      print('✅ MCP Hub Server started successfully on port $port');
-      print('🌐 Hub URL: http://localhost:$port');
-      print('📡 SSE Endpoint: http://localhost:$port/sse');
-      print('❤️ Health Check: http://localhost:$port/health');
-      
       // 加载预配置的子服务器
       _loadPreconfiguredServers();
       
@@ -145,6 +129,66 @@ class McpHubService {
       print('❌ Failed to start MCP Hub Server: $e');
       print('Stack trace: $stackTrace');
       _isRunning = false;
+      rethrow;
+    }
+  }
+
+  /// 启动SSE模式
+  Future<void> _startSseMode(int port) async {
+    _port = port;
+    
+    // 初始化HTTP服务器
+    _httpServer = await HttpServer.bind(InternetAddress.anyIPv4, port);
+    
+    // 创建MCP服务器实例
+    _mcpServer = mcp_dart.McpServer(
+      Implementation(name: "mcp-hub", version: "1.0.0"),
+      options: ServerOptions(
+        capabilities: ServerCapabilities(
+          tools: ServerCapabilitiesTools(),
+          resources: ServerCapabilitiesResources(),
+          prompts: ServerCapabilitiesPrompts(),
+        ),
+      ),
+    );
+
+    // 注册工具和资源
+    _registerTools();
+    _registerResources();
+    
+    // 初始化SSE管理器
+    _sseManager = SseServerManager(_mcpServer!);
+    
+    // 处理HTTP请求
+    _httpServer!.listen((request) {
+      _handleHttpRequest(request);
+    });
+    
+    print('✅ MCP Hub Server (SSE mode) started successfully on port $port');
+    print('🌐 Hub URL: http://localhost:$port');
+    print('📡 SSE Endpoint: http://localhost:$port/sse');
+    print('❤️ Health Check: http://localhost:$port/health');
+  }
+
+  /// 启动Streamable模式
+  Future<void> _startStreamableMode(int port) async {
+    try {
+      final configService = ConfigService.instance;
+      final streamablePort = await configService.getStreamablePort();
+      
+      _port = streamablePort;
+      
+      // 初始化Streamable Hub
+      _streamableHub = StreamableMcpHub.instance;
+      await _streamableHub!.startHub(port: streamablePort);
+      
+      print('✅ MCP Hub Server (Streamable mode) started successfully on port $streamablePort');
+      print('🌐 Streamable Hub URL: http://localhost:$streamablePort/mcp');
+      print('🔄 Multiple clients supported with session management');
+      print('📊 Shared server pool for efficient resource usage');
+    } catch (e, stackTrace) {
+      print('❌ ERROR in _startStreamableMode: $e');
+      print('Stack trace: $stackTrace');
       rethrow;
     }
   }
@@ -170,13 +214,22 @@ class McpHubService {
           restoredCount++;
         } else if (server.status == models.McpServerStatus.starting || 
                    server.status == models.McpServerStatus.stopping) {
-          // 清理中间状态（这些状态在应用重启后无效）
-          print('🧹 Cleaning intermediate state: ${server.name} (${server.status.name} -> stopped)');
-          final updatedServer = server.copyWith(
-            status: models.McpServerStatus.stopped,
-            updatedAt: DateTime.now(),
-          );
-          await repository.updateServer(updatedServer);
+          // 清理中间状态，但对于starting状态的服务器，如果之前是运行的，应该恢复
+          print('🧹 Cleaning intermediate state: ${server.name} (${server.status.name})');
+          
+          // 如果是starting状态，说明可能是应用关闭时正在启动，应该尝试恢复
+          if (server.status == models.McpServerStatus.starting) {
+            print('🔄 Attempting to restore server that was starting: ${server.name}');
+            serversToStart.add(server);
+            restoredCount++;
+          } else {
+            // stopping状态设为stopped
+            final updatedServer = server.copyWith(
+              status: models.McpServerStatus.stopped,
+              updatedAt: DateTime.now(),
+            );
+            await repository.updateServer(updatedServer);
+          }
         } else if (server.autoStart && 
                    (server.status == models.McpServerStatus.stopped || 
                     server.status == models.McpServerStatus.installed)) {
@@ -191,37 +244,9 @@ class McpHubService {
       if (serversToStart.isNotEmpty) {
         print('🚀 Starting ${serversToStart.length} servers (${restoredCount} restored, ${autoStartCount} auto-start)...');
         
-        // 延迟启动，确保Hub完全初始化
-        Timer(const Duration(seconds: 2), () async {
-          for (final server in serversToStart) {
-            try {
-              print('🚀 Auto-starting server: ${server.name}');
-              
-              // 更新状态为starting
-              final startingServer = server.copyWith(
-                status: models.McpServerStatus.starting,
-                updatedAt: DateTime.now(),
-              );
-              await repository.updateServer(startingServer);
-              
-              // 实际启动将由监控系统处理
-              print('✅ Queued for startup: ${server.name}');
-              
-            } catch (e) {
-              print('❌ Failed to queue server ${server.name} for startup: $e');
-              // 启动失败时设置为error状态
-              try {
-                final errorServer = server.copyWith(
-                  status: models.McpServerStatus.error,
-                  errorMessage: 'Auto-start failed: $e',
-                  updatedAt: DateTime.now(),
-                );
-                await repository.updateServer(errorServer);
-              } catch (updateError) {
-                print('❌ Failed to update error status: $updateError');
-              }
-            }
-          }
+        // 延迟启动，确保监控系统先完成（避免状态冲突）
+        Timer(const Duration(seconds: 5), () {
+          _processServerStartupQueue(serversToStart, repository);
         });
       }
       
@@ -235,6 +260,68 @@ class McpHubService {
       
     } catch (e) {
       print('❌ Failed to restore server states: $e');
+    }
+  }
+
+  /// 处理服务器启动队列（独立的异步方法，避免Timer回调中的异常）
+  Future<void> _processServerStartupQueue(List<models.McpServer> serversToStart, dynamic repository) async {
+    try {
+      print('🔄 Processing server startup queue...');
+      for (final server in serversToStart) {
+        try {
+          // 重新查询服务器当前状态（可能已被监控系统更新）
+          final currentServer = await repository.getServerById(server.id);
+          if (currentServer == null) {
+            print('⚠️ Server ${server.name} not found, skipping');
+            continue;
+          }
+          
+          print('🚀 Auto-starting server: ${currentServer.name} (current status: ${currentServer.status.name})');
+          
+          // 检查服务器是否已经在运行中（避免状态冲突）
+          if (currentServer.status == models.McpServerStatus.running) {
+            print('✅ Server ${currentServer.name} is already running, skipping startup queue');
+            continue;
+          }
+          
+          // 只有当状态不是starting时才更新状态
+          if (currentServer.status != models.McpServerStatus.starting) {
+            final startingServer = currentServer.copyWith(
+              status: models.McpServerStatus.starting,
+              updatedAt: DateTime.now(),
+            );
+            await repository.updateServer(startingServer);
+            print('📋 Updated status to starting for ${currentServer.name}');
+          } else {
+            print('📋 Server ${currentServer.name} already in starting state');
+          }
+          
+          // 实际启动将由监控系统处理
+          print('✅ Queued for startup: ${currentServer.name}');
+          
+        } catch (e) {
+          print('❌ Failed to queue server ${server.name} for startup: $e');
+          // 启动失败时设置为error状态
+          try {
+            // 重新获取最新状态进行错误更新
+            final latestServer = await repository.getServerById(server.id);
+            if (latestServer != null) {
+              final errorServer = latestServer.copyWith(
+                status: models.McpServerStatus.error,
+                errorMessage: 'Auto-start failed: $e',
+                updatedAt: DateTime.now(),
+              );
+              await repository.updateServer(errorServer);
+            }
+          } catch (updateError) {
+            print('❌ Failed to update error status: $updateError');
+          }
+        }
+      }
+      print('✅ Server startup queue processing completed');
+    } catch (e) {
+      print('❌ Critical error in server startup queue processing: $e');
+      print('Stack trace: ${StackTrace.current}');
     }
   }
 
@@ -254,10 +341,18 @@ class McpHubService {
       // 断开所有子服务器连接
       await _disconnectAllChildServers();
       
-      await _httpServer?.close();
-      _httpServer = null;
-      _mcpServer = null;
-      _sseManager = null;
+      if (_serverMode == 'streamable' && _streamableHub != null) {
+        // 停止Streamable模式
+        await _streamableHub!.stopHub();
+        _streamableHub = null;
+      } else {
+        // 停止SSE模式
+        await _httpServer?.close();
+        _httpServer = null;
+        _mcpServer = null;
+        _sseManager = null;
+      }
+      
       _isRunning = false;
       
       print('✅ MCP Hub Server stopped successfully');
@@ -272,17 +367,38 @@ class McpHubService {
   Future<void> _startDatabaseStatusMonitoring() async {
     print('🔍 Starting database status monitoring...');
     
-    // 延迟10秒后开始监控（等待所有初始化完成）
-    await Future.delayed(const Duration(seconds: 10));
     _isInitializationComplete = true;
     print('✅ Hub initialization completed, monitoring enabled');
     
-    // 每5秒检查一次数据库状态
-    _statusMonitorTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
-      _monitorDatabaseStatus();
+    // 立即执行一次检查（处理启动时已有的starting状态服务器）
+    print('🔄 Performing immediate monitoring check...');
+    try {
+      await _monitorDatabaseStatus();
+      print('✅ Immediate monitoring check completed');
+    } catch (e) {
+      print('❌ Immediate monitoring check failed: $e');
+    }
+    
+    // 延迟3秒后再次检查（处理恢复流程中新设置的starting状态服务器）
+    Timer(const Duration(seconds: 3), () async {
+      print('🔄 Performing follow-up monitoring check...');
+      try {
+        await _monitorDatabaseStatus();
+        print('✅ Follow-up monitoring check completed');
+      } catch (e) {
+        print('❌ Follow-up monitoring check failed: $e');
+      }
     });
     
-    print('✅ Database status monitoring started');
+    // 延迟8秒后开始定期监控
+    Timer(const Duration(seconds: 8), () {
+      _statusMonitorTimer = Timer.periodic(const Duration(seconds: 5), (timer) {
+        _monitorDatabaseStatus();
+      });
+      print('✅ Periodic database status monitoring started');
+    });
+    
+    print('✅ Database status monitoring initialized');
   }
 
   /// 停止数据库状态监控
@@ -301,25 +417,71 @@ class McpHubService {
         final repository = McpServerRepository.instance;
         final allServers = await repository.getAllServers();
         
+        bool hasActions = false;
+        
         // 1. 处理需要启动的服务器 (starting状态)
         final startingServers = allServers
             .where((server) => server.status == models.McpServerStatus.starting)
             .toList();
         
-        for (final server in startingServers) {
-          print('🚀 Hub: Starting server ${server.name} (${server.id})');
-          await _hubStartServer(server);
+        print('🔍 Monitor: Found ${allServers.length} total servers, ${startingServers.length} starting servers');
+        
+        if (startingServers.isNotEmpty) {
+          hasActions = true;
+          for (final server in startingServers) {
+            // 检查服务器是否已经连接但状态未更新
+            if (_childServers.containsKey(server.id)) {
+              final existingServer = _childServers[server.id]!;
+              if (existingServer.isConnected) {
+                print('✅ Hub: Server ${server.name} already connected, updating status to running');
+                await _updateServerStatus(server.id, models.McpServerStatus.running);
+                continue;
+              }
+            }
+            
+            // 检查是否最近刚处理过这个服务器
+            final lastProcessed = _lastProcessedTime[server.id];
+            if (lastProcessed != null && 
+                DateTime.now().difference(lastProcessed).inSeconds < 10) {
+              print('⏳ Hub: Skipping ${server.name} - processed recently');
+              continue;
+            }
+            
+            print('🚀 Hub: Starting server ${server.name} (${server.id})');
+            _lastProcessedTime[server.id] = DateTime.now();
+            await _hubStartServer(server);
+          }
         }
         
         // 2. 处理需要连接的服务器 (running状态但未连接)
         final runningServers = allServers
             .where((server) => server.status == models.McpServerStatus.running)
-            .where((server) => !_childServers.containsKey(server.id) || !_childServers[server.id]!.isConnected)
+            .where((server) {
+              // 只处理确实未连接的服务器
+              if (!_childServers.containsKey(server.id)) {
+                return true; // 服务器不在内存中，需要连接
+              }
+              final existingServer = _childServers[server.id]!;
+              // 更严格的连接检查：既要标记为连接，又要有有效的客户端
+              return !existingServer.isConnected || existingServer.client == null;
+            })
             .toList();
         
-        for (final server in runningServers) {
-          print('🔗 Hub: Connecting to running server ${server.name} (${server.id})');
-          await _hubConnectToServer(server);
+        if (runningServers.isNotEmpty) {
+          hasActions = true;
+          for (final server in runningServers) {
+            // 检查是否最近刚处理过这个服务器（避免重复处理）
+            final lastProcessed = _lastProcessedTime[server.id];
+            if (lastProcessed != null && 
+                DateTime.now().difference(lastProcessed).inSeconds < 10) {
+              print('⏳ Hub: Skipping ${server.name} - processed recently');
+              continue;
+            }
+            
+            print('🔗 Hub: Connecting to running server ${server.name} (${server.id}) - not currently connected');
+            _lastProcessedTime[server.id] = DateTime.now();
+            await _hubConnectToServer(server);
+          }
         }
         
         // 3. 处理需要停止的服务器 (stopping状态)
@@ -327,9 +489,12 @@ class McpHubService {
             .where((server) => server.status == models.McpServerStatus.stopping)
             .toList();
         
-        for (final server in stoppingServers) {
-          print('🛑 Hub: Stopping server ${server.name} (${server.id})');
-          await _hubStopServer(server);
+        if (stoppingServers.isNotEmpty) {
+          hasActions = true;
+          for (final server in stoppingServers) {
+            print('🛑 Hub: Stopping server ${server.name} (${server.id})');
+            await _hubStopServer(server);
+          }
         }
         
         // 4. 检查已断开的服务器（只断开明确停止的服务器）
@@ -341,9 +506,17 @@ class McpHubService {
             .toSet();
         
         final shouldDisconnect = connectedServerIds.intersection(explicitlyStoppedIds);
-        for (final serverId in shouldDisconnect) {
-          print('🔌 Hub: Disconnecting from explicitly stopped server ${serverId}');
-          await _hubDisconnectFromServer(serverId);
+        if (shouldDisconnect.isNotEmpty) {
+          hasActions = true;
+          for (final serverId in shouldDisconnect) {
+            print('🔌 Hub: Disconnecting from explicitly stopped server ${serverId}');
+            await _hubDisconnectFromServer(serverId);
+          }
+        }
+        
+        // 只在有实际操作时打印监控状态
+        if (hasActions) {
+          print('📊 Hub: Monitoring cycle completed with actions taken');
         }
         
       } catch (e) {
@@ -460,12 +633,39 @@ class McpHubService {
     }
   }
 
+  /// 检查服务器连接是否有效（轻量级检查）
+  bool _isServerConnectionValid(ChildServerInfo serverInfo) {
+    return serverInfo.isConnected && 
+           serverInfo.client != null && 
+           serverInfo.tools.isNotEmpty; // 如果有工具说明连接是有效的
+  }
+
   /// Hub统一连接到已启动的服务器（保留，用于运行时检测）
   Future<void> _hubConnectToServer(models.McpServer server) async {
-    // 对于统一架构，直接调用启动方法
-    // 因为MCP的StdioClientTransport就是设计为一体化的
-    print('🔄 Hub: Redirecting to unified start+connect for ${server.name}');
-    await _hubStartServer(server);
+    try {
+      print('🔗 Hub: Attempting to connect to running server ${server.name}');
+      
+      // 检查是否已经连接并且健康
+      if (_childServers.containsKey(server.id)) {
+        final existing = _childServers[server.id]!;
+        if (_isServerConnectionValid(existing)) {
+          print('✅ Hub: Server ${server.id} is already connected and healthy');
+          return;
+        } else {
+          print('🔄 Hub: Server ${server.id} exists but disconnected, removing and restarting');
+          await _hubDisconnectFromServer(server.id);
+        }
+      }
+      
+      // 对于统一架构，需要重新启动来连接
+      // 因为MCP的StdioClientTransport就是设计为一体化的
+      print('🔄 Hub: Using unified start+connect for ${server.name}');
+      await _hubStartServer(server);
+      
+    } catch (e) {
+      print('❌ Hub: Failed to connect to server ${server.name}: $e');
+      await _updateServerStatus(server.id, models.McpServerStatus.error);
+    }
   }
 
   /// Hub统一停止服务器
@@ -2270,4 +2470,25 @@ class McpHubService {
     // 3. 工具未找到
     throw Exception('Tool not found: $toolName');
   }
+
+  // ===== Additional Getters =====
+  
+  /// 获取服务器模式
+  String get serverMode => _serverMode;
+  
+  /// 获取详细的Hub状态
+  Map<String, dynamic> get detailedHubStatus => {
+    'running': _isRunning,
+    'port': _port,
+    'mode': _serverMode,
+    'child_servers': _childServers.length,
+    'connected_servers': _childServers.values.where((s) => s.isConnected).length,
+    'total_tools': _getTotalToolsCount(),
+    'total_resources': _getTotalResourcesCount(),
+    if (_serverMode == 'streamable' && _streamableHub != null) ...{
+      'streamable_status': _streamableHub!.getStatus(),
+    },
+  };
+  
+
 } 

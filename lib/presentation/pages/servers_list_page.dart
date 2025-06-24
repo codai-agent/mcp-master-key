@@ -300,55 +300,25 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
         updatedAt: DateTime.now(),
       );
       await serverActions.updateServer(startingServer);
-      ref.refresh(serversListProvider);
       
       // 执行实际的启动操作
       await serverActions.startServer(server.id);
       
-      // 等待服务器状态真正变成running或error
-      const maxWaitTime = Duration(seconds: 30);
-      const checkInterval = Duration(milliseconds: 500);
-      final startTime = DateTime.now();
-      
-      while (DateTime.now().difference(startTime) < maxWaitTime) {
-        await Future.delayed(checkInterval);
-        
-        // 刷新服务器列表以获取最新状态
-        ref.refresh(serversListProvider);
-        
-        // 获取最新的服务器状态
-        final updatedServers = await ref.read(serversListProvider.future);
-        final currentServer = updatedServers.firstWhere(
-          (s) => s.id == server.id,
-          orElse: () => server,
-        );
-        
-        if (currentServer.status == McpServerStatus.running) {
-          // 启动成功
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.check_circle, color: Colors.white),
-                  const SizedBox(width: 12),
-                  Text('服务器启动成功: ${server.name}'),
-                ],
-              ),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-          return;
-        } else if (currentServer.status == McpServerStatus.error) {
-          // 启动失败
-          throw Exception('服务器启动失败');
-        }
-        // 如果还是starting状态，继续等待
-      }
-      
-      // 超时仍未启动成功
-      throw Exception('服务器启动超时，请检查服务器配置');
+      // 显示成功提示，状态变化会由StreamProvider自动刷新界面
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.rocket_launch, color: Colors.white),
+              const SizedBox(width: 12),
+              Text('正在启动服务器: ${server.name}'),
+            ],
+          ),
+          backgroundColor: Colors.blue,
+          duration: const Duration(seconds: 3),
+        ),
+      );
       
     } catch (e) {
       // 隐藏之前的SnackBar并显示错误消息
@@ -367,8 +337,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
         ),
       );
       
-      // 刷新列表以显示错误状态
-      ref.refresh(serversListProvider);
+      // 错误状态会由StreamProvider自动刷新
     }
   }
 
@@ -401,55 +370,25 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
         updatedAt: DateTime.now(),
       );
       await serverActions.updateServer(stoppingServer);
-      ref.refresh(serversListProvider);
       
       // 执行实际的停止操作
       await serverActions.stopServer(server.id);
       
-      // 等待服务器状态真正变成stopped或error
-      const maxWaitTime = Duration(seconds: 30);
-      const checkInterval = Duration(milliseconds: 500);
-      final startTime = DateTime.now();
-      
-      while (DateTime.now().difference(startTime) < maxWaitTime) {
-        await Future.delayed(checkInterval);
-        
-        // 刷新服务器列表以获取最新状态
-        ref.refresh(serversListProvider);
-        
-        // 获取最新的服务器状态
-        final updatedServers = await ref.read(serversListProvider.future);
-        final currentServer = updatedServers.firstWhere(
-          (s) => s.id == server.id,
-          orElse: () => server,
-        );
-        
-        if (currentServer.status == McpServerStatus.stopped) {
-          // 停止成功
-          ScaffoldMessenger.of(context).hideCurrentSnackBar();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.stop_circle, color: Colors.white),
-                  const SizedBox(width: 12),
-                  Text('服务器停止成功: ${server.name}'),
-                ],
-              ),
-              backgroundColor: Colors.orange,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-          return;
-        } else if (currentServer.status == McpServerStatus.error) {
-          // 停止失败
-          throw Exception('服务器停止失败');
-        }
-        // 如果还是stopping状态，继续等待
-      }
-      
-      // 超时仍未停止成功
-      throw Exception('服务器停止超时，请检查服务器状态');
+      // 显示成功提示，状态变化会由StreamProvider自动刷新界面
+      ScaffoldMessenger.of(context).hideCurrentSnackBar();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.stop_circle, color: Colors.white),
+              const SizedBox(width: 12),
+              Text('正在停止服务器: ${server.name}'),
+            ],
+          ),
+          backgroundColor: Colors.orange,
+          duration: const Duration(seconds: 3),
+        ),
+      );
       
     } catch (e) {
       // 隐藏之前的SnackBar并显示错误消息
@@ -468,8 +407,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
         ),
       );
       
-      // 刷新列表以显示错误状态
-      ref.refresh(serversListProvider);
+      // 错误状态会由StreamProvider自动刷新
     }
   }
 
@@ -485,8 +423,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
       final serverActions = ref.read(serverActionsProvider);
       await serverActions.restartServer(server.id);
       
-      // 刷新服务器列表
-      ref.refresh(serversListProvider);
+      // 服务器列表会自动刷新
       
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

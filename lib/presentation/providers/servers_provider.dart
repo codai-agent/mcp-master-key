@@ -14,10 +14,17 @@ final serverServiceProvider = Provider<McpServerService>((ref) {
   return McpServerService.instance;
 });
 
-// 服务器列表Provider
-final serversListProvider = FutureProvider<List<McpServer>>((ref) async {
+// 服务器列表Provider - 使用StreamProvider实现实时更新
+final serversListProvider = StreamProvider<List<McpServer>>((ref) async* {
   final repository = ref.read(serverRepositoryProvider);
-  return await repository.getAllServers();
+  
+  // 首次加载
+  yield await repository.getAllServers();
+  
+  // 定期刷新以监听数据库变化
+  await for (final _ in Stream.periodic(const Duration(seconds: 2))) {
+    yield await repository.getAllServers();
+  }
 });
 
 // 单个服务器Provider

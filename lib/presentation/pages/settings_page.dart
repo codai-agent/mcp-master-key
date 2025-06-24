@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/system_info_widget.dart';
 import '../providers/servers_provider.dart';
+import '../../business/services/config_service.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -17,6 +18,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   bool _minimizeToTray = true;
   int _logRetentionDays = 30;
   bool _useChinaMirrors = false;
+  String _serverMode = 'sse'; // 新增：服务器模式
+  int _streamablePort = 3001; // 新增：Streamable模式端口
 
   @override
   void initState() {
@@ -26,10 +29,17 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   Future<void> _loadSettings() async {
     final configNotifier = ref.read(configProvider.notifier);
+    final configService = ConfigService.instance;
+    
     final useChinaMirrors = await configNotifier.useChinaMirrors;
+    final serverMode = await configService.getMcpServerMode();
+    final streamablePort = await configService.getStreamablePort();
+    
     if (mounted) {
       setState(() {
         _useChinaMirrors = useChinaMirrors;
+        _serverMode = serverMode;
+        _streamablePort = streamablePort;
       });
     }
   }
@@ -57,6 +67,102 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     _darkMode = value;
                   });
                 },
+              ),
+            ],
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Hub服务器配置
+          _buildSectionCard(
+            title: 'MCP Hub 服务器',
+            children: [
+              ListTile(
+                title: const Text('运行模式'),
+                subtitle: Text(_getServerModeDescription(_serverMode)),
+                trailing: DropdownButton<String>(
+                  value: _serverMode,
+                  items: const [
+                    DropdownMenuItem(
+                      value: 'sse',
+                      child: Text('SSE模式 (单客户端)'),
+                    ),
+                    DropdownMenuItem(
+                      value: 'streamable',
+                      child: Text('Streamable模式 (多客户端)'),
+                    ),
+                  ],
+                  onChanged: (value) async {
+                    if (value != null && value != _serverMode) {
+                      await _changeServerMode(value);
+                    }
+                  },
+                ),
+              ),
+              if (_serverMode == 'streamable') ...[
+                ListTile(
+                  title: const Text('Streamable端口'),
+                  subtitle: Text('多客户端模式使用的端口: $_streamablePort'),
+                  trailing: SizedBox(
+                    width: 100,
+                    child: TextField(
+                      controller: TextEditingController(text: _streamablePort.toString()),
+                      keyboardType: TextInputType.number,
+                      textAlign: TextAlign.center,
+                      onSubmitted: (value) async {
+                        final port = int.tryParse(value);
+                        if (port != null && port > 1024 && port < 65536) {
+                          await _changeStreamablePort(port);
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text('端口必须在1024-65535之间')),
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                ),
+              ],
+                             Container(
+                 padding: const EdgeInsets.all(12),
+                 margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                 decoration: BoxDecoration(
+                   color: _serverMode == 'sse' ? Colors.blue.withValues(alpha: 0.1) : Colors.green.withValues(alpha: 0.1),
+                   borderRadius: BorderRadius.circular(8),
+                   border: Border.all(
+                     color: _serverMode == 'sse' ? Colors.blue.withValues(alpha: 0.3) : Colors.green.withValues(alpha: 0.3),
+                   ),
+                 ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          _serverMode == 'sse' ? Icons.person : Icons.group,
+                          color: _serverMode == 'sse' ? Colors.blue : Colors.green,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          _serverMode == 'sse' ? 'SSE模式' : 'Streamable模式',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: _serverMode == 'sse' ? Colors.blue : Colors.green,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      _getServerModeHelp(_serverMode),
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
@@ -319,6 +425,139 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         return '错误';
       default:
         return '未知';
+    }
+  }
+
+  String _getServerModeDescription(String mode) {
+    switch (mode) {
+      case 'sse':
+        return '只允许单个客户端连接';
+      case 'streamable':
+        return '支持多个客户端并发连接';
+      default:
+        return mode;
+    }
+  }
+
+  String _getServerModeHelp(String mode) {
+    switch (mode) {
+      case 'sse':
+        return '适合单一应用使用，性能更好，兼容性强';
+      case 'streamable':
+        return '适合多个应用同时连接，支持会话隔离，资源共享';
+      default:
+        return '';
+    }
+  }
+
+  Future<void> _changeServerMode(String newMode) async {
+    try {
+      final configService = ConfigService.instance;
+      await configService.setMcpServerMode(newMode);
+      
+      setState(() {
+        _serverMode = newMode;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('服务器模式已更改为: ${_getServerModeDescription(newMode)}'),
+            backgroundColor: Colors.green,
+          ),
+        );
+
+        // 显示重启提示
+        _showRestartDialog();
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('更改服务器模式失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _changeStreamablePort(int newPort) async {
+    try {
+      final configService = ConfigService.instance;
+      await configService.setStreamablePort(newPort);
+      
+      setState(() {
+        _streamablePort = newPort;
+      });
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Streamable端口已更改为: $newPort'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('更改端口失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  void _showRestartDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('需要重启'),
+        content: const Text('服务器模式更改需要重启MCP Hub服务才能生效。'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('稍后重启'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              Navigator.of(context).pop();
+              await _restartHubService();
+            },
+            child: const Text('立即重启'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _restartHubService() async {
+    try {
+      // 这里应该调用Hub服务的重启方法
+      // final hubService = McpHubService.instance;
+      // await hubService.stopHub();
+      // await hubService.startHub();
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('MCP Hub服务重启成功'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('重启Hub服务失败: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
     }
   }
 

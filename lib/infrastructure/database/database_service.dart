@@ -175,6 +175,27 @@ class DatabaseService {
       print('✅ Database schema consistency ensured');
     }
     
+    // 从版本4升级到版本5：添加应用配置表
+    if (oldVersion < 5) {
+      print('📝 Adding app configuration table for version 5...');
+      
+      try {
+        // 创建应用配置表
+        await db.execute(DatabaseSchema.createAppConfigTable);
+        print('✅ app_config table created');
+        
+        // 创建应用配置索引
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_app_config_category ON app_config (category)');
+        await db.execute('CREATE INDEX IF NOT EXISTS idx_app_config_updated_at ON app_config (updated_at)');
+        print('✅ app_config indexes created');
+        
+      } catch (e) {
+        print('❌ Error creating app_config table: $e');
+      }
+      
+      print('✅ Database upgraded to version 5');
+    }
+    
     print('✅ Database upgrade completed');
   }
 
