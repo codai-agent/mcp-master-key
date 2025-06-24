@@ -1,0 +1,407 @@
+import 'dart:convert';
+import 'dart:io';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+
+import '../../core/constants/path_constants.dart';
+import '../../core/models/mcp_server.dart';
+import '../../infrastructure/database/database_service.dart';
+
+/// 配置服务类
+class ConfigService {
+  static ConfigService? _instance;
+  static ConfigService get instance => _instance ??= ConfigService._();
+  
+  ConfigService._();
+
+  final DatabaseService _databaseService = DatabaseService.instance;
+  Map<String, dynamic>? _config;
+
+  /// 获取配置文件路径（使用用户主目录）
+  Future<String> get configPath async {
+    final configDir = Directory(PathConstants.getUserConfigPath());
+    
+    if (!await configDir.exists()) {
+      await configDir.create(recursive: true);
+    }
+
+    return path.join(configDir.path, 'config.json');
+  }
+
+  /// 加载配置
+  Future<Map<String, dynamic>> loadConfig() async {
+    if (_config != null) return _config!;
+
+    try {
+      final configFile = File(await configPath);
+      if (await configFile.exists()) {
+        final content = await configFile.readAsString();
+        _config = jsonDecode(content);
+      } else {
+        _config = _getDefaultConfig();
+        await saveConfig();
+      }
+    } catch (e) {
+      print('⚠️ Error loading config: $e');
+      _config = _getDefaultConfig();
+    }
+
+    return _config!;
+  }
+
+  /// 保存配置
+  Future<void> saveConfig() async {
+    if (_config == null) return;
+
+    try {
+      final configFile = File(await configPath);
+      await configFile.writeAsString(jsonEncode(_config));
+      print('✅ Configuration saved');
+    } catch (e) {
+      print('❌ Error saving config: $e');
+    }
+  }
+
+  /// 获取配置值
+  Future<T?> getValue<T>(String key, [T? defaultValue]) async {
+    final config = await loadConfig();
+    return _getNestedValue(config, key) ?? defaultValue;
+  }
+
+  /// 设置配置值
+  Future<void> setValue(String key, dynamic value) async {
+    await loadConfig();
+    _setNestedValue(_config!, key, value);
+    await saveConfig();
+  }
+
+  /// 获取MCP Hub服务器配置
+  Future<Map<String, dynamic>> getHubConfig() async {
+    final config = await loadConfig();
+    return config['hub'] ?? {};
+  }
+
+  /// 设置MCP Hub服务器配置
+  Future<void> setHubConfig(Map<String, dynamic> hubConfig) async {
+    await setValue('hub', hubConfig);
+  }
+
+  /// 获取服务器配置列表
+  Future<List<Map<String, dynamic>>> getServerConfigs() async {
+    final config = await loadConfig();
+    return List<Map<String, dynamic>>.from(config['servers'] ?? []);
+  }
+
+  /// 添加服务器配置
+  Future<void> addServerConfig(Map<String, dynamic> serverConfig) async {
+    final configs = await getServerConfigs();
+    configs.add(serverConfig);
+    await setValue('servers', configs);
+  }
+
+  /// 更新服务器配置
+  Future<void> updateServerConfig(String serverId, Map<String, dynamic> serverConfig) async {
+    final configs = await getServerConfigs();
+    final index = configs.indexWhere((config) => config['id'] == serverId);
+    if (index != -1) {
+      configs[index] = serverConfig;
+      await setValue('servers', configs);
+    }
+  }
+
+  /// 删除服务器配置
+  Future<void> removeServerConfig(String serverId) async {
+    final configs = await getServerConfigs();
+    configs.removeWhere((config) => config['id'] == serverId);
+    await setValue('servers', configs);
+  }
+
+  /// 导入配置
+  Future<void> importConfig(Map<String, dynamic> importedConfig) async {
+    try {
+      // 验证配置格式
+      _validateConfig(importedConfig);
+      
+      // 合并配置
+      await loadConfig();
+      
+      // 导入Hub配置
+      if (importedConfig.containsKey('hub')) {
+        await setHubConfig(importedConfig['hub']);
+      }
+      
+      // 导入服务器配置
+      if (importedConfig.containsKey('servers')) {
+        final servers = List<Map<String, dynamic>>.from(importedConfig['servers']);
+        for (final serverConfig in servers) {
+          await addServerConfig(serverConfig);
+        }
+      }
+      
+      print('✅ Configuration imported successfully');
+    } catch (e) {
+      print('❌ Error importing config: $e');
+      rethrow;
+    }
+  }
+
+  /// 导出配置
+  Future<Map<String, dynamic>> exportConfig() async {
+    final config = await loadConfig();
+    
+    return {
+      'version': '1.0.0',
+      'exported_at': DateTime.now().toIso8601String(),
+      'hub': config['hub'] ?? {},
+      'servers': config['servers'] ?? [],
+      'settings': config['settings'] ?? {},
+    };
+  }
+
+  /// 重置配置
+  Future<void> resetConfig() async {
+    _config = _getDefaultConfig();
+    await saveConfig();
+    print('✅ Configuration reset to defaults');
+  }
+
+  /// 获取默认配置
+  Map<String, dynamic> _getDefaultConfig() {
+    return {
+      'version': '1.0.0',
+      'hub': {
+        'port': 3000,
+        'auto_start': true,
+        'max_connections': 100,
+        'timeout_seconds': 30,
+        'enable_cors': true,
+        'log_level': 'info',
+      },
+      'servers': <Map<String, dynamic>>[],
+      'settings': {
+        'auto_cleanup_days': 30,
+        'max_log_entries': 10000,
+        'enable_notifications': true,
+        'theme': 'system',
+        'language': 'zh-CN',
+      },
+      'download': {
+        'use_china_mirrors': false,
+        'python_mirror_url': 'https://pypi.org/simple',
+        'python_mirror_url_china': 'https://pypi.tuna.tsinghua.edu.cn/simple',
+        'npm_mirror_url': 'https://registry.npmjs.org/',
+        'npm_mirror_url_china': 'https://registry.npmmirror.com/',
+        'timeout_seconds': 120,
+        'concurrent_downloads': 4,
+      },
+      'security': {
+        'enable_auth': false,
+        'allowed_origins': ['*'],
+        'rate_limit': {
+          'enabled': false,
+          'requests_per_minute': 100,
+        },
+      },
+    };
+  }
+
+  /// 验证配置格式
+  void _validateConfig(Map<String, dynamic> config) {
+    // 基本验证
+    if (!config.containsKey('version')) {
+      throw Exception('Configuration missing version field');
+    }
+
+    // 验证Hub配置
+    if (config.containsKey('hub')) {
+      final hubConfig = config['hub'];
+      if (hubConfig is! Map<String, dynamic>) {
+        throw Exception('Invalid hub configuration format');
+      }
+    }
+
+    // 验证服务器配置
+    if (config.containsKey('servers')) {
+      final servers = config['servers'];
+      if (servers is! List) {
+        throw Exception('Invalid servers configuration format');
+      }
+      
+      for (final server in servers) {
+        if (server is! Map<String, dynamic>) {
+          throw Exception('Invalid server configuration format');
+        }
+        
+        if (!server.containsKey('id') || !server.containsKey('name')) {
+          throw Exception('Server configuration missing required fields');
+        }
+      }
+    }
+  }
+
+  /// 获取嵌套值
+  dynamic _getNestedValue(Map<String, dynamic> map, String key) {
+    final keys = key.split('.');
+    dynamic current = map;
+    
+    for (final k in keys) {
+      if (current is Map<String, dynamic> && current.containsKey(k)) {
+        current = current[k];
+      } else {
+        return null;
+      }
+    }
+    
+    return current;
+  }
+
+  /// 设置嵌套值
+  void _setNestedValue(Map<String, dynamic> map, String key, dynamic value) {
+    final keys = key.split('.');
+    Map<String, dynamic> current = map;
+    
+    for (int i = 0; i < keys.length - 1; i++) {
+      final k = keys[i];
+      if (!current.containsKey(k) || current[k] is! Map<String, dynamic>) {
+        current[k] = <String, dynamic>{};
+      }
+      current = current[k];
+    }
+    
+    current[keys.last] = value;
+  }
+
+  /// 同步服务器配置到数据库
+  Future<void> syncServersToDatabase() async {
+    try {
+      final serverConfigs = await getServerConfigs();
+      
+      for (final config in serverConfigs) {
+        final server = McpServer(
+          id: config['id'],
+          name: config['name'],
+          description: config['description'],
+          status: McpServerStatus.values.firstWhere(
+            (s) => s.name == (config['status'] ?? 'notInstalled'),
+            orElse: () => McpServerStatus.notInstalled,
+          ),
+          connectionType: McpConnectionType.values.firstWhere(
+            (t) => t.name == (config['connection_type'] ?? 'stdio'),
+            orElse: () => McpConnectionType.stdio,
+          ),
+          installType: McpInstallType.values.firstWhere(
+            (t) => t.name == (config['install_type'] ?? 'npx'),
+            orElse: () => McpInstallType.npx,
+          ),
+          command: config['command'] ?? '',
+          args: List<String>.from(config['args'] ?? []),
+          env: Map<String, String>.from(config['env'] ?? {}),
+          workingDirectory: config['working_directory'],
+          installSource: config['install_source'],
+          version: config['version'],
+          config: Map<String, dynamic>.from(config['config'] ?? {}),
+          autoStart: config['auto_start'] ?? false,
+          logLevel: config['log_level'] ?? 'info',
+          createdAt: DateTime.now(),
+          updatedAt: DateTime.now(),
+        );
+
+        // 检查服务器是否已存在
+        final existingServer = await _databaseService.database.then((db) => 
+          db.query('mcp_servers', where: 'id = ?', whereArgs: [server.id])
+        );
+
+        if (existingServer.isEmpty) {
+          // 插入新服务器
+          await _databaseService.database.then((db) => 
+            db.insert('mcp_servers', _serverToMap(server))
+          );
+        } else {
+          // 更新现有服务器
+          await _databaseService.database.then((db) => 
+            db.update(
+              'mcp_servers',
+              _serverToMap(server),
+              where: 'id = ?',
+              whereArgs: [server.id],
+            )
+          );
+        }
+      }
+      
+      print('✅ Server configurations synced to database');
+    } catch (e) {
+      print('❌ Error syncing servers to database: $e');
+    }
+  }
+
+  // 下载设置相关的便捷方法
+  
+  /// 是否使用中国镜像源
+  Future<bool> getUseChinaMirrors() async {
+    return await getValue('download.use_china_mirrors', false) ?? false;
+  }
+  
+  /// 设置是否使用中国镜像源
+  Future<void> setUseChinaMirrors(bool enabled) async {
+    await setValue('download.use_china_mirrors', enabled);
+  }
+  
+  /// 获取Python镜像源URL
+  Future<String> getPythonMirrorUrl() async {
+    final useChinaMirrors = await getUseChinaMirrors();
+    if (useChinaMirrors) {
+      return await getValue('download.python_mirror_url_china', 'https://pypi.tuna.tsinghua.edu.cn/simple') ?? 'https://pypi.tuna.tsinghua.edu.cn/simple';
+    } else {
+      return await getValue('download.python_mirror_url', 'https://pypi.org/simple') ?? 'https://pypi.org/simple';
+    }
+  }
+  
+  /// 获取NPM镜像源URL
+  Future<String> getNpmMirrorUrl() async {
+    final useChinaMirrors = await getUseChinaMirrors();
+    if (useChinaMirrors) {
+      return await getValue('download.npm_mirror_url_china', 'https://registry.npmmirror.com/') ?? 'https://registry.npmmirror.com/';
+    } else {
+      return await getValue('download.npm_mirror_url', 'https://registry.npmjs.org/') ?? 'https://registry.npmjs.org/';
+    }
+  }
+  
+  /// 获取下载超时时间
+  Future<int> getDownloadTimeoutSeconds() async {
+    return await getValue('download.timeout_seconds', 120) ?? 120;
+  }
+  
+  /// 获取并发下载数
+  Future<int> getConcurrentDownloads() async {
+    return await getValue('download.concurrent_downloads', 4) ?? 4;
+  }
+
+  /// 将服务器对象转换为数据库映射
+  Map<String, dynamic> _serverToMap(McpServer server) {
+    return {
+      'id': server.id,
+      'name': server.name,
+      'description': server.description,
+      'status': server.status.name,
+      'connection_type': server.connectionType.name,
+      'install_type': server.installType.name,
+      'command': server.command,
+      'args': jsonEncode(server.args),
+      'env': jsonEncode(server.env),
+      'working_directory': server.workingDirectory,
+      'install_source': server.installSource,
+      'version': server.version,
+      'config': jsonEncode(server.config),
+      'process_id': server.processId,
+      'port': server.port,
+      'created_at': server.createdAt.millisecondsSinceEpoch,
+      'updated_at': server.updatedAt.millisecondsSinceEpoch,
+      'last_started_at': server.lastStartedAt?.millisecondsSinceEpoch,
+      'last_stopped_at': server.lastStoppedAt?.millisecondsSinceEpoch,
+      'auto_start': server.autoStart ? 1 : 0,
+      'error_message': server.errorMessage,
+      'log_level': server.logLevel,
+    };
+  }
+} 
