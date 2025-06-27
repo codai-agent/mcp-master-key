@@ -339,6 +339,47 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // MCP 服务器配置
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.settings, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        'MCP 服务器配置',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow('服务器名称', server.name),
+                  if (server.description != null)
+                    _buildInfoRow('描述', server.description!),
+                  _buildInfoRow('安装类型', server.installType.name.toUpperCase()),
+                  _buildInfoRow('连接类型', server.connectionType.name.toUpperCase()),
+                  _buildInfoRow('命令', server.command),
+                  if (server.args.isNotEmpty)
+                    _buildInfoRow('参数', server.args.join(' ')),
+                  if (server.workingDirectory != null)
+                    _buildInfoRow('工作目录', server.workingDirectory!),
+                  if (server.installSource != null)
+                    _buildInfoRow('安装源', server.installSource!),
+                  if (server.version != null)
+                    _buildInfoRow('版本', server.version!),
+                  _buildInfoRow('自动启动', server.autoStart ? '是' : '否'),
+                  _buildInfoRow('日志级别', server.logLevel.toUpperCase()),
+                  _buildInfoRow('状态', _getStatusText(server.status)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          
           // 环境变量
           if (server.env.isNotEmpty) ...[
             Card(
@@ -347,9 +388,15 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '环境变量',
-                      style: Theme.of(context).textTheme.titleMedium,
+                    Row(
+                      children: [
+                        const Icon(Icons.eco, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          '环境变量',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     ...server.env.entries.map((entry) => 
@@ -370,9 +417,15 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      '配置参数',
-                      style: Theme.of(context).textTheme.titleMedium,
+                    Row(
+                      children: [
+                        const Icon(Icons.code, size: 20),
+                        const SizedBox(width: 8),
+                        Text(
+                          '附加配置参数',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 12),
                     Container(
