@@ -336,16 +336,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                   child: const Text('导出'),
                 ),
               ),
-              ListTile(
-                title: const Text('导入配置'),
-                subtitle: const Text('从文件导入配置'),
-                trailing: ElevatedButton(
-                  onPressed: () {
-                    _importConfiguration();
-                  },
-                  child: const Text('导入'),
-                ),
-              ),
+
             ],
           ),
           
@@ -598,12 +589,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     );
   }
 
-  void _importConfiguration() {
-    // TODO: 实现配置导入
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('配置导入功能开发中')),
-    );
-  }
+
 
   void _checkForUpdates() {
     // TODO: 实现更新检查

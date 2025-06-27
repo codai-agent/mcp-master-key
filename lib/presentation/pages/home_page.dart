@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'servers_list_page.dart';
-import 'config_import_page.dart';
 import 'server_monitor_page.dart';
 import 'settings_page.dart';
 import 'installation_wizard_page.dart';
@@ -26,11 +25,6 @@ class _HomePageState extends ConsumerState<HomePage> {
       icon: Icons.add_circle,
       label: '安装服务器',
       page: const InstallationWizardPage(),
-    ),
-    NavigationItem(
-      icon: Icons.file_upload,
-      label: '导入配置',
-      page: const ConfigImportPage(),
     ),
     NavigationItem(
       icon: Icons.monitor,

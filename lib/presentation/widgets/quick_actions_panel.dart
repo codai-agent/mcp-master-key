@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../pages/installation_wizard_page.dart';
-import '../pages/config_import_page.dart';
+
 
 /// 快速动作面板
 class QuickActionsPanel extends ConsumerWidget {
@@ -49,9 +49,9 @@ class QuickActionsPanel extends ConsumerWidget {
                   context,
                   icon: Icons.add_circle_outline,
                   label: '添加服务器',
-                  subtitle: '手动配置服务器',
+                  subtitle: '通过安装向导添加',
                   color: Colors.green,
-                  onTap: () => _navigateToConfigImport(context),
+                  onTap: () => _navigateToInstallWizard(context),
                 ),
                 _buildActionButton(
                   context,
@@ -149,14 +149,7 @@ class QuickActionsPanel extends ConsumerWidget {
     );
   }
 
-  void _navigateToConfigImport(BuildContext context) {
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) => const ConfigImportPage(),
-      ),
-    );
-  }
+
 
   void _refreshServerList(WidgetRef ref) {
     // TODO: 实现刷新服务器列表逻辑

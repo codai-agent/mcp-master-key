@@ -4,6 +4,7 @@ import '../../business/services/package_manager_service.dart';
 import '../../business/services/mcp_server_service.dart';
 import '../../core/models/mcp_server.dart';
 import '../../infrastructure/runtime/runtime_manager.dart';
+import '../widgets/json_config_editor.dart';
 
 /// 安装向导页面
 class InstallationWizardPage extends StatefulWidget {
@@ -236,23 +237,13 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
-          Container(
-            decoration: BoxDecoration(
-              border: Border.all(color: _configError.isNotEmpty ? Colors.red : Colors.grey[300]!),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: TextField(
-              controller: _configController,
-              maxLines: 12,
-              style: const TextStyle(fontFamily: 'monospace', fontSize: 14),
-              decoration: InputDecoration(
-                hintText: '请输入完整的MCP配置JSON...',
-                border: InputBorder.none,
-                contentPadding: const EdgeInsets.all(12),
-                errorText: _configError.isNotEmpty ? _configError : null,
-              ),
-              onChanged: (_) => _parseConfig(),
-            ),
+          JsonConfigEditor(
+            initialValue: _configController.text,
+            onChanged: (newConfig) {
+              _configController.text = newConfig;
+              _parseConfig();
+            },
+            errorText: _configError.isNotEmpty ? _configError : null,
           ),
           
           // 配置帮助

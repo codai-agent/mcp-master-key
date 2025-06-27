@@ -4,7 +4,7 @@ import '../../core/models/mcp_server.dart';
 import '../../presentation/providers/servers_provider.dart';
 import '../widgets/server_card.dart';
 import 'installation_wizard_page.dart';
-import 'config_import_page.dart';
+
 import 'server_monitor_page.dart';
 
 class ServersListPage extends ConsumerStatefulWidget {
@@ -64,14 +64,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                       icon: const Icon(Icons.download, size: 18),
                       label: const Text('安装MCP服务器'),
                     ),
-                    TextButton.icon(
-                      onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => const ConfigImportPage()),
-                      ),
-                      icon: const Icon(Icons.file_upload, size: 18),
-                      label: const Text('导入配置'),
-                    ),
+
                   ],
                 ),
               ),
