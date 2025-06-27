@@ -24,7 +24,11 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
   final McpToolsAggregator _toolsAggregator = McpToolsAggregator.instance;
   
   List<McpLogEntry> _logs = [];
+  List<McpLogEntry> _filteredLogs = [];
   bool _isLoadingLogs = false;
+  String? _selectedLogLevel;
+  bool _autoScroll = true;
+  final ScrollController _logScrollController = ScrollController();
   Map<String, dynamic>? _processInfo;
   List<Map<String, dynamic>> _serverTools = [];
   StreamSubscription? _processEventSubscription;
@@ -44,6 +48,7 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
   @override
   void dispose() {
     _tabController.dispose();
+    _logScrollController.dispose();
     _processEventSubscription?.cancel();
     _toolEventSubscription?.cancel();
     _refreshTimer?.cancel();
@@ -103,8 +108,10 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
       final logs = await _repository.getServerLogs(widget.serverId, limit: 100);
       setState(() {
         _logs = logs;
+        _filterLogs();
         _isLoadingLogs = false;
       });
+      _scrollToBottom();
     } catch (e) {
       setState(() {
         _isLoadingLogs = false;
@@ -115,6 +122,42 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
         );
       }
     }
+  }
+  
+  void _filterLogs() {
+    if (_selectedLogLevel == null) {
+      _filteredLogs = _logs;
+    } else {
+      _filteredLogs = _logs.where((log) => log.level.toLowerCase() == _selectedLogLevel).toList();
+    }
+  }
+  
+  void _scrollToBottom() {
+    if (_autoScroll && _logScrollController.hasClients) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _logScrollController.animateTo(
+          _logScrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      });
+    }
+  }
+  
+  Widget _buildLogLevelChip(String label, String? level) {
+    final isSelected = _selectedLogLevel == level;
+    return FilterChip(
+      label: Text(label),
+      selected: isSelected,
+      onSelected: (selected) {
+        setState(() {
+          _selectedLogLevel = selected ? level : null;
+          _filterLogs();
+        });
+      },
+      backgroundColor: isSelected ? Theme.of(context).primaryColor.withOpacity(0.1) : null,
+      selectedColor: Theme.of(context).primaryColor.withOpacity(0.2),
+    );
   }
 
   @override
@@ -464,27 +507,69 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
             color: Colors.grey[50],
             border: Border(bottom: BorderSide(color: Colors.grey[300]!)),
           ),
-          child: Row(
+          child: Column(
             children: [
-              Text(
-                '日志 (${_logs.length})',
-                style: Theme.of(context).textTheme.titleMedium,
+              // 标题和操作按钮
+              Row(
+                children: [
+                  const Icon(Icons.article, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    '服务器日志 (${_logs.length})',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.refresh),
+                    onPressed: _loadServerLogs,
+                    tooltip: '刷新日志',
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: () => _clearLogs(),
+                    tooltip: '清空日志',
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.download),
+                    onPressed: () => _exportLogs(),
+                    tooltip: '导出日志',
+                  ),
+                ],
               ),
-              const Spacer(),
-              IconButton(
-                icon: const Icon(Icons.refresh),
-                onPressed: _loadServerLogs,
-                tooltip: '刷新日志',
-              ),
-              IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: () => _clearLogs(),
-                tooltip: '清空日志',
-              ),
-              IconButton(
-                icon: const Icon(Icons.download),
-                onPressed: () => _exportLogs(),
-                tooltip: '导出日志',
+              const SizedBox(height: 12),
+              
+              // 日志级别过滤器
+              Row(
+                children: [
+                  const Text('级别筛选: '),
+                  const SizedBox(width: 8),
+                  _buildLogLevelChip('ALL', null),
+                  const SizedBox(width: 4),
+                  _buildLogLevelChip('ERROR', 'error'),
+                  const SizedBox(width: 4),
+                  _buildLogLevelChip('WARN', 'warning'),
+                  const SizedBox(width: 4),
+                  _buildLogLevelChip('INFO', 'info'),
+                  const SizedBox(width: 4),
+                  _buildLogLevelChip('DEBUG', 'debug'),
+                  const Spacer(),
+                  
+                  // 自动滚动开关
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Text('自动滚动'),
+                      Switch(
+                        value: _autoScroll,
+                        onChanged: (value) {
+                          setState(() {
+                            _autoScroll = value;
+                          });
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
@@ -494,14 +579,41 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
         Expanded(
           child: _isLoadingLogs
               ? const Center(child: CircularProgressIndicator())
-              : _logs.isEmpty
-                  ? const Center(
-                      child: Text('暂无日志'),
+              : _filteredLogs.isEmpty
+                  ? Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.article_outlined,
+                            size: 64,
+                            color: Colors.grey[400],
+                          ),
+                          const SizedBox(height: 16),
+                          Text(
+                            _selectedLogLevel == null ? '暂无日志' : '该级别暂无日志',
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 16,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            '服务器运行时的日志信息将在这里显示',
+                            style: TextStyle(
+                              color: Colors.grey[500],
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
                     )
                   : ListView.builder(
-                      itemCount: _logs.length,
+                      controller: _logScrollController,
+                      padding: const EdgeInsets.all(8),
+                      itemCount: _filteredLogs.length,
                       itemBuilder: (context, index) {
-                        final log = _logs[index];
+                        final log = _filteredLogs[index];
                         return _buildLogEntry(log);
                       },
                     ),
@@ -516,57 +628,205 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            '运行时统计',
-            style: Theme.of(context).textTheme.titleLarge,
+          Row(
+            children: [
+              const Icon(Icons.analytics, size: 24),
+              const SizedBox(width: 8),
+              Text(
+                '服务器统计',
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+            ],
           ),
           const SizedBox(height: 16),
           
-          // 运行时间统计
-          if (server.status == McpServerStatus.running && server.lastStartedAt != null) ...[
-            Card(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      '当前会话',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 12),
-                    _buildInfoRow(
-                      '运行时间',
-                      _formatDuration(DateTime.now().difference(server.lastStartedAt!)),
-                    ),
-                    if (server.processId != null)
-                      _buildInfoRow('进程ID', server.processId.toString()),
-                    if (server.port != null)
-                      _buildInfoRow('端口', server.port.toString()),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-          
-          // TODO: 添加更多统计信息
+          // 基本运行统计
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    '统计功能开发中',
-                    style: Theme.of(context).textTheme.titleMedium,
+                  Row(
+                    children: [
+                      const Icon(Icons.timer, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        '运行状态',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
                   ),
                   const SizedBox(height: 12),
-                  const Text('将来这里会显示：'),
-                  const Text('• 请求数量统计'),
-                  const Text('• 响应时间统计'),
-                  const Text('• 错误率统计'),
-                  const Text('• 资源使用情况'),
+                  _buildInfoRow('当前状态', _getStatusText(server.status)),
+                  if (server.lastStartedAt != null) ...[
+                    _buildInfoRow('最后启动时间', _formatDateTime(server.lastStartedAt!)),
+                    if (server.status == McpServerStatus.running)
+                      _buildInfoRow(
+                        '运行时长',
+                        _formatDuration(DateTime.now().difference(server.lastStartedAt!)),
+                      ),
+                  ],
+                  if (server.lastStoppedAt != null)
+                    _buildInfoRow('最后停止时间', _formatDateTime(server.lastStoppedAt!)),
+                  if (server.processId != null)
+                    _buildInfoRow('进程ID', server.processId.toString()),
+                  if (server.port != null)
+                    _buildInfoRow('运行端口', server.port.toString()),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // 工具统计
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.build, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        '工具统计',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow('可用工具数量', '${_serverTools.length}'),
+                  if (_serverTools.isNotEmpty) ...[
+                    const SizedBox(height: 8),
+                    const Text('工具列表：', style: TextStyle(fontWeight: FontWeight.w500)),
+                    const SizedBox(height: 4),
+                    ..._serverTools.map((tool) => Padding(
+                      padding: const EdgeInsets.only(left: 16, top: 2),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.label, size: 14, color: Colors.grey),
+                          const SizedBox(width: 4),
+                          Text(
+                            tool['name'] ?? 'Unknown',
+                            style: const TextStyle(fontSize: 13),
+                          ),
+                        ],
+                      ),
+                    )),
+                  ] else ...[
+                    Text(
+                      '暂无可用工具',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // 日志统计
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.article, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        '日志统计',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow('总日志条数', '${_logs.length}'),
+                  if (_logs.isNotEmpty) ...[
+                    _buildInfoRow('错误日志', '${_logs.where((log) => log.level.toLowerCase() == 'error').length}'),
+                    _buildInfoRow('警告日志', '${_logs.where((log) => log.level.toLowerCase() == 'warning').length}'),
+                    _buildInfoRow('信息日志', '${_logs.where((log) => log.level.toLowerCase() == 'info').length}'),
+                    _buildInfoRow('调试日志', '${_logs.where((log) => log.level.toLowerCase() == 'debug').length}'),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // 性能指标
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.speed, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        '性能指标',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  if (_processInfo != null) ...[
+                    _buildInfoRow('重启次数', '${_processInfo!['restart_count'] ?? 0}'),
+                  ] else ...[
+                    Text(
+                      '暂无性能数据',
+                      style: TextStyle(
+                        color: Colors.grey[600],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      '启动服务器后将显示详细的性能指标',
+                      style: TextStyle(
+                        color: Colors.grey[500],
+                        fontSize: 12,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          
+          // 生命周期统计
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Icon(Icons.history, size: 20),
+                      const SizedBox(width: 8),
+                      Text(
+                        '生命周期',
+                        style: Theme.of(context).textTheme.titleMedium,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _buildInfoRow('创建时间', _formatDateTime(server.createdAt)),
+                  _buildInfoRow('最后更新', _formatDateTime(server.updatedAt)),
+                  _buildInfoRow('自动启动', server.autoStart ? '已启用' : '已禁用'),
+                  if (server.errorMessage != null)
+                    _buildInfoRow('最后错误', server.errorMessage!),
                 ],
               ),
             ),
