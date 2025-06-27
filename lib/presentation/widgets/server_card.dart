@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'dart:convert';
 import '../../core/models/mcp_server.dart';
 import '../providers/servers_provider.dart';
 
@@ -157,18 +159,10 @@ class ServerCard extends ConsumerWidget {
                             ),
                           ),
                           const PopupMenuItem(
-                            value: 'edit',
+                            value: 'show_config',
                             child: ListTile(
-                              leading: Icon(Icons.edit),
-                              title: Text('编辑配置'),
-                              contentPadding: EdgeInsets.zero,
-                            ),
-                          ),
-                          const PopupMenuItem(
-                            value: 'copy',
-                            child: ListTile(
-                              leading: Icon(Icons.copy),
-                              title: Text('复制配置'),
+                              leading: Icon(Icons.code),
+                              title: Text('显示配置'),
                               contentPadding: EdgeInsets.zero,
                             ),
                           ),
@@ -314,11 +308,8 @@ class ServerCard extends ConsumerWidget {
       case 'details':
         _showServerDetails(context);
         break;
-      case 'edit':
-        _editServerConfig(context);
-        break;
-      case 'copy':
-        _copyServerConfig(context);
+      case 'show_config':
+        _showServerConfig(context);
         break;
       case 'delete':
         _confirmDelete(context, ref);
@@ -380,21 +371,102 @@ class ServerCard extends ConsumerWidget {
     );
   }
 
-  void _editServerConfig(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('编辑配置功能即将推出'),
-        duration: Duration(seconds: 2),
-      ),
-    );
-  }
+  void _showServerConfig(BuildContext context) {
+    // 构建服务器配置的 JSON 格式
+    final config = {
+      'mcpServers': {
+        server.name: {
+          'command': server.command,
+          'args': server.args,
+          if (server.env.isNotEmpty) 'env': server.env,
+          if (server.workingDirectory != null) 'workingDirectory': server.workingDirectory,
+        }
+      }
+    };
 
-  void _copyServerConfig(BuildContext context) {
-    // 这里可以实现复制配置到剪贴板的功能
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('已复制服务器 "${server.name}" 的配置'),
-        duration: const Duration(seconds: 2),
+    // 格式化 JSON 字符串
+    const encoder = JsonEncoder.withIndent('  ');
+    final configJson = encoder.convert(config);
+
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Container(
+          width: MediaQuery.of(context).size.width * 0.8,
+          height: MediaQuery.of(context).size.height * 0.7,
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // 标题
+              Row(
+                children: [
+                  const Icon(Icons.code, size: 24),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '服务器配置 - ${server.name}',
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              
+              // 配置内容
+              Expanded(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: Colors.grey[300]!),
+                  ),
+                  child: SingleChildScrollView(
+                    child: SelectableText(
+                      configJson,
+                      style: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 14,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              
+              const SizedBox(height: 16),
+              
+              // 底部按钮
+              Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  OutlinedButton.icon(
+                    onPressed: () async {
+                      await Clipboard.setData(ClipboardData(text: configJson));
+                      if (context.mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('已复制服务器 "${server.name}" 的配置到剪贴板'),
+                            backgroundColor: Colors.green,
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
+                    },
+                    icon: const Icon(Icons.copy, size: 16),
+                    label: const Text('复制'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
