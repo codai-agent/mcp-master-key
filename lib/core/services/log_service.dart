@@ -14,6 +14,24 @@ enum LogLevel {
   fatal,
 }
 
+/// 日志级别扩展方法（提供name属性兼容性）
+extension LogLevelExtension on LogLevel {
+  String get name {
+    switch (this) {
+      case LogLevel.debug:
+        return 'debug';
+      case LogLevel.info:
+        return 'info';
+      case LogLevel.warn:
+        return 'warn';
+      case LogLevel.error:
+        return 'error';
+      case LogLevel.fatal:
+        return 'fatal';
+    }
+  }
+}
+
 /// 日志条目
 class LogEntry {
   final String id;

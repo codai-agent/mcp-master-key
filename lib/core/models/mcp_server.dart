@@ -25,12 +25,50 @@ enum McpServerStatus {
   uninstalling,
 }
 
+/// MCP服务器状态枚举扩展方法（提供name属性兼容性）
+extension McpServerStatusExtension on McpServerStatus {
+  String get name {
+    switch (this) {
+      case McpServerStatus.notInstalled:
+        return 'notInstalled';
+      case McpServerStatus.installed:
+        return 'installed';
+      case McpServerStatus.starting:
+        return 'starting';
+      case McpServerStatus.running:
+        return 'running';
+      case McpServerStatus.stopping:
+        return 'stopping';
+      case McpServerStatus.stopped:
+        return 'stopped';
+      case McpServerStatus.error:
+        return 'error';
+      case McpServerStatus.installing:
+        return 'installing';
+      case McpServerStatus.uninstalling:
+        return 'uninstalling';
+    }
+  }
+}
+
 /// MCP服务器连接类型
 enum McpConnectionType {
   /// STDIO连接
   stdio,
   /// HTTP/SSE连接
   sse,
+}
+
+/// MCP服务器连接类型扩展方法
+extension McpConnectionTypeExtension on McpConnectionType {
+  String get name {
+    switch (this) {
+      case McpConnectionType.stdio:
+        return 'stdio';
+      case McpConnectionType.sse:
+        return 'sse';
+    }
+  }
 }
 
 /// MCP服务器安装类型
@@ -45,6 +83,24 @@ enum McpInstallType {
   github,
   /// 预安装命令
   preInstalled,
+}
+
+/// MCP服务器安装类型扩展方法
+extension McpInstallTypeExtension on McpInstallType {
+  String get name {
+    switch (this) {
+      case McpInstallType.npx:
+        return 'npx';
+      case McpInstallType.uvx:
+        return 'uvx';
+      case McpInstallType.localPath:
+        return 'localPath';
+      case McpInstallType.github:
+        return 'github';
+      case McpInstallType.preInstalled:
+        return 'preInstalled';
+    }
+  }
 }
 
 /// MCP服务器数据模型
@@ -137,6 +193,48 @@ enum McpLifecycleEventType {
   uninstallFailed,
   /// 健康检查
   healthCheck,
+}
+
+/// MCP服务器生命周期事件类型扩展方法
+extension McpLifecycleEventTypeExtension on McpLifecycleEventType {
+  String get name {
+    switch (this) {
+      case McpLifecycleEventType.installStarted:
+        return 'installStarted';
+      case McpLifecycleEventType.installCompleted:
+        return 'installCompleted';
+      case McpLifecycleEventType.installFailed:
+        return 'installFailed';
+      case McpLifecycleEventType.startStarted:
+        return 'startStarted';
+      case McpLifecycleEventType.startCompleted:
+        return 'startCompleted';
+      case McpLifecycleEventType.startFailed:
+        return 'startFailed';
+      case McpLifecycleEventType.stopStarted:
+        return 'stopStarted';
+      case McpLifecycleEventType.stopCompleted:
+        return 'stopCompleted';
+      case McpLifecycleEventType.stopFailed:
+        return 'stopFailed';
+      case McpLifecycleEventType.configUpdated:
+        return 'configUpdated';
+      case McpLifecycleEventType.statusChanged:
+        return 'statusChanged';
+      case McpLifecycleEventType.errorOccurred:
+        return 'errorOccurred';
+      case McpLifecycleEventType.restarted:
+        return 'restarted';
+      case McpLifecycleEventType.uninstallStarted:
+        return 'uninstallStarted';
+      case McpLifecycleEventType.uninstallCompleted:
+        return 'uninstallCompleted';
+      case McpLifecycleEventType.uninstallFailed:
+        return 'uninstallFailed';
+      case McpLifecycleEventType.healthCheck:
+        return 'healthCheck';
+    }
+  }
 }
 
 /// MCP服务器生命周期事件

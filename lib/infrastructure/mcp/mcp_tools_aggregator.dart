@@ -266,6 +266,18 @@ enum ToolSource {
   childServer,
 }
 
+/// 工具来源扩展方法（提供name属性兼容性）
+extension ToolSourceExtension on ToolSource {
+  String get name {
+    switch (this) {
+      case ToolSource.hub:
+        return 'hub';
+      case ToolSource.childServer:
+        return 'childServer';
+    }
+  }
+}
+
 /// 工具定义
 class ToolDefinition {
   final String name;
@@ -329,4 +341,22 @@ enum ToolEventType {
   toolFailed,
   toolsUpdated,
   toolsRemoved,
+}
+
+/// 工具事件类型扩展方法（提供name属性兼容性）
+extension ToolEventTypeExtension on ToolEventType {
+  String get name {
+    switch (this) {
+      case ToolEventType.toolCalled:
+        return 'toolCalled';
+      case ToolEventType.toolCompleted:
+        return 'toolCompleted';
+      case ToolEventType.toolFailed:
+        return 'toolFailed';
+      case ToolEventType.toolsUpdated:
+        return 'toolsUpdated';
+      case ToolEventType.toolsRemoved:
+        return 'toolsRemoved';
+    }
+  }
 } 

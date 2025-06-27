@@ -16,6 +16,22 @@ enum RestartStrategy {
   disabled,
 }
 
+/// 重启策略扩展方法（提供name属性兼容性）
+extension RestartStrategyExtension on RestartStrategy {
+  String get name {
+    switch (this) {
+      case RestartStrategy.immediate:
+        return 'immediate';
+      case RestartStrategy.delayed:
+        return 'delayed';
+      case RestartStrategy.exponentialBackoff:
+        return 'exponentialBackoff';
+      case RestartStrategy.disabled:
+        return 'disabled';
+    }
+  }
+}
+
 /// 重启配置
 class RestartConfig {
   final RestartStrategy strategy;

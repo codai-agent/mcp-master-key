@@ -276,7 +276,7 @@ class McpHubService {
             continue;
           }
           
-          print('🚀 Auto-starting server: ${currentServer.name} (current status: ${currentServer.status.name})');
+          print('🚀 Auto-starting server: ${currentServer.name} (current status: ${_getStatusName(currentServer.status)})');
           
           // 检查服务器是否已经在运行中（避免状态冲突）
           if (currentServer.status == models.McpServerStatus.running) {
@@ -322,6 +322,30 @@ class McpHubService {
     } catch (e) {
       print('❌ Critical error in server startup queue processing: $e');
       print('Stack trace: ${StackTrace.current}');
+    }
+  }
+
+  /// 获取状态名称的辅助方法（解决.name兼容性问题）
+  String _getStatusName(models.McpServerStatus status) {
+    switch (status) {
+      case models.McpServerStatus.notInstalled:
+        return 'notInstalled';
+      case models.McpServerStatus.installed:
+        return 'installed';
+      case models.McpServerStatus.starting:
+        return 'starting';
+      case models.McpServerStatus.running:
+        return 'running';
+      case models.McpServerStatus.stopping:
+        return 'stopping';
+      case models.McpServerStatus.stopped:
+        return 'stopped';
+      case models.McpServerStatus.error:
+        return 'error';
+      case models.McpServerStatus.installing:
+        return 'installing';
+      case models.McpServerStatus.uninstalling:
+        return 'uninstalling';
     }
   }
 

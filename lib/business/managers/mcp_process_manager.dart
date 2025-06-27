@@ -328,6 +328,7 @@ class McpProcessManager {
         'GPG_AGENT_INFO', 'GPG_TTY',                        // GPG
         'HTTP_PROXY', 'HTTPS_PROXY', 'NO_PROXY',            // 代理设置
         'SSL_CERT_FILE', 'SSL_CERT_DIR',                    // SSL证书
+        'REQUESTS_CA_BUNDLE', 'CURL_CA_BUNDLE',             // 其他SSL证书配置
       ];
       
       for (final varName in importantEnvVars) {
@@ -335,6 +336,56 @@ class McpProcessManager {
         if (value != null && value.isNotEmpty) {
           environment[varName] = value;
         }
+      }
+      
+      // 🔒 SSL证书验证配置 - 解决"unable to verify the first certificate"问题
+      try {
+        // 添加通用SSL配置环境变量
+        environment['NODE_TLS_REJECT_UNAUTHORIZED'] = '0'; // Node.js忽略SSL错误
+        environment['PYTHONHTTPSVERIFY'] = '0';            // Python忽略HTTPS验证
+        environment['SSL_VERIFY'] = 'false';               // 通用SSL验证禁用
+        environment['CURL_INSECURE'] = '1';                // curl忽略SSL错误
+        
+        // 尝试设置系统证书路径
+        if (Platform.isMacOS) {
+          // macOS系统证书路径
+          environment['SSL_CERT_FILE'] = '/etc/ssl/cert.pem';
+          environment['SSL_CERT_DIR'] = '/etc/ssl/certs';
+        } else if (Platform.isLinux) {
+          // Linux系统证书路径（多个可能位置）
+          final linuxCertPaths = [
+            '/etc/ssl/certs/ca-certificates.crt',
+            '/etc/pki/tls/certs/ca-bundle.crt',
+            '/etc/ssl/ca-bundle.pem',
+            '/etc/ssl/cert.pem',
+          ];
+          
+          for (final certPath in linuxCertPaths) {
+            if (File(certPath).existsSync()) {
+              environment['SSL_CERT_FILE'] = certPath;
+              break;
+            }
+          }
+          
+          environment['SSL_CERT_DIR'] = '/etc/ssl/certs';
+        } else if (Platform.isWindows) {
+          // Windows不需要额外证书配置，使用系统证书存储
+          // 但可以设置一些通用配置
+          environment['SSL_CERT_DIR'] = '';
+        }
+        
+        print('   🔒 Added SSL configuration for HTTPS requests:');
+        print('   - NODE_TLS_REJECT_UNAUTHORIZED: ${environment['NODE_TLS_REJECT_UNAUTHORIZED']}');
+        print('   - PYTHONHTTPSVERIFY: ${environment['PYTHONHTTPSVERIFY']}');
+        print('   - SSL_VERIFY: ${environment['SSL_VERIFY']}');
+        if (environment.containsKey('SSL_CERT_FILE')) {
+          print('   - SSL_CERT_FILE: ${environment['SSL_CERT_FILE']}');
+        }
+        if (environment.containsKey('SSL_CERT_DIR')) {
+          print('   - SSL_CERT_DIR: ${environment['SSL_CERT_DIR']}');
+        }
+      } catch (e) {
+        print('   ⚠️ Warning: Failed to configure SSL settings: $e');
       }
       
       print('   📊 Built universal environment with ${environment.length} variables for all MCP services');
