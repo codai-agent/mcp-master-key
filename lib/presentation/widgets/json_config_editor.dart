@@ -27,15 +27,8 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
   static const String _jsonPrefix = '{\n  "mcpServers": {';
   static const String _jsonSuffix = '\n  }\n}';
   
-  // 占位符内容
-  static const String _placeholderContent = '''
-    "example-server": {
-      "command": "uvx",
-      "args": ["mcp-server-hotnews"],
-      "env": {
-        "API_KEY": "your-api-key"
-      }
-    }''';
+  // 占位符提示文本
+  static const String _placeholderText = '点击此处输入MCP服务器配置...\n\n示例格式：\n    "server-name": {\n        "command": "uvx",\n        "args": ["package-name"]\n    }';
 
   @override
   void initState() {
@@ -133,8 +126,8 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
           ),
           
           // 可编辑的服务器配置部分
-          Container(
-            constraints: const BoxConstraints(minHeight: 200),
+          SizedBox(
+            height: 6 * 14 * 1.5 + 24, // 6行 * 字体大小 * 行高 + padding
             child: Stack(
               children: [
                 // 占位符文本（当用户没有输入时显示）
@@ -143,7 +136,7 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
                     child: Padding(
                       padding: const EdgeInsets.all(12),
                       child: Text(
-                        _placeholderContent,
+                        _placeholderText,
                         style: const TextStyle(
                           fontFamily: 'monospace',
                           fontSize: 14,
@@ -154,35 +147,29 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
                     ),
                   ),
                 
-                // 实际的输入框
-                TextField(
-                  controller: _serverConfigController,
-                  focusNode: _focusNode,
-                  maxLines: null,
-                  minLines: 12,
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 14,
-                    height: 1.5,
+                // 实际的输入框（支持滚动）
+                Scrollbar(
+                  child: TextField(
+                    controller: _serverConfigController,
+                    focusNode: _focusNode,
+                    maxLines: null,
+                    style: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 14,
+                      height: 1.5,
+                    ),
+                    decoration: const InputDecoration(
+                      hintText: '',
+                      border: InputBorder.none,
+                      contentPadding: EdgeInsets.all(12),
+                    ),
+                    onTap: () {
+                      // 当用户点击时，如果是空的，获取焦点即可
+                      if (showPlaceholder) {
+                        _focusNode.requestFocus();
+                      }
+                    },
                   ),
-                  decoration: const InputDecoration(
-                    hintText: '',
-                    border: InputBorder.none,
-                    contentPadding: EdgeInsets.all(12),
-                  ),
-                  onTap: () {
-                    // 当用户点击时，如果是空的，自动填入基础结构
-                    if (showPlaceholder) {
-                      setState(() {
-                        _serverConfigController.text = _placeholderContent;
-                        // 将光标定位到服务器名称位置
-                        _serverConfigController.selection = const TextSelection(
-                          baseOffset: 4, // "example-server" 的开始位置
-                          extentOffset: 18, // "example-server" 的结束位置
-                        );
-                      });
-                    }
-                  },
                 ),
               ],
             ),

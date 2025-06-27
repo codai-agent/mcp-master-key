@@ -44,17 +44,10 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   @override
   void initState() {
     super.initState();
-    // 预填充示例配置
+    // 初始化为空配置，显示占位符
     _configController.text = '''
 {
   "mcpServers": {
-    "example-server": {
-      "command": "uvx",
-      "args": ["mcp-server-hotnews"],
-      "env": {
-        "API_KEY": "your-api-key"
-      }
-    }
   }
 }''';
     _parseConfig();
