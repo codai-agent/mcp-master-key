@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
-import 'lib/presentation/widgets/json_config_editor.dart';
+import '../lib/presentation/widgets/json_config_editor.dart';
 
 void main() {
   runApp(const JsonEditorTestApp());

@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'lib/business/services/mcp_server_service.dart';
-import 'lib/business/services/command_resolver_service.dart';
-import 'lib/core/models/mcp_server.dart';
+import '../lib/business/services/mcp_server_service.dart';
+import '../lib/business/services/command_resolver_service.dart';
+import '../lib/core/models/mcp_server.dart';
 
 void main() async {
   print('🧪 Testing Server Addition with Command Resolution');

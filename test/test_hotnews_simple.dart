@@ -1,9 +1,9 @@
 import 'dart:io';
-import 'lib/business/services/mcp_server_service.dart';
-import 'lib/business/managers/mcp_process_manager.dart';
-import 'lib/infrastructure/runtime/runtime_manager.dart';
-import 'lib/infrastructure/runtime/runtime_initializer.dart';
-import 'lib/infrastructure/database/database_service.dart';
+import '../lib/business/services/mcp_server_service.dart';
+import '../lib/business/managers/mcp_process_manager.dart';
+import '../lib/infrastructure/runtime/runtime_manager.dart';
+import '../lib/infrastructure/runtime/runtime_initializer.dart';
+import '../lib/infrastructure/database/database_service.dart';
 
 /// 简化的HotNews MCP服务器测试程序
 /// 

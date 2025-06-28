@@ -1,5 +1,5 @@
-import 'lib/business/services/command_resolver_service.dart';
-import 'lib/core/models/mcp_server.dart';
+import '../lib/business/services/command_resolver_service.dart';
+import '../lib/core/models/mcp_server.dart';
 
 void main() async {
   print('🧪 Testing Command Resolver Service');

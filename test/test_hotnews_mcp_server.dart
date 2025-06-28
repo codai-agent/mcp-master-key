@@ -1,9 +1,9 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'lib/business/services/mcp_server_service.dart';
-import 'lib/business/managers/mcp_process_manager.dart';
-import 'lib/infrastructure/runtime/runtime_manager.dart';
-import 'lib/infrastructure/runtime/runtime_initializer.dart';
+import '../lib/business/services/mcp_server_service.dart';
+import '../lib/business/managers/mcp_process_manager.dart';
+import '../lib/infrastructure/runtime/runtime_manager.dart';
+import '../lib/infrastructure/runtime/runtime_initializer.dart';
 
 /// HotNews MCP服务器测试程序
 /// 

@@ -1,6 +1,6 @@
-import 'lib/business/services/mcp_hub_service.dart';
-import 'lib/infrastructure/database/database_service.dart';
-import 'lib/infrastructure/repositories/mcp_server_repository.dart';
+import '../lib/business/services/mcp_hub_service.dart';
+import '../lib/infrastructure/database/database_service.dart';
+import '../lib/infrastructure/repositories/mcp_server_repository.dart';
 
 void main() async {
   print('🔍 Debug: Manual monitoring trigger');

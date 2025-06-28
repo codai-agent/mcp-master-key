@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:window_manager/window_manager.dart';
 import '../../infrastructure/runtime/runtime_initializer.dart';
 import '../../infrastructure/database/database_service.dart';
 import '../../business/services/mcp_hub_service.dart';
@@ -55,6 +56,14 @@ class _SplashPageState extends ConsumerState<SplashPage>
     try {
       // 获取本地化文本，此时应该已经准备好了
       final l10n = AppLocalizations.of(context)!;
+      
+      // 更新窗口标题为国际化标题
+      try {
+        await windowManager.setTitle(l10n.appTitle);
+      } catch (e) {
+        // 如果设置标题失败，继续执行
+        print('Failed to set window title: $e');
+      }
       
       // 最小显示时间，避免闪烁
       setState(() {

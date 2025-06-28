@@ -21,7 +21,7 @@ void main() async {
     backgroundColor: Colors.transparent,
     skipTaskbar: false,
     titleBarStyle: TitleBarStyle.normal,
-    title: 'MCP Hub',
+    title: 'MCP Master Key', // 初始标题，稍后会被国际化更新
   );
 
   windowManager.waitUntilReadyToShow(windowOptions, () async {
@@ -42,7 +42,9 @@ class McpHubApp extends ConsumerWidget {
     final currentLocale = ref.watch(currentLocaleProvider);
     
     return MaterialApp(
-      title: 'MCP Master Key',
+      onGenerateTitle: (context) {
+        return AppLocalizations.of(context)?.appTitle ?? 'MCP Master Key';
+      },
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
