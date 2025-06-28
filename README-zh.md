@@ -1,7 +1,7 @@
 [English](README.md) | [中文](README-zh.md)
 
 <div align="center">
-  <img src="assets/images/logo.png" alt="MCP Hub Logo" width="200" height="200">
+  <img src="https://github.com/user-attachments/assets/49a8b11b-0d2e-4b35-8c48-235140d9cd49" alt="MCP Hub Logo" width="200" height="200">
   
   # MCP 管家
   
