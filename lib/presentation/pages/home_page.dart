@@ -5,6 +5,7 @@ import 'hub_monitor_page.dart';
 import 'settings_page.dart';
 import 'installation_wizard_page.dart';
 import '../themes/app_theme.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -16,31 +17,35 @@ class HomePage extends ConsumerStatefulWidget {
 class _HomePageState extends ConsumerState<HomePage> {
   int _selectedIndex = 0;
   
-  final List<NavigationItem> _navigationItems = [
-    NavigationItem(
-      icon: Icons.dashboard,
-      label: '服务器管理',
-      page: const ServersListPage(),
-    ),
-    NavigationItem(
-      icon: Icons.add_circle,
-      label: '安装服务器',
-      page: const InstallationWizardPage(),
-    ),
-    NavigationItem(
-      icon: Icons.monitor,
-      label: '监控',
-      page: const HubMonitorPage(),
-    ),
-    NavigationItem(
-      icon: Icons.settings,
-      label: '设置',
-      page: const SettingsPage(),
-    ),
-  ];
+  List<NavigationItem> _getNavigationItems(AppLocalizations l10n) {
+    return [
+      NavigationItem(
+        icon: Icons.dashboard,
+        label: l10n.nav_servers,
+        page: const ServersListPage(),
+      ),
+      NavigationItem(
+        icon: Icons.add_circle,
+        label: l10n.nav_install,
+        page: const InstallationWizardPage(),
+      ),
+      NavigationItem(
+        icon: Icons.monitor,
+        label: l10n.nav_monitor,
+        page: const HubMonitorPage(),
+      ),
+      NavigationItem(
+        icon: Icons.settings,
+        label: l10n.nav_settings,
+        page: const SettingsPage(),
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final navigationItems = _getNavigationItems(l10n);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final sidebarColor = isDark ? AppTheme.darkSidebar : AppTheme.lightSidebar;
     
@@ -95,7 +100,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              'MCP Hub',
+                              l10n.appTitle,
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -103,7 +108,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                               ),
                             ),
                             Text(
-                              'Model Context Protocol',
+                              l10n.appSubtitle,
                               style: TextStyle(
                                 fontSize: 11,
                                 color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
@@ -126,9 +131,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                 Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    itemCount: _navigationItems.length,
+                    itemCount: navigationItems.length,
                     itemBuilder: (context, index) {
-                      final item = _navigationItems[index];
+                      final item = navigationItems[index];
                       final isSelected = index == _selectedIndex;
                       
                       return Container(
@@ -185,7 +190,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           
           // 内容区域
           Expanded(
-            child: _navigationItems[_selectedIndex].page,
+            child: navigationItems[_selectedIndex].page,
           ),
         ],
       ),

@@ -5,6 +5,8 @@ import '../providers/servers_provider.dart';
 import '../../business/services/config_service.dart';
 import '../themes/app_theme.dart';
 import '../providers/theme_provider.dart';
+import '../providers/locale_provider.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -47,21 +49,41 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('设置'),
+        title: Text(l10n.settings_title),
         automaticallyImplyLeading: false,
       ),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // 外观设置
+          // 通用设置
           _buildSectionCard(
-            title: '外观',
+            title: l10n.settings_general,
             children: [
+              ListTile(
+                title: Text(l10n.settings_language),
+                subtitle: Text(_getLanguageDisplayName(ref.watch(localeProvider))),
+                trailing: DropdownButton<AppLanguage>(
+                  value: ref.watch(localeProvider),
+                  items: AppLanguage.values.map((language) {
+                    return DropdownMenuItem(
+                      value: language,
+                      child: Text(_getLanguageDisplayName(language)),
+                    );
+                  }).toList(),
+                  onChanged: (value) async {
+                    if (value != null) {
+                      await ref.read(localeProvider.notifier).setLanguage(value);
+                    }
+                  },
+                ),
+              ),
               SwitchListTile(
-                title: const Text('深色主题'),
-                subtitle: const Text('使用深色界面主题'),
+                title: Text(l10n.settings_theme),
+                subtitle: Text(_getThemeDisplayName(ref.watch(themeProvider))),
                 value: ref.watch(themeProvider) == ThemeMode.dark,
                 onChanged: (value) async {
                   await ref.read(themeProvider.notifier).toggleDarkMode(value);
@@ -74,7 +96,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           
           // Hub服务器配置
           _buildSectionCard(
-            title: 'MCP Hub 服务器',
+            title: l10n.settings_hub,
             children: [
               ListTile(
                 title: const Text('运行模式'),
@@ -654,5 +676,31 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         ],
       ),
     );
+  }
+
+  /// 获取语言显示名称
+  String _getLanguageDisplayName(AppLanguage language) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (language) {
+      case AppLanguage.system:
+        return l10n.settings_language_system;
+      case AppLanguage.english:
+        return l10n.settings_language_en;
+      case AppLanguage.chinese:
+        return l10n.settings_language_zh;
+    }
+  }
+
+  /// 获取主题显示名称
+  String _getThemeDisplayName(ThemeMode themeMode) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (themeMode) {
+      case ThemeMode.system:
+        return l10n.settings_theme_system;
+      case ThemeMode.light:
+        return l10n.settings_theme_light;
+      case ThemeMode.dark:
+        return l10n.settings_theme_dark;
+    }
   }
 } 

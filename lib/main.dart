@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
+import 'l10n/generated/app_localizations.dart';
 import 'presentation/pages/splash_page.dart';
 import 'presentation/themes/app_theme.dart';
 import 'presentation/providers/theme_provider.dart';
+import 'presentation/providers/locale_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -36,12 +39,24 @@ class McpHubApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeProvider);
+    final currentLocale = ref.watch(currentLocaleProvider);
     
     return MaterialApp(
-      title: 'MCP Hub',
+      title: 'MCP Master Key',
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: themeMode,
+      locale: currentLocale,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: const [
+        Locale('en'), // English
+        Locale('zh'), // Chinese
+      ],
       home: const SplashPage(),
       debugShowCheckedModeBanner: false,
     );

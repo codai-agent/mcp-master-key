@@ -4,6 +4,7 @@ import '../../infrastructure/runtime/runtime_initializer.dart';
 import '../../infrastructure/database/database_service.dart';
 import '../../business/services/mcp_hub_service.dart';
 import '../../business/managers/mcp_process_manager.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'home_page.dart';
 
 /// 启动画面，处理应用初始化
@@ -18,8 +19,9 @@ class _SplashPageState extends ConsumerState<SplashPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  String _currentStatus = '正在启动 MCP Hub...';
+  String _currentStatus = '';
   bool _isInitialized = false;
+  bool _hasStartedInitialization = false;
 
   @override
   void initState() {
@@ -37,7 +39,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
     ));
 
     _animationController.forward();
-    _initializeApp();
+    // 不在这里调用_initializeApp，而是在build中延迟调用
   }
 
   @override
@@ -47,13 +49,22 @@ class _SplashPageState extends ConsumerState<SplashPage>
   }
 
   Future<void> _initializeApp() async {
+    if (_hasStartedInitialization) return;
+    _hasStartedInitialization = true;
+    
     try {
+      // 获取本地化文本，此时应该已经准备好了
+      final l10n = AppLocalizations.of(context)!;
+      
       // 最小显示时间，避免闪烁
+      setState(() {
+        _currentStatus = l10n.splash_initializing;
+      });
       await Future.delayed(const Duration(milliseconds: 800));
 
       // 🏗️ 初始化运行时环境
       setState(() {
-        _currentStatus = '正在初始化运行环境...';
+        _currentStatus = l10n.splash_init_runtime;
       });
       await Future.delayed(const Duration(milliseconds: 300));
 
@@ -62,7 +73,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
       
       if (runtimeSuccess) {
         setState(() {
-          _currentStatus = '正在初始化进程管理器...';
+          _currentStatus = l10n.splash_init_process;
         });
         await Future.delayed(const Duration(milliseconds: 200));
 
@@ -72,7 +83,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
 
       // 💾 初始化数据库
       setState(() {
-        _currentStatus = '正在初始化数据库...';
+        _currentStatus = l10n.splash_init_database;
       });
       await Future.delayed(const Duration(milliseconds: 200));
 
@@ -81,7 +92,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
 
       // 🌐 启动MCP Hub服务器
       setState(() {
-        _currentStatus = '正在启动 MCP Hub 服务器...';
+        _currentStatus = l10n.splash_init_hub;
       });
       await Future.delayed(const Duration(milliseconds: 300));
 
@@ -89,7 +100,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
       await hubService.startHub();
 
       setState(() {
-        _currentStatus = '启动完成！';
+        _currentStatus = l10n.splash_init_complete;
         _isInitialized = true;
       });
 
@@ -102,8 +113,9 @@ class _SplashPageState extends ConsumerState<SplashPage>
         );
       }
     } catch (e) {
+      final l10n = AppLocalizations.of(context);
       setState(() {
-        _currentStatus = '启动失败: $e';
+        _currentStatus = l10n != null ? '${l10n.splash_init_error}: $e' : 'Initialization error: $e';
       });
       
       // 即使失败也跳转到主页，让用户可以手动重试
@@ -118,6 +130,22 @@ class _SplashPageState extends ConsumerState<SplashPage>
 
   @override
   Widget build(BuildContext context) {
+    // 在第一次build时启动初始化，此时国际化系统应该已经准备好了
+    if (!_hasStartedInitialization) {
+      // 使用postFrameCallback确保在build完成后再开始初始化
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _initializeApp();
+      });
+    }
+    
+    // 安全地获取本地化文本，如果还没准备好就使用默认值
+    AppLocalizations? l10n;
+    try {
+      l10n = AppLocalizations.of(context);
+    } catch (e) {
+      // 如果国际化还没准备好，使用null
+    }
+    
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: FadeTransition(
@@ -170,7 +198,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
               
               // 应用名称
               Text(
-                'MCP Hub',
+                l10n?.appTitle ?? 'MCP Master Key',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   fontWeight: FontWeight.bold,
                   color: Theme.of(context).primaryColor,
@@ -181,7 +209,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
               
               // 副标题
               Text(
-                'Model Context Protocol 服务器管理平台',
+                l10n?.appSubtitle ?? 'Unified Management Center for MCP Servers',
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                   color: Colors.grey[600],
                 ),
@@ -214,7 +242,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                     
                     // 状态文本
                     Text(
-                      _currentStatus,
+                      _currentStatus.isEmpty ? (l10n?.splash_initializing ?? 'Initializing...') : _currentStatus,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                         color: _isInitialized ? Colors.green : Colors.grey[600],
                         fontWeight: _isInitialized ? FontWeight.w500 : FontWeight.normal,

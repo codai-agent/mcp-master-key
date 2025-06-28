@@ -443,6 +443,19 @@ class ConfigService {
     await _recordConfigChangeEvent('app_theme_mode', mode, '应用主题模式更改为: $mode');
   }
 
+  /// 获取语言设置 (从数据库)
+  Future<String> getLanguage() async {
+    return await _getConfigFromDatabase('app_language', 'en');
+  }
+
+  /// 设置语言 (保存到数据库)
+  Future<void> setLanguage(String language) async {
+    await _setConfigToDatabase('app_language', language, 'string', '应用语言设置', 'appearance');
+    
+    // 记录配置变更事件
+    await _recordConfigChangeEvent('app_language', language, '应用语言更改为: $language');
+  }
+
   /// 从数据库获取配置
   Future<String> _getConfigFromDatabase(String key, String defaultValue) async {
     try {
