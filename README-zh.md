@@ -17,6 +17,8 @@
 ---
 
 ## 🚀 核心功能
+<img width="1200" alt="ui" src="https://github.com/user-attachments/assets/1ec55933-ed7a-44cc-b3d7-77cd8e880e3c" />
+
 
 ### **统一服务器管理**
 - **一键安装**: 支持从多种来源安装MCP服务器(PyPI、NPM、GitHub、本地文件)
