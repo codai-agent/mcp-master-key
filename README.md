@@ -17,6 +17,7 @@
 ---
 
 ## 🚀 Key Features
+<img width="1200" alt="11" src="https://github.com/user-attachments/assets/8abd4f57-cc1f-4a97-9d7a-8cf03b9aec77" />
 
 ### **Unified Server Management**
 - **One-Click Installation**: Install MCP servers from various sources (PyPI, NPM, GitHub, local files)
