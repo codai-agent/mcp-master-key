@@ -210,24 +210,24 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.push<bool>(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const InstallationWizardPage(),
-            ),
-          );
-          // 如果安装成功，刷新服务器列表
-          if (result == true && mounted) {
-            ref.refresh(serversListProvider);
-          }
-        },
-        icon: const Icon(Icons.add_circle),
-        label: const Text('添加MCP服务器'),
-        tooltip: '安装并添加新的MCP服务器',
-        backgroundColor: Theme.of(context).primaryColor,
-      ),
+      // floatingActionButton: FloatingActionButton.extended(
+      //   onPressed: () async {
+      //     final result = await Navigator.push<bool>(
+      //       context,
+      //       MaterialPageRoute(
+      //         builder: (context) => const InstallationWizardPage(),
+      //       ),
+      //     );
+      //     // 如果安装成功，刷新服务器列表
+      //     if (result == true && mounted) {
+      //       ref.refresh(serversListProvider);
+      //     }
+      //   },
+      //   icon: const Icon(Icons.add_circle),
+      //   label: const Text('添加MCP服务器'),
+      //   tooltip: '安装并添加新的MCP服务器',
+      //   backgroundColor: Theme.of(context).primaryColor,
+      // ),
     );
   }
 

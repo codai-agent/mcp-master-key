@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
 import 'presentation/pages/splash_page.dart';
+import 'presentation/themes/app_theme.dart';
+import 'presentation/providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,17 +30,18 @@ void main() async {
   runApp(const ProviderScope(child: McpHubApp()));
 }
 
-class McpHubApp extends StatelessWidget {
+class McpHubApp extends ConsumerWidget {
   const McpHubApp({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
+    
     return MaterialApp(
       title: 'MCP Hub',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: themeMode,
       home: const SplashPage(),
       debugShowCheckedModeBanner: false,
     );

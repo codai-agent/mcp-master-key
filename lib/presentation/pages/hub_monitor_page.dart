@@ -5,6 +5,7 @@ import '../../core/models/mcp_server.dart';
 import '../../business/services/mcp_hub_service.dart';
 import '../../business/services/mcp_server_service.dart';
 import '../../infrastructure/repositories/mcp_server_repository.dart';
+import '../themes/app_theme.dart';
 
 class HubMonitorPage extends ConsumerStatefulWidget {
   const HubMonitorPage({Key? key}) : super(key: key);
@@ -123,8 +124,18 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
     final totalTools = _hubStatus?['total_tools'] ?? 0;
     final serverMode = _hubStatus?['server_mode'] ?? '未知';
     final debugInfo = _hubStatus?['debug_info'] as Map<String, dynamic>?;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(
+          color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
+          width: 1,
+        ),
+      ),
+      color: isDark ? AppTheme.darkCardBackground : AppTheme.lightCardBackground,
       child: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
@@ -134,31 +145,50 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
               children: [
                 Icon(
                   Icons.hub,
-                  color: isRunning ? Colors.green : Colors.red,
+                  color: isRunning ? AppTheme.vscodeGreen : AppTheme.vscodeRed,
                   size: 24,
                 ),
                 const SizedBox(width: 8),
                 Text(
                   'MCP Hub 状态',
-                  style: Theme.of(context).textTheme.headlineSmall,
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                  ),
                 ),
                 const Spacer(),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isRunning ? Colors.green.withOpacity(0.1) : Colors.red.withOpacity(0.1),
+                    color: isRunning ? AppTheme.vscodeGreen.withOpacity(0.1) : AppTheme.vscodeRed.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isRunning ? Colors.green : Colors.red,
+                      color: isRunning ? AppTheme.vscodeGreen : AppTheme.vscodeRed,
                       width: 1,
                     ),
                   ),
-                  child: Text(
-                    isRunning ? '运行中' : '已停止',
-                    style: TextStyle(
-                      color: isRunning ? Colors.green : Colors.red,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: BoxDecoration(
+                          color: isRunning ? AppTheme.vscodeGreen : AppTheme.vscodeRed,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        isRunning ? '运行中' : '已停止',
+                        style: TextStyle(
+                          color: isRunning ? AppTheme.vscodeGreen : AppTheme.vscodeRed,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ],
@@ -389,17 +419,30 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
   }
 
   Widget _buildInfoRow(String label, String value) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4.0),
+      padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          Container(
+            width: 4,
+            height: 16,
+            decoration: BoxDecoration(
+              color: AppTheme.vscodeBlue.withOpacity(0.6),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(width: 12),
           SizedBox(
-            width: 100,
+            width: 120,
             child: Text(
               label,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: Colors.grey.shade600,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
               ),
             ),
           ),
@@ -407,7 +450,11 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
           Expanded(
             child: Text(
               value,
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                color: isDark ? AppTheme.darkText : AppTheme.lightText,
+              ),
             ),
           ),
         ],

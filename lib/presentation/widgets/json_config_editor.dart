@@ -90,8 +90,6 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
 
   @override
   Widget build(BuildContext context) {
-    final serverConfig = _serverConfigController.text.trim();
-    final showPlaceholder = serverConfig.isEmpty;
     
     return Container(
       decoration: BoxDecoration(
@@ -127,51 +125,34 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
           
           // 可编辑的服务器配置部分
           SizedBox(
-            height: 6 * 14 * 1.5 + 24, // 6行 * 字体大小 * 行高 + padding
-            child: Stack(
-              children: [
-                // 占位符文本（当用户没有输入时显示）
-                if (showPlaceholder)
-                  Positioned.fill(
-                    child: Padding(
-                      padding: const EdgeInsets.all(12),
-                      child: Text(
-                        _placeholderText,
-                        style: const TextStyle(
-                          fontFamily: 'monospace',
-                          fontSize: 14,
-                          color: Colors.grey,
-                          height: 1.5,
-                        ),
-                      ),
-                    ),
-                  ),
-                
-                // 实际的输入框（支持滚动）
-                Scrollbar(
-                  child: TextField(
-                    controller: _serverConfigController,
-                    focusNode: _focusNode,
-                    maxLines: null,
-                    style: const TextStyle(
-                      fontFamily: 'monospace',
-                      fontSize: 14,
-                      height: 1.5,
-                    ),
-                    decoration: const InputDecoration(
-                      hintText: '',
-                      border: InputBorder.none,
-                      contentPadding: EdgeInsets.all(12),
-                    ),
-                    onTap: () {
-                      // 当用户点击时，如果是空的，获取焦点即可
-                      if (showPlaceholder) {
-                        _focusNode.requestFocus();
-                      }
-                    },
-                  ),
+            height: 12 * 14 * 1.5 + 24, // 12行 * 字体大小 * 行高 + padding (增加高度)
+            child: Scrollbar(
+              child: TextField(
+                controller: _serverConfigController,
+                focusNode: _focusNode,
+                maxLines: null,
+                expands: true,
+                textAlignVertical: TextAlignVertical.top,
+                style: const TextStyle(
+                  fontFamily: 'monospace',
+                  fontSize: 14,
+                  height: 1.5,
                 ),
-              ],
+                decoration: InputDecoration(
+                  hintText: _placeholderText, // 将占位符内容直接放在hintText中
+                  hintStyle: const TextStyle(
+                    fontFamily: 'monospace',
+                    fontSize: 14,
+                    color: Colors.grey,
+                    height: 1.5,
+                  ),
+                  border: InputBorder.none,
+                  contentPadding: const EdgeInsets.all(12),
+                ),
+                onTap: () {
+                  _focusNode.requestFocus();
+                },
+              ),
             ),
           ),
           

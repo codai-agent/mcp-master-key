@@ -430,6 +430,19 @@ class ConfigService {
     await _setConfigToDatabase('hub_streamable_port', port.toString(), 'integer', 'Streamable模式端口', 'hub');
   }
 
+  /// 获取主题模式 (从数据库)
+  Future<String> getThemeMode() async {
+    return await _getConfigFromDatabase('app_theme_mode', 'system');
+  }
+
+  /// 设置主题模式 (保存到数据库)
+  Future<void> setThemeMode(String mode) async {
+    await _setConfigToDatabase('app_theme_mode', mode, 'string', '应用主题模式', 'appearance');
+    
+    // 记录配置变更事件
+    await _recordConfigChangeEvent('app_theme_mode', mode, '应用主题模式更改为: $mode');
+  }
+
   /// 从数据库获取配置
   Future<String> _getConfigFromDatabase(String key, String defaultValue) async {
     try {

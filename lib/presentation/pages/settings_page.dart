@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/system_info_widget.dart';
 import '../providers/servers_provider.dart';
 import '../../business/services/config_service.dart';
+import '../themes/app_theme.dart';
+import '../providers/theme_provider.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -12,7 +14,6 @@ class SettingsPage extends ConsumerStatefulWidget {
 }
 
 class _SettingsPageState extends ConsumerState<SettingsPage> {
-  bool _darkMode = false;
   String _logLevel = 'info';
   bool _autoStart = false;
   bool _minimizeToTray = true;
@@ -61,11 +62,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               SwitchListTile(
                 title: const Text('深色主题'),
                 subtitle: const Text('使用深色界面主题'),
-                value: _darkMode,
-                onChanged: (value) {
-                  setState(() {
-                    _darkMode = value;
-                  });
+                value: ref.watch(themeProvider) == ThemeMode.dark,
+                onChanged: (value) async {
+                  await ref.read(themeProvider.notifier).toggleDarkMode(value);
                 },
               ),
             ],
@@ -385,17 +384,43 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     required String title,
     required List<Widget> children,
   }) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Card(
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(
+          color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
+          width: 1,
+        ),
+      ),
+      color: isDark ? AppTheme.darkCardBackground : AppTheme.lightCardBackground,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
-            child: Text(
-              title,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
+            child: Row(
+              children: [
+                Container(
+                  width: 4,
+                  height: 20,
+                  decoration: BoxDecoration(
+                    color: AppTheme.vscodeBlue,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                  ),
+                ),
+              ],
             ),
           ),
           ...children,

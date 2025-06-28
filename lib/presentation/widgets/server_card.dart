@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import '../../core/models/mcp_server.dart';
 import '../providers/servers_provider.dart';
+import '../themes/app_theme.dart';
 
 class ServerCard extends ConsumerWidget {
   final McpServer server;
@@ -23,8 +24,18 @@ class ServerCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
     return Card(
-      elevation: 2,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: BorderSide(
+          color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
+          width: 1,
+        ),
+      ),
+      color: isDark ? AppTheme.darkCardBackground : AppTheme.lightCardBackground,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(8),
@@ -38,11 +49,18 @@ class ServerCard extends ConsumerWidget {
                 children: [
                   // 状态指示器
                   Container(
-                    width: 12,
-                    height: 12,
+                    width: 10,
+                    height: 10,
                     decoration: BoxDecoration(
                       color: _getStatusColor(server.status),
                       shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: _getStatusColor(server.status).withOpacity(0.3),
+                          blurRadius: 4,
+                          spreadRadius: 1,
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 12),
@@ -59,12 +77,12 @@ class ServerCard extends ConsumerWidget {
                   
                   // 类型标签
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
-                      color: _getTypeColor(server.installType).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
+                      color: _getTypeColor(server.installType).withOpacity(0.08),
+                      borderRadius: BorderRadius.circular(4),
                       border: Border.all(
-                        color: _getTypeColor(server.installType).withOpacity(0.3),
+                        color: _getTypeColor(server.installType).withOpacity(0.2),
                         width: 1,
                       ),
                     ),
@@ -72,8 +90,9 @@ class ServerCard extends ConsumerWidget {
                       server.installType.name.toUpperCase(),
                       style: TextStyle(
                         color: _getTypeColor(server.installType),
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.5,
                       ),
                     ),
                   ),
@@ -202,21 +221,21 @@ class ServerCard extends ConsumerWidget {
   Color _getStatusColor(McpServerStatus status) {
     switch (status) {
       case McpServerStatus.running:
-        return Colors.green;
+        return AppTheme.vscodeGreen;
       case McpServerStatus.stopped:
         return Colors.grey;
       case McpServerStatus.installed:
-        return Colors.blue;
+        return AppTheme.vscodeBlue;
       case McpServerStatus.starting:
-        return Colors.orange;
+        return AppTheme.vscodeOrange;
       case McpServerStatus.stopping:
-        return Colors.orange;
+        return AppTheme.vscodeOrange;
       case McpServerStatus.error:
-        return Colors.red;
+        return AppTheme.vscodeRed;
       case McpServerStatus.installing:
-        return Colors.blue.shade300;
+        return AppTheme.vscodeBlue.withOpacity(0.7);
       case McpServerStatus.uninstalling:
-        return Colors.red.shade300;
+        return AppTheme.vscodeRed.withOpacity(0.7);
       case McpServerStatus.notInstalled:
         return Colors.grey.shade400;
       default:
@@ -277,13 +296,13 @@ class ServerCard extends ConsumerWidget {
   Color _getTypeColor(McpInstallType installType) {
     switch (installType) {
       case McpInstallType.npx:
-        return Colors.green;
+        return AppTheme.vscodeGreen;
       case McpInstallType.uvx:
-        return Colors.blue;
+        return AppTheme.vscodeBlue;
       case McpInstallType.localPath:
-        return Colors.orange;
+        return AppTheme.vscodeOrange;
       case McpInstallType.github:
-        return Colors.purple;
+        return AppTheme.vscodePurple;
       case McpInstallType.preInstalled:
         return Colors.grey;
       default:
