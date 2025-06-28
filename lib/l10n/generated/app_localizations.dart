@@ -1946,6 +1946,18 @@ abstract class AppLocalizations {
   /// **'Initializing...'**
   String get splash_initializing;
 
+  /// No description provided for @sidebar_collapse.
+  ///
+  /// In en, this message translates to:
+  /// **'Collapse Sidebar'**
+  String get sidebar_collapse;
+
+  /// No description provided for @sidebar_expand.
+  ///
+  /// In en, this message translates to:
+  /// **'Expand Sidebar'**
+  String get sidebar_expand;
+
   /// No description provided for @splash_init_runtime.
   ///
   /// In en, this message translates to:

@@ -492,6 +492,9 @@
   "settings_multi_client_help": "Suitable for multiple applications connecting simultaneously, supports session isolation, resource sharing",
   
   "splash_initializing": "Initializing...",
+  
+  "sidebar_collapse": "Collapse Sidebar",
+  "sidebar_expand": "Expand Sidebar",
   "splash_init_runtime": "Initializing runtime environment...",
   "splash_init_process": "Initializing process manager...",
   "splash_init_database": "Initializing database...",

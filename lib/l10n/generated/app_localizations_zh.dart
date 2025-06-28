@@ -986,6 +986,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get splash_initializing => '正在初始化...';
 
   @override
+  String get sidebar_collapse => '折叠侧边栏';
+
+  @override
+  String get sidebar_expand => '展开侧边栏';
+
+  @override
   String get splash_init_runtime => '正在初始化运行时环境...';
 
   @override

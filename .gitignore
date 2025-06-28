@@ -45,3 +45,6 @@ app.*.map.json
 /android/app/release
 
 .cursorignore
+
+assets/runtimes/nodejs*
+assets/runtimes/python*

@@ -1027,6 +1027,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get splash_initializing => 'Initializing...';
 
   @override
+  String get sidebar_collapse => 'Collapse Sidebar';
+
+  @override
+  String get sidebar_expand => 'Expand Sidebar';
+
+  @override
   String get splash_init_runtime => 'Initializing runtime environment...';
 
   @override

@@ -332,6 +332,9 @@
   "settings_multi_client_help": "适合多个应用同时连接，支持会话隔离，资源共享",
   
   "splash_initializing": "正在初始化...",
+  
+  "sidebar_collapse": "折叠侧边栏",
+  "sidebar_expand": "展开侧边栏",
   "splash_init_runtime": "正在初始化运行时环境...",
   "splash_init_process": "正在初始化进程管理器...",
   "splash_init_database": "正在初始化数据库...",
