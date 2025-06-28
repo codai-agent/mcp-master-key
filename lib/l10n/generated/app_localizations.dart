@@ -218,6 +218,36 @@ abstract class AppLocalizations {
   /// **'Copied to clipboard'**
   String get common_copied;
 
+  /// No description provided for @common_retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get common_retry;
+
+  /// No description provided for @common_previous.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get common_previous;
+
+  /// No description provided for @common_next.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get common_next;
+
+  /// No description provided for @common_start_install.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Install'**
+  String get common_start_install;
+
+  /// No description provided for @common_installing.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing...'**
+  String get common_installing;
+
   /// No description provided for @nav_servers.
   ///
   /// In en, this message translates to:
@@ -265,6 +295,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add Server'**
   String get servers_add;
+
+  /// No description provided for @servers_install.
+  ///
+  /// In en, this message translates to:
+  /// **'Install MCP Server'**
+  String get servers_install;
 
   /// No description provided for @servers_start.
   ///
@@ -320,6 +356,18 @@ abstract class AppLocalizations {
   /// **'Show Config'**
   String get servers_show_config;
 
+  /// No description provided for @servers_view_details.
+  ///
+  /// In en, this message translates to:
+  /// **'View Details'**
+  String get servers_view_details;
+
+  /// No description provided for @servers_delete_server.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Server'**
+  String get servers_delete_server;
+
   /// No description provided for @servers_delete_confirm.
   ///
   /// In en, this message translates to:
@@ -343,6 +391,78 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Server stop request sent successfully'**
   String get servers_stop_success;
+
+  /// No description provided for @servers_sort_by_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Name'**
+  String get servers_sort_by_name;
+
+  /// No description provided for @servers_sort_by_status.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get servers_sort_by_status;
+
+  /// No description provided for @servers_sort_by_created.
+  ///
+  /// In en, this message translates to:
+  /// **'Time'**
+  String get servers_sort_by_created;
+
+  /// No description provided for @servers_starting_server.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting server: {serverName}...'**
+  String servers_starting_server(String serverName);
+
+  /// No description provided for @servers_stopping_server.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopping server: {serverName}...'**
+  String servers_stopping_server(String serverName);
+
+  /// No description provided for @servers_restarting_server.
+  ///
+  /// In en, this message translates to:
+  /// **'Restarting server: {serverName}'**
+  String servers_restarting_server(String serverName);
+
+  /// No description provided for @servers_start_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Start failed: {error}'**
+  String servers_start_failed(String error);
+
+  /// No description provided for @servers_stop_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop failed: {error}'**
+  String servers_stop_failed(String error);
+
+  /// No description provided for @servers_restart_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart failed: {error}'**
+  String servers_restart_failed(String error);
+
+  /// No description provided for @servers_restart_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Server restarted successfully: {serverName}'**
+  String servers_restart_success(String serverName);
+
+  /// No description provided for @servers_not_exist.
+  ///
+  /// In en, this message translates to:
+  /// **'Server does not exist'**
+  String get servers_not_exist;
+
+  /// No description provided for @servers_load_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Load failed: {error}'**
+  String servers_load_failed(String error);
 
   /// No description provided for @install_title.
   ///
@@ -403,6 +523,426 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Installation failed'**
   String get install_error;
+
+  /// No description provided for @install_wizard_title.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP Server Installation Wizard'**
+  String get install_wizard_title;
+
+  /// No description provided for @install_wizard_auto_install_note.
+  ///
+  /// In en, this message translates to:
+  /// **'• If using uvx/npx commands, packages will be installed automatically'**
+  String get install_wizard_auto_install_note;
+
+  /// No description provided for @install_wizard_manual_install_note.
+  ///
+  /// In en, this message translates to:
+  /// **'• If using other commands, additional installation steps may be required'**
+  String get install_wizard_manual_install_note;
+
+  /// No description provided for @install_wizard_env_support_note.
+  ///
+  /// In en, this message translates to:
+  /// **'• Supports environment variable configuration and command line arguments'**
+  String get install_wizard_env_support_note;
+
+  /// No description provided for @install_wizard_uvx_example.
+  ///
+  /// In en, this message translates to:
+  /// **'UVX Example'**
+  String get install_wizard_uvx_example;
+
+  /// No description provided for @install_wizard_npx_example.
+  ///
+  /// In en, this message translates to:
+  /// **'NPX Example'**
+  String get install_wizard_npx_example;
+
+  /// No description provided for @install_wizard_python_example.
+  ///
+  /// In en, this message translates to:
+  /// **'Python Example'**
+  String get install_wizard_python_example;
+
+  /// No description provided for @install_wizard_manual_config_note.
+  ///
+  /// In en, this message translates to:
+  /// **'Since your configuration doesn\'t use uvx/npx, manual installation source configuration is required.'**
+  String get install_wizard_manual_config_note;
+
+  /// No description provided for @install_wizard_auto_config_note.
+  ///
+  /// In en, this message translates to:
+  /// **'The system will automatically download and install required packages, no additional configuration needed.'**
+  String get install_wizard_auto_config_note;
+
+  /// No description provided for @install_wizard_auto_install_supported.
+  ///
+  /// In en, this message translates to:
+  /// **'Your configuration supports automatic installation, you can proceed to the next step directly.'**
+  String get install_wizard_auto_install_supported;
+
+  /// No description provided for @install_wizard_github_source.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Source'**
+  String get install_wizard_github_source;
+
+  /// No description provided for @install_wizard_github_source_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Clone and install from GitHub repository'**
+  String get install_wizard_github_source_desc;
+
+  /// No description provided for @install_wizard_local_path.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Path'**
+  String get install_wizard_local_path;
+
+  /// No description provided for @install_wizard_local_path_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Install from local file system'**
+  String get install_wizard_local_path_desc;
+
+  /// No description provided for @install_wizard_auto_analyze_note.
+  ///
+  /// In en, this message translates to:
+  /// **'The system will automatically analyze repository structure and determine the best installation command.'**
+  String get install_wizard_auto_analyze_note;
+
+  /// No description provided for @install_wizard_step_configure.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure Server'**
+  String get install_wizard_step_configure;
+
+  /// No description provided for @install_wizard_step_analyze.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze Installation'**
+  String get install_wizard_step_analyze;
+
+  /// No description provided for @install_wizard_step_options.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Options'**
+  String get install_wizard_step_options;
+
+  /// No description provided for @install_wizard_step_execute.
+  ///
+  /// In en, this message translates to:
+  /// **'Execute Installation'**
+  String get install_wizard_step_execute;
+
+  /// No description provided for @install_wizard_step_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Required'**
+  String get install_wizard_step_required;
+
+  /// No description provided for @install_wizard_step_auto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto'**
+  String get install_wizard_step_auto;
+
+  /// No description provided for @install_wizard_step_optional.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional'**
+  String get install_wizard_step_optional;
+
+  /// No description provided for @install_wizard_step_complete.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get install_wizard_step_complete;
+
+  /// No description provided for @install_wizard_configure_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure MCP Server'**
+  String get install_wizard_configure_title;
+
+  /// No description provided for @install_wizard_configure_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Please fill in the basic information and configuration for the MCP server. The mcpServers configuration is required to determine startup commands and installation methods.'**
+  String get install_wizard_configure_subtitle;
+
+  /// No description provided for @install_wizard_server_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Name'**
+  String get install_wizard_server_name;
+
+  /// No description provided for @install_wizard_server_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Description (Optional)'**
+  String get install_wizard_server_description;
+
+  /// No description provided for @install_wizard_config_placeholder.
+  ///
+  /// In en, this message translates to:
+  /// **'Click here to enter MCP server configuration...'**
+  String get install_wizard_config_placeholder;
+
+  /// No description provided for @install_wizard_analyze_config.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze Configuration'**
+  String get install_wizard_analyze_config;
+
+  /// No description provided for @install_wizard_auto_install_ready.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-installation ready'**
+  String get install_wizard_auto_install_ready;
+
+  /// No description provided for @install_wizard_auto_analysis.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto Analysis'**
+  String get install_wizard_auto_analysis;
+
+  /// No description provided for @install_wizard_install_command.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Command (Optional)'**
+  String get install_wizard_install_command;
+
+  /// No description provided for @install_wizard_install_complete.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation complete! MCP server has been successfully added to your server list.'**
+  String get install_wizard_install_complete;
+
+  /// No description provided for @install_wizard_uvx_detected.
+  ///
+  /// In en, this message translates to:
+  /// **'UVX command detected, the system will automatically use uv tool to install Python packages.'**
+  String get install_wizard_uvx_detected;
+
+  /// No description provided for @install_wizard_npx_detected.
+  ///
+  /// In en, this message translates to:
+  /// **'NPX command detected, the system will automatically use npm to install Node.js packages.'**
+  String get install_wizard_npx_detected;
+
+  /// No description provided for @install_wizard_finish.
+  ///
+  /// In en, this message translates to:
+  /// **'Finish'**
+  String get install_wizard_finish;
+
+  /// No description provided for @install_wizard_installation_complete.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation complete, you can start this server in the server list'**
+  String get install_wizard_installation_complete;
+
+  /// No description provided for @install_wizard_execution_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Execution'**
+  String get install_wizard_execution_title;
+
+  /// No description provided for @install_wizard_execution_installing.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing MCP server, please wait...'**
+  String get install_wizard_execution_installing;
+
+  /// No description provided for @install_wizard_execution_ready.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to start installation, click the \"Start Install\" button.'**
+  String get install_wizard_execution_ready;
+
+  /// No description provided for @install_wizard_execution_summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Summary'**
+  String get install_wizard_execution_summary;
+
+  /// No description provided for @install_wizard_execution_logs.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Logs'**
+  String get install_wizard_execution_logs;
+
+  /// No description provided for @install_wizard_success_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Successful!'**
+  String get install_wizard_success_title;
+
+  /// No description provided for @install_wizard_success_message.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP server has been added to your server list and is ready to use.'**
+  String get install_wizard_success_message;
+
+  /// No description provided for @install_wizard_analysis_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Strategy Analysis'**
+  String get install_wizard_analysis_title;
+
+  /// No description provided for @install_wizard_analysis_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'The system is analyzing your configuration to determine the best installation strategy.'**
+  String get install_wizard_analysis_subtitle;
+
+  /// No description provided for @install_wizard_strategy_detected.
+  ///
+  /// In en, this message translates to:
+  /// **'Detected installation strategy: {strategy}'**
+  String install_wizard_strategy_detected(String strategy);
+
+  /// No description provided for @install_wizard_config_source_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure Installation Source'**
+  String get install_wizard_config_source_title;
+
+  /// No description provided for @install_wizard_config_source_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Since your configuration doesn\'t use uvx/npx, please select the installation source type and provide relevant information.'**
+  String get install_wizard_config_source_subtitle;
+
+  /// No description provided for @install_wizard_source_type.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Source Type'**
+  String get install_wizard_source_type;
+
+  /// No description provided for @install_wizard_summary_server_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Name'**
+  String get install_wizard_summary_server_name;
+
+  /// No description provided for @install_wizard_summary_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get install_wizard_summary_description;
+
+  /// No description provided for @install_wizard_summary_strategy.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Strategy'**
+  String get install_wizard_summary_strategy;
+
+  /// No description provided for @install_wizard_summary_source.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Source'**
+  String get install_wizard_summary_source;
+
+  /// No description provided for @install_wizard_summary_unnamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unnamed'**
+  String get install_wizard_summary_unnamed;
+
+  /// No description provided for @install_wizard_source_github.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Source'**
+  String get install_wizard_source_github;
+
+  /// No description provided for @install_wizard_source_local.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Path'**
+  String get install_wizard_source_local;
+
+  /// No description provided for @install_wizard_python_manual.
+  ///
+  /// In en, this message translates to:
+  /// **'Python command detected, need to configure package installation source (GitHub or local path).'**
+  String get install_wizard_python_manual;
+
+  /// No description provided for @install_wizard_nodejs_manual.
+  ///
+  /// In en, this message translates to:
+  /// **'Node.js command detected, need to configure package installation source (GitHub or local path).'**
+  String get install_wizard_nodejs_manual;
+
+  /// No description provided for @install_wizard_custom_manual.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom command detected, need to manually configure installation source and method.'**
+  String get install_wizard_custom_manual;
+
+  /// No description provided for @install_wizard_strategy_uvx.
+  ///
+  /// In en, this message translates to:
+  /// **'UVX (Python Package Manager)'**
+  String get install_wizard_strategy_uvx;
+
+  /// No description provided for @install_wizard_strategy_npx.
+  ///
+  /// In en, this message translates to:
+  /// **'NPX (Node.js Package Manager)'**
+  String get install_wizard_strategy_npx;
+
+  /// No description provided for @install_wizard_strategy_pip.
+  ///
+  /// In en, this message translates to:
+  /// **'PIP (Python Installation)'**
+  String get install_wizard_strategy_pip;
+
+  /// No description provided for @install_wizard_strategy_npm.
+  ///
+  /// In en, this message translates to:
+  /// **'NPM (Node.js Installation)'**
+  String get install_wizard_strategy_npm;
+
+  /// No description provided for @install_wizard_strategy_git.
+  ///
+  /// In en, this message translates to:
+  /// **'Git Clone'**
+  String get install_wizard_strategy_git;
+
+  /// No description provided for @install_wizard_strategy_local.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Installation'**
+  String get install_wizard_strategy_local;
+
+  /// No description provided for @install_wizard_no_additional_config.
+  ///
+  /// In en, this message translates to:
+  /// **'No additional configuration needed'**
+  String get install_wizard_no_additional_config;
+
+  /// No description provided for @install_wizard_additional_steps_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Additional installation steps required'**
+  String get install_wizard_additional_steps_required;
+
+  /// No description provided for @install_wizard_github_repo_url.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Repository URL'**
+  String get install_wizard_github_repo_url;
+
+  /// No description provided for @install_wizard_local_path_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Path'**
+  String get install_wizard_local_path_label;
 
   /// No description provided for @monitor_title.
   ///
@@ -523,6 +1063,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Refresh'**
   String get monitor_refresh;
+
+  /// No description provided for @monitor_server_statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Statistics'**
+  String get monitor_server_statistics;
+
+  /// No description provided for @monitor_total_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Total:'**
+  String get monitor_total_label;
+
+  /// No description provided for @monitor_installed.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed'**
+  String get monitor_installed;
+
+  /// No description provided for @monitor_connected_servers_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected Servers'**
+  String get monitor_connected_servers_title;
+
+  /// No description provided for @monitor_no_connected_servers.
+  ///
+  /// In en, this message translates to:
+  /// **'No connected servers'**
+  String get monitor_no_connected_servers;
+
+  /// No description provided for @monitor_system_information.
+  ///
+  /// In en, this message translates to:
+  /// **'System Information'**
+  String get monitor_system_information;
+
+  /// No description provided for @monitor_total_servers.
+  ///
+  /// In en, this message translates to:
+  /// **'Total: {count} servers'**
+  String monitor_total_servers(int count);
 
   /// No description provided for @server_monitor_title.
   ///
@@ -776,6 +1358,84 @@ abstract class AppLocalizations {
   /// **'Error Information'**
   String get server_monitor_error_info;
 
+  /// No description provided for @server_monitor_log_load_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load logs: {error}'**
+  String server_monitor_log_load_failed(String error);
+
+  /// No description provided for @server_monitor_log_filter.
+  ///
+  /// In en, this message translates to:
+  /// **'Level Filter: '**
+  String get server_monitor_log_filter;
+
+  /// No description provided for @server_monitor_operation_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Operation failed: {error}'**
+  String server_monitor_operation_failed(String error);
+
+  /// No description provided for @server_monitor_delete_confirm_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Delete'**
+  String get server_monitor_delete_confirm_title;
+
+  /// No description provided for @server_monitor_delete_confirm_content.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this server? This action cannot be undone.'**
+  String get server_monitor_delete_confirm_content;
+
+  /// No description provided for @server_monitor_logs_cleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Logs cleared'**
+  String get server_monitor_logs_cleared;
+
+  /// No description provided for @server_monitor_clear_logs_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to clear logs: {error}'**
+  String server_monitor_clear_logs_failed(String error);
+
+  /// No description provided for @server_monitor_export_logs_todo.
+  ///
+  /// In en, this message translates to:
+  /// **'Log export feature is under development'**
+  String get server_monitor_export_logs_todo;
+
+  /// No description provided for @server_monitor_export_logs_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to export logs: {error}'**
+  String server_monitor_export_logs_failed(String error);
+
+  /// No description provided for @server_monitor_edit_todo.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit feature is under development'**
+  String get server_monitor_edit_todo;
+
+  /// No description provided for @server_card_details_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Details - {serverName}'**
+  String server_card_details_title(String serverName);
+
+  /// No description provided for @server_card_delete_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete failed: {error}'**
+  String server_card_delete_failed(String error);
+
+  /// No description provided for @server_card_confirm_delete_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm Delete'**
+  String get server_card_confirm_delete_title;
+
   /// No description provided for @settings_title.
   ///
   /// In en, this message translates to:
@@ -845,26 +1505,122 @@ abstract class AppLocalizations {
   /// No description provided for @settings_hub_mode.
   ///
   /// In en, this message translates to:
-  /// **'Hub Mode'**
+  /// **'Running Mode'**
   String get settings_hub_mode;
 
   /// No description provided for @settings_hub_mode_sse.
   ///
   /// In en, this message translates to:
-  /// **'SSE Mode'**
+  /// **'SSE Mode (Single Client)'**
   String get settings_hub_mode_sse;
 
   /// No description provided for @settings_hub_mode_streamable.
   ///
   /// In en, this message translates to:
-  /// **'Streamable Mode'**
+  /// **'Streamable Mode (Multi Client)'**
   String get settings_hub_mode_streamable;
 
   /// No description provided for @settings_hub_port.
   ///
   /// In en, this message translates to:
-  /// **'Hub Port'**
+  /// **'Streamable Port'**
   String get settings_hub_port;
+
+  /// No description provided for @settings_hub_port_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Port used for multi-client mode: {port}'**
+  String settings_hub_port_desc(String port);
+
+  /// No description provided for @settings_hub_port_invalid.
+  ///
+  /// In en, this message translates to:
+  /// **'Port must be between 1024-65535'**
+  String get settings_hub_port_invalid;
+
+  /// No description provided for @settings_startup.
+  ///
+  /// In en, this message translates to:
+  /// **'Startup Settings'**
+  String get settings_startup;
+
+  /// No description provided for @settings_startup_auto.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto Start on Boot'**
+  String get settings_startup_auto;
+
+  /// No description provided for @settings_startup_auto_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically start application when system boots'**
+  String get settings_startup_auto_desc;
+
+  /// No description provided for @settings_startup_minimize.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimize to System Tray'**
+  String get settings_startup_minimize;
+
+  /// No description provided for @settings_startup_minimize_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimize to system tray when closing window'**
+  String get settings_startup_minimize_desc;
+
+  /// No description provided for @settings_logs.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Settings'**
+  String get settings_logs;
+
+  /// No description provided for @settings_log_level.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Level'**
+  String get settings_log_level;
+
+  /// No description provided for @settings_log_level_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Current level: {level}'**
+  String settings_log_level_desc(String level);
+
+  /// No description provided for @settings_log_level_debug.
+  ///
+  /// In en, this message translates to:
+  /// **'Debug'**
+  String get settings_log_level_debug;
+
+  /// No description provided for @settings_log_level_info.
+  ///
+  /// In en, this message translates to:
+  /// **'Info'**
+  String get settings_log_level_info;
+
+  /// No description provided for @settings_log_level_warn.
+  ///
+  /// In en, this message translates to:
+  /// **'Warning'**
+  String get settings_log_level_warn;
+
+  /// No description provided for @settings_log_level_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get settings_log_level_error;
+
+  /// No description provided for @settings_log_retention.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Retention Days'**
+  String get settings_log_retention;
+
+  /// No description provided for @settings_log_retention_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically delete logs older than {days} days'**
+  String settings_log_retention_desc(String days);
 
   /// No description provided for @settings_download.
   ///
@@ -881,20 +1637,26 @@ abstract class AppLocalizations {
   /// No description provided for @settings_download_mirror_desc.
   ///
   /// In en, this message translates to:
-  /// **'Enable to use Tsinghua PyPI and Taobao NPM mirrors for faster downloads in China'**
+  /// **'Use Tsinghua and other domestic mirrors to accelerate package downloads'**
   String get settings_download_mirror_desc;
 
-  /// No description provided for @settings_download_current_pypi.
+  /// No description provided for @settings_download_current_source.
   ///
   /// In en, this message translates to:
-  /// **'Current PyPI Source'**
-  String get settings_download_current_pypi;
+  /// **'Current Mirror Source'**
+  String get settings_download_current_source;
 
-  /// No description provided for @settings_download_current_npm.
+  /// No description provided for @settings_download_mirror_advantages.
   ///
   /// In en, this message translates to:
-  /// **'Current NPM Source'**
-  String get settings_download_current_npm;
+  /// **'Mirror Advantages'**
+  String get settings_download_mirror_advantages;
+
+  /// No description provided for @settings_download_mirror_advantages_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'• Download speed increased by 5-10 times\n• Solve network connection issues\n• Support Python and NPM packages'**
+  String get settings_download_mirror_advantages_desc;
 
   /// No description provided for @settings_download_official_pypi.
   ///
@@ -920,6 +1682,48 @@ abstract class AppLocalizations {
   /// **'Taobao NPM Mirror'**
   String get settings_download_taobao_npm;
 
+  /// No description provided for @settings_maintenance.
+  ///
+  /// In en, this message translates to:
+  /// **'Maintenance'**
+  String get settings_maintenance;
+
+  /// No description provided for @settings_clear_cache.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cache'**
+  String get settings_clear_cache;
+
+  /// No description provided for @settings_clear_cache_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear temporary files and cache data'**
+  String get settings_clear_cache_desc;
+
+  /// No description provided for @settings_clear_cache_button.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get settings_clear_cache_button;
+
+  /// No description provided for @settings_export_config.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Configuration'**
+  String get settings_export_config;
+
+  /// No description provided for @settings_export_config_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Export server configuration and application settings'**
+  String get settings_export_config_desc;
+
+  /// No description provided for @settings_export_config_button.
+  ///
+  /// In en, this message translates to:
+  /// **'Export'**
+  String get settings_export_config_button;
+
   /// No description provided for @settings_about.
   ///
   /// In en, this message translates to:
@@ -932,17 +1736,209 @@ abstract class AppLocalizations {
   /// **'Version'**
   String get settings_version;
 
-  /// No description provided for @settings_build.
+  /// No description provided for @settings_version_desc.
   ///
   /// In en, this message translates to:
-  /// **'Build'**
-  String get settings_build;
+  /// **'MCP Hub v1.0.0'**
+  String get settings_version_desc;
 
-  /// No description provided for @settings_copyright.
+  /// No description provided for @settings_check_update.
   ///
   /// In en, this message translates to:
-  /// **'Copyright'**
-  String get settings_copyright;
+  /// **'Check for Updates'**
+  String get settings_check_update;
+
+  /// No description provided for @settings_check_update_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Check if new version is available'**
+  String get settings_check_update_desc;
+
+  /// No description provided for @settings_check_update_button.
+  ///
+  /// In en, this message translates to:
+  /// **'Check'**
+  String get settings_check_update_button;
+
+  /// No description provided for @settings_open_source.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Source License'**
+  String get settings_open_source;
+
+  /// No description provided for @settings_open_source_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'View open source license information'**
+  String get settings_open_source_desc;
+
+  /// No description provided for @settings_mode_changed.
+  ///
+  /// In en, this message translates to:
+  /// **'Server mode changed to: {mode}'**
+  String settings_mode_changed(String mode);
+
+  /// No description provided for @settings_mode_change_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to change server mode: {error}'**
+  String settings_mode_change_failed(String error);
+
+  /// No description provided for @settings_port_changed.
+  ///
+  /// In en, this message translates to:
+  /// **'Streamable port changed to: {port}'**
+  String settings_port_changed(String port);
+
+  /// No description provided for @settings_port_change_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to change port: {error}'**
+  String settings_port_change_failed(String error);
+
+  /// No description provided for @settings_restart_required_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart Required'**
+  String get settings_restart_required_title;
+
+  /// No description provided for @settings_restart_required_content.
+  ///
+  /// In en, this message translates to:
+  /// **'Server mode change requires restarting MCP Hub service to take effect.'**
+  String get settings_restart_required_content;
+
+  /// No description provided for @settings_restart_later.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart Later'**
+  String get settings_restart_later;
+
+  /// No description provided for @settings_restart_now.
+  ///
+  /// In en, this message translates to:
+  /// **'Restart Now'**
+  String get settings_restart_now;
+
+  /// No description provided for @settings_hub_restarted.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP Hub service restarted successfully'**
+  String get settings_hub_restarted;
+
+  /// No description provided for @settings_hub_restart_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to restart Hub service: {error}'**
+  String settings_hub_restart_failed(String error);
+
+  /// No description provided for @settings_clear_cache_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cache'**
+  String get settings_clear_cache_title;
+
+  /// No description provided for @settings_clear_cache_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to clear all cache data? This action cannot be undone.'**
+  String get settings_clear_cache_confirm;
+
+  /// No description provided for @settings_confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get settings_confirm;
+
+  /// No description provided for @settings_cache_cleared.
+  ///
+  /// In en, this message translates to:
+  /// **'Cache cleared successfully'**
+  String get settings_cache_cleared;
+
+  /// No description provided for @settings_export_todo.
+  ///
+  /// In en, this message translates to:
+  /// **'Configuration export feature is under development'**
+  String get settings_export_todo;
+
+  /// No description provided for @settings_already_latest.
+  ///
+  /// In en, this message translates to:
+  /// **'Already the latest version'**
+  String get settings_already_latest;
+
+  /// No description provided for @settings_license_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Open Source License'**
+  String get settings_license_title;
+
+  /// No description provided for @settings_runtime_mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Runtime Mode'**
+  String get settings_runtime_mode;
+
+  /// No description provided for @settings_multi_client_support.
+  ///
+  /// In en, this message translates to:
+  /// **'Support multiple concurrent client connections'**
+  String get settings_multi_client_support;
+
+  /// No description provided for @settings_app_behavior.
+  ///
+  /// In en, this message translates to:
+  /// **'Application Behavior'**
+  String get settings_app_behavior;
+
+  /// No description provided for @settings_log_settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Log Settings'**
+  String get settings_log_settings;
+
+  /// No description provided for @settings_download_settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Download Settings'**
+  String get settings_download_settings;
+
+  /// No description provided for @settings_storage_management.
+  ///
+  /// In en, this message translates to:
+  /// **'Storage Management'**
+  String get settings_storage_management;
+
+  /// No description provided for @settings_system_information.
+  ///
+  /// In en, this message translates to:
+  /// **'System Information'**
+  String get settings_system_information;
+
+  /// No description provided for @settings_about_section.
+  ///
+  /// In en, this message translates to:
+  /// **'About'**
+  String get settings_about_section;
+
+  /// No description provided for @settings_single_client_mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Only allows single client connection'**
+  String get settings_single_client_mode;
+
+  /// No description provided for @settings_single_client_help.
+  ///
+  /// In en, this message translates to:
+  /// **'Suitable for single application use, better performance, strong compatibility'**
+  String get settings_single_client_help;
+
+  /// No description provided for @settings_multi_client_help.
+  ///
+  /// In en, this message translates to:
+  /// **'Suitable for multiple applications connecting simultaneously, supports session isolation, resource sharing'**
+  String get settings_multi_client_help;
 
   /// No description provided for @splash_initializing.
   ///
@@ -1045,6 +2041,240 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Flutter Version'**
   String get system_info_flutter_version;
+
+  /// No description provided for @hub_monitor_title.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP Hub Monitor'**
+  String get hub_monitor_title;
+
+  /// No description provided for @hub_monitor_status.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP Hub Status'**
+  String get hub_monitor_status;
+
+  /// No description provided for @hub_monitor_running.
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get hub_monitor_running;
+
+  /// No description provided for @hub_monitor_stopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped'**
+  String get hub_monitor_stopped;
+
+  /// No description provided for @hub_monitor_port.
+  ///
+  /// In en, this message translates to:
+  /// **'Service Port'**
+  String get hub_monitor_port;
+
+  /// No description provided for @hub_monitor_mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Running Mode'**
+  String get hub_monitor_mode;
+
+  /// No description provided for @hub_monitor_connected_servers.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected Servers'**
+  String get hub_monitor_connected_servers;
+
+  /// No description provided for @hub_monitor_available_tools.
+  ///
+  /// In en, this message translates to:
+  /// **'Available Tools'**
+  String get hub_monitor_available_tools;
+
+  /// No description provided for @hub_monitor_service_address.
+  ///
+  /// In en, this message translates to:
+  /// **'Service Address'**
+  String get hub_monitor_service_address;
+
+  /// No description provided for @hub_monitor_not_running.
+  ///
+  /// In en, this message translates to:
+  /// **'Hub service is not running'**
+  String get hub_monitor_not_running;
+
+  /// No description provided for @hub_monitor_debug_info.
+  ///
+  /// In en, this message translates to:
+  /// **'Debug Info'**
+  String get hub_monitor_debug_info;
+
+  /// No description provided for @hub_monitor_server_statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Statistics'**
+  String get hub_monitor_server_statistics;
+
+  /// No description provided for @hub_monitor_connected_servers_list.
+  ///
+  /// In en, this message translates to:
+  /// **'Connected Servers'**
+  String get hub_monitor_connected_servers_list;
+
+  /// No description provided for @hub_monitor_system_info.
+  ///
+  /// In en, this message translates to:
+  /// **'System Information'**
+  String get hub_monitor_system_info;
+
+  /// No description provided for @hub_monitor_unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get hub_monitor_unknown;
+
+  /// No description provided for @hub_monitor_count_unit.
+  ///
+  /// In en, this message translates to:
+  /// **' servers'**
+  String get hub_monitor_count_unit;
+
+  /// No description provided for @hub_monitor_tools_unit.
+  ///
+  /// In en, this message translates to:
+  /// **' tools'**
+  String get hub_monitor_tools_unit;
+
+  /// No description provided for @servers_quick_actions.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Actions'**
+  String get servers_quick_actions;
+
+  /// No description provided for @servers_search_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search servers...'**
+  String get servers_search_hint;
+
+  /// No description provided for @servers_description_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP servers added through installation wizard'**
+  String get servers_description_hint;
+
+  /// No description provided for @servers_status_running.
+  ///
+  /// In en, this message translates to:
+  /// **'Running'**
+  String get servers_status_running;
+
+  /// No description provided for @servers_status_stopped.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopped'**
+  String get servers_status_stopped;
+
+  /// No description provided for @servers_status_starting.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting'**
+  String get servers_status_starting;
+
+  /// No description provided for @servers_status_stopping.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopping'**
+  String get servers_status_stopping;
+
+  /// No description provided for @servers_status_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Error'**
+  String get servers_status_error;
+
+  /// No description provided for @servers_status_installing.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing'**
+  String get servers_status_installing;
+
+  /// No description provided for @servers_status_uninstalling.
+  ///
+  /// In en, this message translates to:
+  /// **'Uninstalling'**
+  String get servers_status_uninstalling;
+
+  /// No description provided for @servers_status_installed.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed'**
+  String get servers_status_installed;
+
+  /// No description provided for @servers_status_not_installed.
+  ///
+  /// In en, this message translates to:
+  /// **'Not Installed'**
+  String get servers_status_not_installed;
+
+  /// No description provided for @servers_status_unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get servers_status_unknown;
+
+  /// No description provided for @servers_more_options.
+  ///
+  /// In en, this message translates to:
+  /// **'More Options'**
+  String get servers_more_options;
+
+  /// No description provided for @servers_no_servers.
+  ///
+  /// In en, this message translates to:
+  /// **'No servers yet'**
+  String get servers_no_servers;
+
+  /// No description provided for @servers_no_servers_found.
+  ///
+  /// In en, this message translates to:
+  /// **'No matching servers found'**
+  String get servers_no_servers_found;
+
+  /// No description provided for @servers_add_server_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Click the floating button to start adding servers'**
+  String get servers_add_server_hint;
+
+  /// No description provided for @servers_load_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Load failed'**
+  String get servers_load_error;
+
+  /// No description provided for @servers_retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get servers_retry;
+
+  /// No description provided for @servers_starting_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Starting server: {serverName}...'**
+  String servers_starting_message(String serverName);
+
+  /// No description provided for @servers_stopping_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Stopping server: {serverName}...'**
+  String servers_stopping_message(String serverName);
+
+  /// No description provided for @servers_restarting_message.
+  ///
+  /// In en, this message translates to:
+  /// **'Restarting server: {serverName}...'**
+  String servers_restarting_message(String serverName);
 }
 
 class _AppLocalizationsDelegate

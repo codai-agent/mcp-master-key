@@ -5,6 +5,7 @@ import '../../core/models/mcp_server.dart';
 import '../../infrastructure/repositories/mcp_server_repository.dart';
 import '../../business/managers/enhanced_mcp_process_manager.dart';
 import '../../infrastructure/mcp/mcp_tools_aggregator.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../providers/servers_provider.dart';
 
 class ServerMonitorPage extends ConsumerStatefulWidget {
@@ -118,7 +119,7 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
       });
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('加载日志失败: $e')),
+          SnackBar(content: Text(AppLocalizations.of(context)!.server_monitor_log_load_failed(e.toString()))),
         );
       }
     }
@@ -162,19 +163,20 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final serverAsync = ref.watch(serverProvider(widget.serverId));
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('服务器监控'),
+        title: Text(l10n.server_monitor_title),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(icon: Icon(Icons.info), text: '概览'),
-            Tab(icon: Icon(Icons.settings), text: '配置'),
-            Tab(icon: Icon(Icons.article), text: '日志'),
-            Tab(icon: Icon(Icons.analytics), text: '统计'),
+          tabs: [
+            Tab(icon: const Icon(Icons.info), text: l10n.server_monitor_overview),
+            Tab(icon: const Icon(Icons.settings), text: l10n.server_monitor_config),
+            Tab(icon: const Icon(Icons.article), text: l10n.server_monitor_logs),
+            Tab(icon: const Icon(Icons.analytics), text: l10n.server_monitor_stats),
           ],
         ),
         actions: [
@@ -190,18 +192,18 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
       body: serverAsync.when(
         data: (server) {
           if (server == null) {
-            return const Center(
-              child: Text('服务器不存在'),
+            return Center(
+              child: Text(l10n.servers_not_exist),
             );
           }
           
           return TabBarView(
             controller: _tabController,
             children: [
-              _buildOverviewTab(server),
-              _buildConfigTab(server),
-              _buildLogsTab(),
-              _buildStatsTab(server),
+              _buildOverviewTab(server, l10n),
+              _buildConfigTab(server, l10n),
+              _buildLogsTab(l10n),
+              _buildStatsTab(server, l10n),
             ],
           );
         },
@@ -212,11 +214,11 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
             children: [
               const Icon(Icons.error, size: 64, color: Colors.red),
               const SizedBox(height: 16),
-              Text('加载失败: $error'),
+              Text(l10n.servers_load_failed(error.toString())),
               const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: () => ref.refresh(serverProvider(widget.serverId)),
-                child: const Text('重试'),
+                child: Text(l10n.common_retry),
               ),
             ],
           ),
@@ -225,7 +227,7 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
     );
   }
 
-  Widget _buildOverviewTab(McpServer server) {
+  Widget _buildOverviewTab(McpServer server, AppLocalizations l10n) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -337,28 +339,28 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
                       if (server.status == McpServerStatus.stopped)
                         ElevatedButton.icon(
                           icon: const Icon(Icons.play_arrow),
-                          label: const Text('启动'),
+                          label: Text(l10n.servers_start),
                           onPressed: () => _handleServerAction('start'),
                         ),
                       if (server.status == McpServerStatus.running)
                         ElevatedButton.icon(
                           icon: const Icon(Icons.stop),
-                          label: const Text('停止'),
+                          label: Text(l10n.servers_stop),
                           onPressed: () => _handleServerAction('stop'),
                         ),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.refresh),
-                        label: const Text('重启'),
+                        label: Text(l10n.servers_restart),
                         onPressed: () => _handleServerAction('restart'),
                       ),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.edit),
-                        label: const Text('编辑'),
+                        label: Text(l10n.common_edit),
                         onPressed: () => _handleServerAction('edit'),
                       ),
                       ElevatedButton.icon(
                         icon: const Icon(Icons.delete),
-                        label: const Text('删除'),
+                        label: Text(l10n.common_delete),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.red,
                           foregroundColor: Colors.white,
@@ -376,7 +378,7 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
     );
   }
 
-  Widget _buildConfigTab(McpServer server) {
+  Widget _buildConfigTab(McpServer server, AppLocalizations l10n) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -497,7 +499,7 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
     );
   }
 
-  Widget _buildLogsTab() {
+  Widget _buildLogsTab(AppLocalizations l10n) {
     return Column(
       children: [
         // 日志控制栏
@@ -541,7 +543,7 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
               // 日志级别过滤器
               Row(
                 children: [
-                  const Text('级别筛选: '),
+                  Text(l10n.server_monitor_log_filter),
                   const SizedBox(width: 8),
                   _buildLogLevelChip('ALL', null),
                   const SizedBox(width: 4),
@@ -558,7 +560,7 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text('自动滚动'),
+                      Text(l10n.server_monitor_auto_scroll),
                       Switch(
                         value: _autoScroll,
                         onChanged: (value) {
@@ -622,7 +624,7 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
     );
   }
 
-  Widget _buildStatsTab(McpServer server) {
+  Widget _buildStatsTab(McpServer server, AppLocalizations l10n) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(

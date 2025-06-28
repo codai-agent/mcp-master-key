@@ -445,7 +445,7 @@ class ConfigService {
 
   /// 获取语言设置 (从数据库)
   Future<String> getLanguage() async {
-    return await _getConfigFromDatabase('app_language', 'en');
+    return await _getConfigFromDatabase('app_language', 'system');
   }
 
   /// 设置语言 (保存到数据库)

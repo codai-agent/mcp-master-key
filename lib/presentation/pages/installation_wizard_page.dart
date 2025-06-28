@@ -6,6 +6,7 @@ import '../../business/parsers/mcp_config_parser.dart';
 import '../../core/models/mcp_server.dart';
 import '../../infrastructure/runtime/runtime_manager.dart';
 import '../widgets/json_config_editor.dart';
+import '../../l10n/generated/app_localizations.dart';
 import 'home_page.dart';
 
 /// 安装向导页面
@@ -57,9 +58,11 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MCP服务器安装向导'),
+        title: Text(l10n.install_wizard_title),
         automaticallyImplyLeading: true,
       ),
       body: Column(
@@ -69,13 +72,13 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
             padding: const EdgeInsets.all(16),
             child: Row(
               children: [
-                _buildStepIndicator(0, '配置服务器', '必填'),
+                _buildStepIndicator(0, l10n.install_wizard_step_configure, l10n.install_wizard_step_required),
                 _buildStepConnector(),
-                _buildStepIndicator(1, '分析安装', '自动'),
+                _buildStepIndicator(1, l10n.install_wizard_step_analyze, l10n.install_wizard_step_auto),
                 _buildStepConnector(),
-                _buildStepIndicator(2, '安装选项', '可选'),
+                _buildStepIndicator(2, l10n.install_wizard_step_options, l10n.install_wizard_step_optional),
                 _buildStepConnector(),
-                _buildStepIndicator(3, '执行安装', '完成'),
+                _buildStepIndicator(3, l10n.install_wizard_step_execute, l10n.install_wizard_step_complete),
               ],
             ),
           ),
@@ -86,10 +89,10 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
               controller: _pageController,
               physics: const NeverScrollableScrollPhysics(),
               children: [
-                _buildConfigStep(),
-                _buildAnalysisStep(),
-                _buildInstallOptionsStep(),
-                _buildExecutionStep(),
+                _buildConfigStep(l10n),
+                _buildAnalysisStep(l10n),
+                _buildInstallOptionsStep(l10n),
+                _buildExecutionStep(l10n),
               ],
             ),
           ),
@@ -103,7 +106,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
                   Expanded(
                     child: OutlinedButton(
                       onPressed: _previousStep,
-                      child: const Text('上一步'),
+                      child: Text(l10n.common_previous),
                     ),
                   ),
                 if (_currentStep > 0) const SizedBox(width: 16),
@@ -184,19 +187,19 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   }
 
   // 第一步：配置MCP服务器
-  Widget _buildConfigStep() {
+  Widget _buildConfigStep(AppLocalizations l10n) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '配置MCP服务器',
+            l10n.install_wizard_configure_title,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            '请填写MCP服务器的基本信息和配置。mcpServers配置是必填项，用于确定启动命令和安装方式。',
+            l10n.install_wizard_configure_subtitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.grey[600],
             ),
@@ -206,10 +209,10 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
           // 服务器名称
           TextField(
             controller: _nameController,
-            decoration: const InputDecoration(
-              labelText: '服务器名称',
+            decoration: InputDecoration(
+              labelText: l10n.install_wizard_server_name,
               hintText: '例如：热点新闻服务器',
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 16),
@@ -218,10 +221,10 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
           TextField(
             controller: _descriptionController,
             maxLines: 2,
-            decoration: const InputDecoration(
-              labelText: '服务器描述（可选）',
+            decoration: InputDecoration(
+              labelText: l10n.install_wizard_server_description,
               hintText: '简单描述这个MCP服务器的功能',
-              border: OutlineInputBorder(),
+              border: const OutlineInputBorder(),
             ),
           ),
           const SizedBox(height: 16),
@@ -239,6 +242,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
               _parseConfig();
             },
             errorText: _configError.isNotEmpty ? _configError : null,
+            placeholderText: l10n.install_wizard_config_placeholder,
           ),
           
           // 配置帮助
@@ -267,9 +271,9 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
                   ],
                 ),
                 const SizedBox(height: 8),
-                const Text('• 如果使用 uvx/npx 命令，系统会自动安装包'),
-                const Text('• 如果使用其他命令，可能需要额外的安装步骤'),
-                const Text('• 支持环境变量配置和命令行参数'),
+                          Text(l10n.install_wizard_auto_install_note),
+          Text(l10n.install_wizard_manual_install_note),
+          Text(l10n.install_wizard_env_support_note),
               ],
             ),
           ),
@@ -282,17 +286,17 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
               ElevatedButton.icon(
                 onPressed: () => _loadExampleConfig('uvx'),
                 icon: const Icon(Icons.code, size: 16),
-                label: const Text('UVX示例'),
+                label: Text(l10n.install_wizard_uvx_example),
               ),
               ElevatedButton.icon(
                 onPressed: () => _loadExampleConfig('npx'),
                 icon: const Icon(Icons.code, size: 16),
-                label: const Text('NPX示例'),
+                label: Text(l10n.install_wizard_npx_example),
               ),
               ElevatedButton.icon(
                 onPressed: () => _loadExampleConfig('python'),
                 icon: const Icon(Icons.code, size: 16),
-                label: const Text('Python示例'),
+                label: Text(l10n.install_wizard_python_example),
               ),
             ],
           ),
@@ -302,19 +306,19 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   }
 
   // 第二步：分析安装策略
-  Widget _buildAnalysisStep() {
+  Widget _buildAnalysisStep(AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '安装策略分析',
+            l10n.install_wizard_analysis_title,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            '系统正在分析您的配置，确定最佳的安装策略。',
+            l10n.install_wizard_analysis_subtitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.grey[600],
             ),
@@ -338,7 +342,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
                       Icon(Icons.check_circle, color: Colors.green[700]),
                       const SizedBox(width: 8),
                       Text(
-                        '检测到安装策略: ${_getStrategyDisplayName(_detectedStrategy!)}',
+                        l10n.install_wizard_strategy_detected(_getStrategyDisplayName(_detectedStrategy!)),
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.green[700],
@@ -370,7 +374,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
                         Icon(Icons.warning, color: Colors.orange[700]),
                         const SizedBox(width: 8),
                         Text(
-                          '需要额外的安装步骤',
+                          l10n.install_wizard_additional_steps_required,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.orange[700],
@@ -379,7 +383,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Text('由于您的配置不使用uvx/npx，需要手动配置安装源。'),
+                    Text(l10n.install_wizard_manual_config_note),
                   ],
                 ),
               ),
@@ -399,7 +403,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
                         Icon(Icons.auto_fix_high, color: Colors.blue[700]),
                         const SizedBox(width: 8),
                         Text(
-                          '自动安装就绪',
+                          l10n.install_wizard_auto_install_ready,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.blue[700],
@@ -408,7 +412,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
                       ],
                     ),
                     const SizedBox(height: 8),
-                    const Text('系统将自动下载和安装所需的包，无需额外配置。'),
+                    Text(l10n.install_wizard_auto_config_note),
                   ],
                 ),
               ),
@@ -420,21 +424,21 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   }
 
   // 第三步：额外安装选项
-  Widget _buildInstallOptionsStep() {
+  Widget _buildInstallOptionsStep(AppLocalizations l10n) {
     if (!_needsAdditionalInstall) {
-      return const Padding(
-        padding: EdgeInsets.all(16),
+              return Padding(
+        padding: const EdgeInsets.all(16),
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.skip_next, size: 64, color: Colors.grey),
-              SizedBox(height: 16),
+              const Icon(Icons.skip_next, size: 64, color: Colors.grey),
+              const SizedBox(height: 16),
               Text(
-                '无需额外配置',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                l10n.install_wizard_no_additional_config,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
-              Text('您的配置支持自动安装，可以直接进行下一步。'),
+              Text(l10n.install_wizard_auto_install_supported),
             ],
           ),
         ),
@@ -447,12 +451,12 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '配置安装源',
+            l10n.install_wizard_config_source_title,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            '由于您的配置不使用uvx/npx，请选择安装源类型并提供相关信息。',
+            l10n.install_wizard_config_source_subtitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.grey[600],
             ),
@@ -461,7 +465,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
           
           // 安装类型选择
           Text(
-            '安装源类型',
+            l10n.install_wizard_source_type,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
@@ -473,8 +477,8 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
             child: Column(
               children: [
                 RadioListTile<String>(
-                  title: const Text('GitHub源码'),
-                  subtitle: const Text('从GitHub仓库克隆并安装'),
+                                  title: Text(l10n.install_wizard_github_source),
+                subtitle: Text(l10n.install_wizard_github_source_desc),
                   value: 'github',
                   groupValue: _selectedInstallType,
                   onChanged: (value) {
@@ -485,8 +489,8 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
                 ),
                 const Divider(height: 1),
                 RadioListTile<String>(
-                  title: const Text('本地路径'),
-                  subtitle: const Text('从本地文件系统安装'),
+                                  title: Text(l10n.install_wizard_local_path),
+                subtitle: Text(l10n.install_wizard_local_path_desc),
                   value: 'local',
                   groupValue: _selectedInstallType,
                   onChanged: (value) {
@@ -504,11 +508,11 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
           if (_selectedInstallType == 'github') ...[
             TextField(
               controller: _githubUrlController,
-              decoration: const InputDecoration(
-                labelText: 'GitHub仓库地址',
+              decoration: InputDecoration(
+                labelText: l10n.install_wizard_github_repo_url,
                 hintText: 'https://github.com/owner/repo',
-                border: OutlineInputBorder(),
-                prefixIcon: Icon(Icons.link),
+                border: const OutlineInputBorder(),
+                prefixIcon: const Icon(Icons.link),
               ),
             ),
             const SizedBox(height: 16),
@@ -527,7 +531,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
                       Icon(Icons.auto_fix_high, size: 16, color: Colors.blue[700]),
                       const SizedBox(width: 8),
                       Text(
-                        '自动分析',
+                        l10n.install_wizard_auto_analysis,
                         style: TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.blue[700],
@@ -536,7 +540,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
                     ],
                   ),
                   const SizedBox(height: 4),
-                  const Text('系统将自动分析仓库结构并确定最佳安装命令。'),
+                                      Text(l10n.install_wizard_auto_analyze_note),
                 ],
               ),
             ),
@@ -544,7 +548,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
             TextField(
               controller: _localPathController,
               decoration: InputDecoration(
-                labelText: '本地路径',
+                labelText: l10n.install_wizard_local_path_label,
                 hintText: '/path/to/mcp-server',
                 border: const OutlineInputBorder(),
                 prefixIcon: const Icon(Icons.folder),
@@ -561,11 +565,11 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
           const SizedBox(height: 24),
           TextField(
             controller: _installCommandController,
-            decoration: const InputDecoration(
-              labelText: '安装命令（可选）',
+            decoration: InputDecoration(
+              labelText: l10n.install_wizard_install_command,
               hintText: '例如：pip install -e . 或 npm install',
-              border: OutlineInputBorder(),
-              prefixIcon: Icon(Icons.terminal),
+              border: const OutlineInputBorder(),
+              prefixIcon: const Icon(Icons.terminal),
             ),
           ),
         ],
@@ -574,23 +578,23 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   }
 
   // 第四步：执行安装
-  Widget _buildExecutionStep() {
+  Widget _buildExecutionStep(AppLocalizations l10n) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '安装执行',
+            l10n.install_wizard_execution_title,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
             _isInstalling 
-              ? '正在安装MCP服务器，请稍候...' 
+              ? l10n.install_wizard_execution_installing
               : _installationSuccess
-                ? '安装完成！MCP服务器已成功添加到您的服务器列表。'
-                : '准备开始安装，点击"开始安装"按钮。',
+                ? l10n.install_wizard_install_complete
+                : l10n.install_wizard_execution_ready,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.grey[600],
             ),
@@ -609,17 +613,17 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  '安装摘要',
+                  l10n.install_wizard_execution_summary,
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
                 const SizedBox(height: 8),
-                _buildSummaryItem('服务器名称', _nameController.text.isNotEmpty ? _nameController.text : '未命名'),
+                _buildSummaryItem(l10n.install_wizard_summary_server_name, _nameController.text.isNotEmpty ? _nameController.text : l10n.install_wizard_summary_unnamed),
                 if (_descriptionController.text.isNotEmpty)
-                  _buildSummaryItem('描述', _descriptionController.text),
+                  _buildSummaryItem(l10n.install_wizard_summary_description, _descriptionController.text),
                 if (_detectedStrategy != null)
-                  _buildSummaryItem('安装策略', _getStrategyDisplayName(_detectedStrategy!)),
+                  _buildSummaryItem(l10n.install_wizard_summary_strategy, _getStrategyDisplayName(_detectedStrategy!)),
                 if (_needsAdditionalInstall)
-                  _buildSummaryItem('安装源', _selectedInstallType == 'github' ? 'GitHub源码' : '本地路径'),
+                  _buildSummaryItem(l10n.install_wizard_summary_source, _selectedInstallType == 'github' ? l10n.install_wizard_source_github : l10n.install_wizard_source_local),
               ],
             ),
           ),
@@ -628,7 +632,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
           // 安装日志
           if (_installationLogs.isNotEmpty) ...[
             Text(
-              '安装日志',
+              l10n.install_wizard_execution_logs,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 8),
@@ -683,7 +687,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '安装成功！',
+                          l10n.install_wizard_success_title,
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             color: Colors.green[700],
@@ -691,8 +695,8 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
                           ),
                         ),
                         Text(
-                          'MCP服务器已添加到您的服务器列表，可以开始使用了。',
-                          style: TextStyle(fontSize: 12), // 减少字体大小
+                          l10n.install_wizard_success_message,
+                          style: const TextStyle(fontSize: 12), // 减少字体大小
                         ),
                       ],
                     ),
@@ -771,7 +775,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
       });
       
       // 分析安装策略
-      _analyzeInstallStrategy();
+      _analyzeInstallStrategy(AppLocalizations.of(context)!);
       
     } catch (e) {
       setState(() {
@@ -781,7 +785,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   }
 
   // 分析安装策略
-  void _analyzeInstallStrategy() {
+  void _analyzeInstallStrategy(AppLocalizations l10n) {
     if (_parsedConfig.isEmpty) return;
     
     final mcpServers = _parsedConfig['mcpServers'] as Map<String, dynamic>;
@@ -792,23 +796,23 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
       if (command == 'uvx') {
         _detectedStrategy = InstallStrategy.uvx;
         _needsAdditionalInstall = false;
-        _analysisResult = '检测到UVX命令，系统将自动使用uv工具安装Python包。';
+        _analysisResult = l10n.install_wizard_uvx_detected;
       } else if (command == 'npx') {
         _detectedStrategy = InstallStrategy.npx;
         _needsAdditionalInstall = false;
-        _analysisResult = '检测到NPX命令，系统将自动使用npm安装Node.js包。';
+        _analysisResult = l10n.install_wizard_npx_detected;
       } else if (command == 'python' || command == 'python3') {
         _detectedStrategy = InstallStrategy.pip;
         _needsAdditionalInstall = true;
-        _analysisResult = '检测到Python命令，需要配置包的安装源（GitHub或本地路径）。';
+        _analysisResult = l10n.install_wizard_python_manual;
       } else if (command == 'node') {
         _detectedStrategy = InstallStrategy.npm;
         _needsAdditionalInstall = true;
-        _analysisResult = '检测到Node.js命令，需要配置包的安装源（GitHub或本地路径）。';
+        _analysisResult = l10n.install_wizard_nodejs_manual;
       } else {
         _detectedStrategy = InstallStrategy.local;
         _needsAdditionalInstall = true;
-        _analysisResult = '检测到自定义命令，需要手动配置安装源和方式。';
+        _analysisResult = l10n.install_wizard_custom_manual;
       }
     });
   }
@@ -865,19 +869,20 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   }
 
   String _getStrategyDisplayName(InstallStrategy strategy) {
+    final l10n = AppLocalizations.of(context)!;
     switch (strategy) {
       case InstallStrategy.uvx:
-        return 'UVX (Python包管理)';
+        return l10n.install_wizard_strategy_uvx;
       case InstallStrategy.npx:
-        return 'NPX (Node.js包管理)';
+        return l10n.install_wizard_strategy_npx;
       case InstallStrategy.pip:
-        return 'PIP (Python安装)';
+        return l10n.install_wizard_strategy_pip;
       case InstallStrategy.npm:
-        return 'NPM (Node.js安装)';
+        return l10n.install_wizard_strategy_npm;
       case InstallStrategy.git:
-        return 'Git克隆';
+        return l10n.install_wizard_strategy_git;
       case InstallStrategy.local:
-        return '本地安装';
+        return l10n.install_wizard_strategy_local;
     }
   }
 
@@ -899,18 +904,19 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   }
 
   String _getNextButtonText() {
+    final l10n = AppLocalizations.of(context)!;
     switch (_currentStep) {
       case 0:
-        return '分析配置';
+        return l10n.install_wizard_analyze_config;
       case 1:
-        return '下一步';
+        return l10n.common_next;
       case 2:
-        return '开始安装';
+        return l10n.common_start_install;
       case 3:
-        return _installationSuccess ? '完成' : 
-          (_isInstalling ? '安装中...' : '开始安装');
+        return _installationSuccess ? l10n.install_wizard_finish : 
+          (_isInstalling ? l10n.common_installing : l10n.common_start_install);
     }
-    return '下一步';
+    return l10n.common_next;
   }
 
   bool _validateInstallOptions() {
@@ -950,6 +956,8 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
 
   // 开始安装
   Future<void> _startInstallation() async {
+    final l10n = AppLocalizations.of(context)!;
+    
     setState(() {
       _isInstalling = true;
       _installationLogs.clear();
@@ -1111,7 +1119,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
             : serverName,
           description: _descriptionController.text.isNotEmpty
             ? _descriptionController.text
-            : '通过安装向导添加的MCP服务器',
+            : l10n.servers_description_hint,
           installType: installType,
           connectionType: connectionType,  // 使用解析的连接类型
           command: serverConfig['command'],

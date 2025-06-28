@@ -7,12 +7,14 @@ class JsonConfigEditor extends StatefulWidget {
   final String initialValue;
   final Function(String) onChanged;
   final String? errorText;
+  final String? placeholderText;
 
   const JsonConfigEditor({
     super.key,
     required this.initialValue,
     required this.onChanged,
     this.errorText,
+    this.placeholderText,
   });
 
   @override
@@ -139,7 +141,7 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
                   height: 1.5,
                 ),
                 decoration: InputDecoration(
-                  hintText: _placeholderText, // 将占位符内容直接放在hintText中
+                  hintText: widget.placeholderText ?? _placeholderText, // 使用传入的占位符或默认占位符
                   hintStyle: const TextStyle(
                     fontFamily: 'monospace',
                     fontSize: 14,

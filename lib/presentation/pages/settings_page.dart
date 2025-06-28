@@ -99,7 +99,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             title: l10n.settings_hub,
             children: [
               ListTile(
-                title: const Text('运行模式'),
+                title: Text(l10n.settings_runtime_mode),
                 subtitle: Text(_getServerModeDescription(_serverMode)),
                 trailing: DropdownButton<String>(
                   value: _serverMode,
@@ -192,7 +192,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           
           // 应用行为
           _buildSectionCard(
-            title: '应用行为',
+            title: l10n.settings_app_behavior,
             children: [
               SwitchListTile(
                 title: const Text('开机自启动'),
@@ -221,7 +221,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           
           // 日志设置
           _buildSectionCard(
-            title: '日志设置',
+            title: l10n.settings_log_settings,
             children: [
               ListTile(
                 title: const Text('日志级别'),
@@ -270,7 +270,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           
           // 下载设置
           _buildSectionCard(
-            title: '下载设置',
+            title: l10n.settings_download_settings,
             children: [
               SwitchListTile(
                 title: const Text('使用中国大陆镜像源'),
@@ -335,7 +335,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           
           // 存储管理
           _buildSectionCard(
-            title: '存储管理',
+            title: l10n.settings_storage_management,
             children: [
               ListTile(
                 title: const Text('清理缓存'),
@@ -370,7 +370,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
           
           // 关于
           _buildSectionCard(
-            title: '关于',
+            title: l10n.settings_about_section,
             children: [
               ListTile(
                 title: const Text('版本'),
@@ -467,28 +467,31 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   String _getServerModeDescription(String mode) {
+    final l10n = AppLocalizations.of(context)!;
     switch (mode) {
       case 'sse':
-        return '只允许单个客户端连接';
+        return l10n.settings_single_client_mode;
       case 'streamable':
-        return '支持多个客户端并发连接';
+        return l10n.settings_multi_client_support;
       default:
         return mode;
     }
   }
 
   String _getServerModeHelp(String mode) {
+    final l10n = AppLocalizations.of(context)!;
     switch (mode) {
       case 'sse':
-        return '适合单一应用使用，性能更好，兼容性强';
+        return l10n.settings_single_client_help;
       case 'streamable':
-        return '适合多个应用同时连接，支持会话隔离，资源共享';
+        return l10n.settings_multi_client_help;
       default:
         return '';
     }
   }
 
   Future<void> _changeServerMode(String newMode) async {
+    final l10n = AppLocalizations.of(context)!;
     try {
       final configService = ConfigService.instance;
       await configService.setMcpServerMode(newMode);
@@ -500,7 +503,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('服务器模式已更改为: ${_getServerModeDescription(newMode)}'),
+            content: Text(l10n.settings_mode_changed(_getServerModeDescription(newMode))),
             backgroundColor: Colors.green,
           ),
         );
@@ -512,7 +515,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('更改服务器模式失败: $e'),
+            content: Text(l10n.settings_mode_change_failed(e.toString())),
             backgroundColor: Colors.red,
           ),
         );
@@ -550,22 +553,23 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   void _showRestartDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('需要重启'),
-        content: const Text('服务器模式更改需要重启MCP Hub服务才能生效。'),
+        title: Text(l10n.settings_restart_required_title),
+        content: Text(l10n.settings_restart_required_content),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('稍后重启'),
+            child: Text(l10n.settings_restart_later),
           ),
           ElevatedButton(
             onPressed: () async {
               Navigator.of(context).pop();
               await _restartHubService();
             },
-            child: const Text('立即重启'),
+            child: Text(l10n.settings_restart_now),
           ),
         ],
       ),
@@ -599,23 +603,24 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
     }
   }
 
-  void _showCleanupDialog() {
+    void _showCleanupDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('清理缓存'),
-        content: const Text('确定要清理所有缓存数据吗？此操作不可撤销。'),
+        title: Text(l10n.settings_clear_cache_title),
+        content: Text(l10n.settings_clear_cache_confirm),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
+            child: Text(l10n.common_cancel),
           ),
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
               _performCleanup();
             },
-            child: const Text('确定'),
+            child: Text(l10n.settings_confirm),
           ),
         ],
       ),
@@ -623,33 +628,37 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   void _performCleanup() {
+    final l10n = AppLocalizations.of(context)!;
     // TODO: 实现清理逻辑
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('缓存清理完成')),
+      SnackBar(content: Text(l10n.settings_cache_cleared)),
     );
   }
 
   void _exportConfiguration() {
+    final l10n = AppLocalizations.of(context)!;
     // TODO: 实现配置导出
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('配置导出功能开发中')),
+      SnackBar(content: Text(l10n.settings_export_todo)),
     );
   }
 
 
 
   void _checkForUpdates() {
+    final l10n = AppLocalizations.of(context)!;
     // TODO: 实现更新检查
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('当前已是最新版本')),
+      SnackBar(content: Text(l10n.settings_already_latest)),
     );
   }
 
   void _showLicenseDialog() {
+    final l10n = AppLocalizations.of(context)!;
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('开源许可'),
+        title: Text(l10n.settings_license_title),
         content: const SingleChildScrollView(
           child: Text(
             'MCP Hub\n\n'

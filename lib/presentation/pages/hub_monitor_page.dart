@@ -6,6 +6,12 @@ import '../../business/services/mcp_hub_service.dart';
 import '../../business/services/mcp_server_service.dart';
 import '../../infrastructure/repositories/mcp_server_repository.dart';
 import '../themes/app_theme.dart';
+import '../../l10n/generated/app_localizations.dart';
+import '../../business/managers/mcp_process_manager.dart';
+import '../../infrastructure/mcp/mcp_hub_server.dart';
+import '../providers/servers_provider.dart';
+import '../widgets/server_stats_widget.dart';
+import '../widgets/system_info_widget.dart';
 
 class HubMonitorPage extends ConsumerStatefulWidget {
   const HubMonitorPage({Key? key}) : super(key: key);
@@ -88,6 +94,8 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     if (_isLoading) {
       return const Center(
         child: CircularProgressIndicator(),
@@ -103,13 +111,13 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildHubStatusCard(),
+              _buildHubStatusCard(l10n),
               const SizedBox(height: 16),
-              _buildServerStatisticsCard(),
+              _buildServerStatisticsCard(l10n),
               const SizedBox(height: 16),
-              _buildConnectedServersCard(),
+              _buildConnectedServersCard(l10n),
               const SizedBox(height: 16),
-              _buildSystemInfoCard(),
+              _buildSystemInfoCard(l10n),
             ],
           ),
         ),
@@ -117,7 +125,7 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
     );
   }
 
-  Widget _buildHubStatusCard() {
+  Widget _buildHubStatusCard(AppLocalizations l10n) {
     final isRunning = _hubStatus?['running'] == true;
     final port = _hubStatus?['port'];
     final connectedServers = _hubStatus?['connected_servers'] ?? 0;
@@ -150,7 +158,7 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'MCP Hub 状态',
+                  l10n.hub_monitor_status,
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w600,
@@ -181,7 +189,7 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        isRunning ? '运行中' : '已停止',
+                        isRunning ? l10n.hub_monitor_running : l10n.hub_monitor_stopped,
                         style: TextStyle(
                           color: isRunning ? AppTheme.vscodeGreen : AppTheme.vscodeRed,
                           fontWeight: FontWeight.w600,
@@ -195,16 +203,16 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
             ),
             const SizedBox(height: 16),
             if (isRunning) ...[
-              _buildInfoRow('服务端口', port?.toString() ?? '未知'),
-              _buildInfoRow('运行模式', serverMode),
-              _buildInfoRow('连接的服务器', '$connectedServers 个'),
-              _buildInfoRow('可用工具数量', '$totalTools 个'),
-              _buildInfoRow('服务地址', 'http://localhost:$port'),
-            ] else ...[
-              const Text(
-                'Hub 服务未运行',
-                style: TextStyle(color: Colors.red),
-              ),
+              _buildInfoRow(l10n.hub_monitor_port, port?.toString() ?? l10n.hub_monitor_unknown),
+              _buildInfoRow(l10n.hub_monitor_mode, serverMode),
+              _buildInfoRow(l10n.hub_monitor_connected_servers, '$connectedServers${l10n.hub_monitor_count_unit}'),
+              _buildInfoRow(l10n.hub_monitor_available_tools, '$totalTools${l10n.hub_monitor_tools_unit}'),
+              _buildInfoRow(l10n.hub_monitor_service_address, 'http://localhost:$port'),
+                          ] else ...[
+                Text(
+                  l10n.hub_monitor_not_running,
+                  style: TextStyle(color: Colors.red),
+                ),
               if (debugInfo != null) ...[
                 const SizedBox(height: 8),
                 Text(
@@ -232,7 +240,7 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
     );
   }
 
-  Widget _buildServerStatisticsCard() {
+  Widget _buildServerStatisticsCard(AppLocalizations l10n) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -244,14 +252,14 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
                 const Icon(Icons.dns, size: 24),
                 const SizedBox(width: 8),
                 Text(
-                  '服务器统计',
+                  l10n.monitor_server_statistics,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ],
             ),
             const SizedBox(height: 16),
             Text(
-              '总计: ${_allServers.length} 个服务器',
+                              l10n.monitor_total_servers(_allServers.length),
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
@@ -259,13 +267,13 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
               spacing: 8,
               runSpacing: 8,
               children: [
-                _buildStatusChip('运行中', McpServerStatus.running, Colors.green),
-                _buildStatusChip('已安装', McpServerStatus.installed, Colors.blue),
-                _buildStatusChip('已停止', McpServerStatus.stopped, Colors.grey),
-                _buildStatusChip('错误', McpServerStatus.error, Colors.red),
-                _buildStatusChip('启动中', McpServerStatus.starting, Colors.orange),
-                _buildStatusChip('停止中', McpServerStatus.stopping, Colors.orange),
-                _buildStatusChip('未安装', McpServerStatus.notInstalled, Colors.grey.shade400),
+                _buildStatusChip(l10n.servers_running, McpServerStatus.running, Colors.green),
+                _buildStatusChip(l10n.monitor_installed, McpServerStatus.installed, Colors.blue),
+                _buildStatusChip(l10n.servers_stopped, McpServerStatus.stopped, Colors.grey),
+                _buildStatusChip(l10n.servers_error, McpServerStatus.error, Colors.red),
+                _buildStatusChip(l10n.servers_starting, McpServerStatus.starting, Colors.orange),
+                _buildStatusChip(l10n.servers_stopping, McpServerStatus.stopping, Colors.orange),
+                _buildStatusChip(l10n.servers_status_not_installed, McpServerStatus.notInstalled, Colors.grey.shade400),
               ],
             ),
             const SizedBox(height: 16),
@@ -304,7 +312,7 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
     );
   }
 
-  Widget _buildConnectedServersCard() {
+  Widget _buildConnectedServersCard(AppLocalizations l10n) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -316,14 +324,14 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
                 const Icon(Icons.link, size: 24),
                 const SizedBox(width: 8),
                 Text(
-                  '已连接的服务器',
+                  l10n.monitor_connected_servers_title,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ],
             ),
             const SizedBox(height: 16),
             if (_connectedChildServers.isEmpty) ...[
-              const Text('暂无已连接的服务器'),
+              Text(l10n.monitor_no_connected_servers),
             ] else ...[
               for (final server in _connectedChildServers) ...[
                 _buildConnectedServerItem(server),
@@ -390,7 +398,7 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
     );
   }
 
-  Widget _buildSystemInfoCard() {
+  Widget _buildSystemInfoCard(AppLocalizations l10n) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -402,7 +410,7 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
                 const Icon(Icons.info, size: 24),
                 const SizedBox(width: 8),
                 Text(
-                  '系统信息',
+                  l10n.monitor_system_information,
                   style: Theme.of(context).textTheme.headlineSmall,
                 ),
               ],

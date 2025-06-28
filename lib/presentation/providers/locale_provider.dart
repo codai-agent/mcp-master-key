@@ -53,7 +53,7 @@ extension AppLanguageExtension on AppLanguage {
       case 'zh':
         return AppLanguage.chinese;
       default:
-        return AppLanguage.english; // 默认英文
+        return AppLanguage.system; // 默认使用系统语言
     }
   }
 }
@@ -63,8 +63,8 @@ class LocaleNotifier extends StateNotifier<AppLanguage> {
   final ConfigService _configService = ConfigService.instance;
   bool _isInitialized = false;
 
-  LocaleNotifier() : super(AppLanguage.english) {
-    // 不在构造函数中进行异步操作，而是延迟初始化
+  LocaleNotifier() : super(AppLanguage.system) {
+    // 默认使用系统语言，然后异步加载用户设置
     _initializeLanguage();
   }
 
@@ -75,10 +75,15 @@ class LocaleNotifier extends StateNotifier<AppLanguage> {
     
     try {
       final languageCode = await _configService.getLanguage();
-      state = AppLanguageExtension.fromCode(languageCode);
+      final newState = AppLanguageExtension.fromCode(languageCode);
+      
+      // 只有当新状态与当前状态不同时才更新
+      if (newState != state) {
+        state = newState;
+      }
     } catch (e) {
       print('Failed to load language setting: $e');
-      // 保持默认的英文设置
+      // 保持默认的系统语言设置
     }
   }
 

@@ -69,6 +69,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get common_copied => 'Copied to clipboard';
 
   @override
+  String get common_retry => 'Retry';
+
+  @override
+  String get common_previous => 'Previous';
+
+  @override
+  String get common_next => 'Next';
+
+  @override
+  String get common_start_install => 'Start Install';
+
+  @override
+  String get common_installing => 'Installing...';
+
+  @override
   String get nav_servers => 'Server Management';
 
   @override
@@ -92,6 +107,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get servers_add => 'Add Server';
+
+  @override
+  String get servers_install => 'Install MCP Server';
 
   @override
   String get servers_start => 'Start';
@@ -121,6 +139,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get servers_show_config => 'Show Config';
 
   @override
+  String get servers_view_details => 'View Details';
+
+  @override
+  String get servers_delete_server => 'Delete Server';
+
+  @override
   String get servers_delete_confirm =>
       'Are you sure you want to delete this server?';
 
@@ -132,6 +156,58 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get servers_stop_success => 'Server stop request sent successfully';
+
+  @override
+  String get servers_sort_by_name => 'Name';
+
+  @override
+  String get servers_sort_by_status => 'Status';
+
+  @override
+  String get servers_sort_by_created => 'Time';
+
+  @override
+  String servers_starting_server(String serverName) {
+    return 'Starting server: $serverName...';
+  }
+
+  @override
+  String servers_stopping_server(String serverName) {
+    return 'Stopping server: $serverName...';
+  }
+
+  @override
+  String servers_restarting_server(String serverName) {
+    return 'Restarting server: $serverName';
+  }
+
+  @override
+  String servers_start_failed(String error) {
+    return 'Start failed: $error';
+  }
+
+  @override
+  String servers_stop_failed(String error) {
+    return 'Stop failed: $error';
+  }
+
+  @override
+  String servers_restart_failed(String error) {
+    return 'Restart failed: $error';
+  }
+
+  @override
+  String servers_restart_success(String serverName) {
+    return 'Server restarted successfully: $serverName';
+  }
+
+  @override
+  String get servers_not_exist => 'Server does not exist';
+
+  @override
+  String servers_load_failed(String error) {
+    return 'Load failed: $error';
+  }
 
   @override
   String get install_title => 'Install MCP Server';
@@ -163,6 +239,245 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get install_error => 'Installation failed';
+
+  @override
+  String get install_wizard_title => 'MCP Server Installation Wizard';
+
+  @override
+  String get install_wizard_auto_install_note =>
+      '• If using uvx/npx commands, packages will be installed automatically';
+
+  @override
+  String get install_wizard_manual_install_note =>
+      '• If using other commands, additional installation steps may be required';
+
+  @override
+  String get install_wizard_env_support_note =>
+      '• Supports environment variable configuration and command line arguments';
+
+  @override
+  String get install_wizard_uvx_example => 'UVX Example';
+
+  @override
+  String get install_wizard_npx_example => 'NPX Example';
+
+  @override
+  String get install_wizard_python_example => 'Python Example';
+
+  @override
+  String get install_wizard_manual_config_note =>
+      'Since your configuration doesn\'t use uvx/npx, manual installation source configuration is required.';
+
+  @override
+  String get install_wizard_auto_config_note =>
+      'The system will automatically download and install required packages, no additional configuration needed.';
+
+  @override
+  String get install_wizard_auto_install_supported =>
+      'Your configuration supports automatic installation, you can proceed to the next step directly.';
+
+  @override
+  String get install_wizard_github_source => 'GitHub Source';
+
+  @override
+  String get install_wizard_github_source_desc =>
+      'Clone and install from GitHub repository';
+
+  @override
+  String get install_wizard_local_path => 'Local Path';
+
+  @override
+  String get install_wizard_local_path_desc => 'Install from local file system';
+
+  @override
+  String get install_wizard_auto_analyze_note =>
+      'The system will automatically analyze repository structure and determine the best installation command.';
+
+  @override
+  String get install_wizard_step_configure => 'Configure Server';
+
+  @override
+  String get install_wizard_step_analyze => 'Analyze Installation';
+
+  @override
+  String get install_wizard_step_options => 'Installation Options';
+
+  @override
+  String get install_wizard_step_execute => 'Execute Installation';
+
+  @override
+  String get install_wizard_step_required => 'Required';
+
+  @override
+  String get install_wizard_step_auto => 'Auto';
+
+  @override
+  String get install_wizard_step_optional => 'Optional';
+
+  @override
+  String get install_wizard_step_complete => 'Complete';
+
+  @override
+  String get install_wizard_configure_title => 'Configure MCP Server';
+
+  @override
+  String get install_wizard_configure_subtitle =>
+      'Please fill in the basic information and configuration for the MCP server. The mcpServers configuration is required to determine startup commands and installation methods.';
+
+  @override
+  String get install_wizard_server_name => 'Server Name';
+
+  @override
+  String get install_wizard_server_description =>
+      'Server Description (Optional)';
+
+  @override
+  String get install_wizard_config_placeholder =>
+      'Click here to enter MCP server configuration...';
+
+  @override
+  String get install_wizard_analyze_config => 'Analyze Configuration';
+
+  @override
+  String get install_wizard_auto_install_ready => 'Auto-installation ready';
+
+  @override
+  String get install_wizard_auto_analysis => 'Auto Analysis';
+
+  @override
+  String get install_wizard_install_command =>
+      'Installation Command (Optional)';
+
+  @override
+  String get install_wizard_install_complete =>
+      'Installation complete! MCP server has been successfully added to your server list.';
+
+  @override
+  String get install_wizard_uvx_detected =>
+      'UVX command detected, the system will automatically use uv tool to install Python packages.';
+
+  @override
+  String get install_wizard_npx_detected =>
+      'NPX command detected, the system will automatically use npm to install Node.js packages.';
+
+  @override
+  String get install_wizard_finish => 'Finish';
+
+  @override
+  String get install_wizard_installation_complete =>
+      'Installation complete, you can start this server in the server list';
+
+  @override
+  String get install_wizard_execution_title => 'Installation Execution';
+
+  @override
+  String get install_wizard_execution_installing =>
+      'Installing MCP server, please wait...';
+
+  @override
+  String get install_wizard_execution_ready =>
+      'Ready to start installation, click the \"Start Install\" button.';
+
+  @override
+  String get install_wizard_execution_summary => 'Installation Summary';
+
+  @override
+  String get install_wizard_execution_logs => 'Installation Logs';
+
+  @override
+  String get install_wizard_success_title => 'Installation Successful!';
+
+  @override
+  String get install_wizard_success_message =>
+      'MCP server has been added to your server list and is ready to use.';
+
+  @override
+  String get install_wizard_analysis_title => 'Installation Strategy Analysis';
+
+  @override
+  String get install_wizard_analysis_subtitle =>
+      'The system is analyzing your configuration to determine the best installation strategy.';
+
+  @override
+  String install_wizard_strategy_detected(String strategy) {
+    return 'Detected installation strategy: $strategy';
+  }
+
+  @override
+  String get install_wizard_config_source_title =>
+      'Configure Installation Source';
+
+  @override
+  String get install_wizard_config_source_subtitle =>
+      'Since your configuration doesn\'t use uvx/npx, please select the installation source type and provide relevant information.';
+
+  @override
+  String get install_wizard_source_type => 'Installation Source Type';
+
+  @override
+  String get install_wizard_summary_server_name => 'Server Name';
+
+  @override
+  String get install_wizard_summary_description => 'Description';
+
+  @override
+  String get install_wizard_summary_strategy => 'Installation Strategy';
+
+  @override
+  String get install_wizard_summary_source => 'Installation Source';
+
+  @override
+  String get install_wizard_summary_unnamed => 'Unnamed';
+
+  @override
+  String get install_wizard_source_github => 'GitHub Source';
+
+  @override
+  String get install_wizard_source_local => 'Local Path';
+
+  @override
+  String get install_wizard_python_manual =>
+      'Python command detected, need to configure package installation source (GitHub or local path).';
+
+  @override
+  String get install_wizard_nodejs_manual =>
+      'Node.js command detected, need to configure package installation source (GitHub or local path).';
+
+  @override
+  String get install_wizard_custom_manual =>
+      'Custom command detected, need to manually configure installation source and method.';
+
+  @override
+  String get install_wizard_strategy_uvx => 'UVX (Python Package Manager)';
+
+  @override
+  String get install_wizard_strategy_npx => 'NPX (Node.js Package Manager)';
+
+  @override
+  String get install_wizard_strategy_pip => 'PIP (Python Installation)';
+
+  @override
+  String get install_wizard_strategy_npm => 'NPM (Node.js Installation)';
+
+  @override
+  String get install_wizard_strategy_git => 'Git Clone';
+
+  @override
+  String get install_wizard_strategy_local => 'Local Installation';
+
+  @override
+  String get install_wizard_no_additional_config =>
+      'No additional configuration needed';
+
+  @override
+  String get install_wizard_additional_steps_required =>
+      'Additional installation steps required';
+
+  @override
+  String get install_wizard_github_repo_url => 'GitHub Repository URL';
+
+  @override
+  String get install_wizard_local_path_label => 'Local Path';
 
   @override
   String get monitor_title => 'Hub Monitor';
@@ -223,6 +538,29 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get monitor_refresh => 'Refresh';
+
+  @override
+  String get monitor_server_statistics => 'Server Statistics';
+
+  @override
+  String get monitor_total_label => 'Total:';
+
+  @override
+  String get monitor_installed => 'Installed';
+
+  @override
+  String get monitor_connected_servers_title => 'Connected Servers';
+
+  @override
+  String get monitor_no_connected_servers => 'No connected servers';
+
+  @override
+  String get monitor_system_information => 'System Information';
+
+  @override
+  String monitor_total_servers(int count) {
+    return 'Total: $count servers';
+  }
 
   @override
   String get server_monitor_title => 'Server Monitor';
@@ -351,6 +689,59 @@ class AppLocalizationsEn extends AppLocalizations {
   String get server_monitor_error_info => 'Error Information';
 
   @override
+  String server_monitor_log_load_failed(String error) {
+    return 'Failed to load logs: $error';
+  }
+
+  @override
+  String get server_monitor_log_filter => 'Level Filter: ';
+
+  @override
+  String server_monitor_operation_failed(String error) {
+    return 'Operation failed: $error';
+  }
+
+  @override
+  String get server_monitor_delete_confirm_title => 'Confirm Delete';
+
+  @override
+  String get server_monitor_delete_confirm_content =>
+      'Are you sure you want to delete this server? This action cannot be undone.';
+
+  @override
+  String get server_monitor_logs_cleared => 'Logs cleared';
+
+  @override
+  String server_monitor_clear_logs_failed(String error) {
+    return 'Failed to clear logs: $error';
+  }
+
+  @override
+  String get server_monitor_export_logs_todo =>
+      'Log export feature is under development';
+
+  @override
+  String server_monitor_export_logs_failed(String error) {
+    return 'Failed to export logs: $error';
+  }
+
+  @override
+  String get server_monitor_edit_todo => 'Edit feature is under development';
+
+  @override
+  String server_card_details_title(String serverName) {
+    return 'Server Details - $serverName';
+  }
+
+  @override
+  String server_card_delete_failed(String error) {
+    return 'Delete failed: $error';
+  }
+
+  @override
+  String get server_card_confirm_delete_title => 'Confirm Delete';
+
+  @override
   String get settings_title => 'Settings';
 
   @override
@@ -384,16 +775,72 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings_hub => 'Hub Settings';
 
   @override
-  String get settings_hub_mode => 'Hub Mode';
+  String get settings_hub_mode => 'Running Mode';
 
   @override
-  String get settings_hub_mode_sse => 'SSE Mode';
+  String get settings_hub_mode_sse => 'SSE Mode (Single Client)';
 
   @override
-  String get settings_hub_mode_streamable => 'Streamable Mode';
+  String get settings_hub_mode_streamable => 'Streamable Mode (Multi Client)';
 
   @override
-  String get settings_hub_port => 'Hub Port';
+  String get settings_hub_port => 'Streamable Port';
+
+  @override
+  String settings_hub_port_desc(String port) {
+    return 'Port used for multi-client mode: $port';
+  }
+
+  @override
+  String get settings_hub_port_invalid => 'Port must be between 1024-65535';
+
+  @override
+  String get settings_startup => 'Startup Settings';
+
+  @override
+  String get settings_startup_auto => 'Auto Start on Boot';
+
+  @override
+  String get settings_startup_auto_desc =>
+      'Automatically start application when system boots';
+
+  @override
+  String get settings_startup_minimize => 'Minimize to System Tray';
+
+  @override
+  String get settings_startup_minimize_desc =>
+      'Minimize to system tray when closing window';
+
+  @override
+  String get settings_logs => 'Log Settings';
+
+  @override
+  String get settings_log_level => 'Log Level';
+
+  @override
+  String settings_log_level_desc(String level) {
+    return 'Current level: $level';
+  }
+
+  @override
+  String get settings_log_level_debug => 'Debug';
+
+  @override
+  String get settings_log_level_info => 'Info';
+
+  @override
+  String get settings_log_level_warn => 'Warning';
+
+  @override
+  String get settings_log_level_error => 'Error';
+
+  @override
+  String get settings_log_retention => 'Log Retention Days';
+
+  @override
+  String settings_log_retention_desc(String days) {
+    return 'Automatically delete logs older than $days days';
+  }
 
   @override
   String get settings_download => 'Download Settings';
@@ -403,13 +850,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get settings_download_mirror_desc =>
-      'Enable to use Tsinghua PyPI and Taobao NPM mirrors for faster downloads in China';
+      'Use Tsinghua and other domestic mirrors to accelerate package downloads';
 
   @override
-  String get settings_download_current_pypi => 'Current PyPI Source';
+  String get settings_download_current_source => 'Current Mirror Source';
 
   @override
-  String get settings_download_current_npm => 'Current NPM Source';
+  String get settings_download_mirror_advantages => 'Mirror Advantages';
+
+  @override
+  String get settings_download_mirror_advantages_desc =>
+      '• Download speed increased by 5-10 times\n• Solve network connection issues\n• Support Python and NPM packages';
 
   @override
   String get settings_download_official_pypi => 'Official PyPI';
@@ -424,16 +875,153 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settings_download_taobao_npm => 'Taobao NPM Mirror';
 
   @override
+  String get settings_maintenance => 'Maintenance';
+
+  @override
+  String get settings_clear_cache => 'Clear Cache';
+
+  @override
+  String get settings_clear_cache_desc =>
+      'Clear temporary files and cache data';
+
+  @override
+  String get settings_clear_cache_button => 'Clear';
+
+  @override
+  String get settings_export_config => 'Export Configuration';
+
+  @override
+  String get settings_export_config_desc =>
+      'Export server configuration and application settings';
+
+  @override
+  String get settings_export_config_button => 'Export';
+
+  @override
   String get settings_about => 'About';
 
   @override
   String get settings_version => 'Version';
 
   @override
-  String get settings_build => 'Build';
+  String get settings_version_desc => 'MCP Hub v1.0.0';
 
   @override
-  String get settings_copyright => 'Copyright';
+  String get settings_check_update => 'Check for Updates';
+
+  @override
+  String get settings_check_update_desc => 'Check if new version is available';
+
+  @override
+  String get settings_check_update_button => 'Check';
+
+  @override
+  String get settings_open_source => 'Open Source License';
+
+  @override
+  String get settings_open_source_desc =>
+      'View open source license information';
+
+  @override
+  String settings_mode_changed(String mode) {
+    return 'Server mode changed to: $mode';
+  }
+
+  @override
+  String settings_mode_change_failed(String error) {
+    return 'Failed to change server mode: $error';
+  }
+
+  @override
+  String settings_port_changed(String port) {
+    return 'Streamable port changed to: $port';
+  }
+
+  @override
+  String settings_port_change_failed(String error) {
+    return 'Failed to change port: $error';
+  }
+
+  @override
+  String get settings_restart_required_title => 'Restart Required';
+
+  @override
+  String get settings_restart_required_content =>
+      'Server mode change requires restarting MCP Hub service to take effect.';
+
+  @override
+  String get settings_restart_later => 'Restart Later';
+
+  @override
+  String get settings_restart_now => 'Restart Now';
+
+  @override
+  String get settings_hub_restarted => 'MCP Hub service restarted successfully';
+
+  @override
+  String settings_hub_restart_failed(String error) {
+    return 'Failed to restart Hub service: $error';
+  }
+
+  @override
+  String get settings_clear_cache_title => 'Clear Cache';
+
+  @override
+  String get settings_clear_cache_confirm =>
+      'Are you sure you want to clear all cache data? This action cannot be undone.';
+
+  @override
+  String get settings_confirm => 'Confirm';
+
+  @override
+  String get settings_cache_cleared => 'Cache cleared successfully';
+
+  @override
+  String get settings_export_todo =>
+      'Configuration export feature is under development';
+
+  @override
+  String get settings_already_latest => 'Already the latest version';
+
+  @override
+  String get settings_license_title => 'Open Source License';
+
+  @override
+  String get settings_runtime_mode => 'Runtime Mode';
+
+  @override
+  String get settings_multi_client_support =>
+      'Support multiple concurrent client connections';
+
+  @override
+  String get settings_app_behavior => 'Application Behavior';
+
+  @override
+  String get settings_log_settings => 'Log Settings';
+
+  @override
+  String get settings_download_settings => 'Download Settings';
+
+  @override
+  String get settings_storage_management => 'Storage Management';
+
+  @override
+  String get settings_system_information => 'System Information';
+
+  @override
+  String get settings_about_section => 'About';
+
+  @override
+  String get settings_single_client_mode =>
+      'Only allows single client connection';
+
+  @override
+  String get settings_single_client_help =>
+      'Suitable for single application use, better performance, strong compatibility';
+
+  @override
+  String get settings_multi_client_help =>
+      'Suitable for multiple applications connecting simultaneously, supports session isolation, resource sharing';
 
   @override
   String get splash_initializing => 'Initializing...';
@@ -485,4 +1073,129 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get system_info_flutter_version => 'Flutter Version';
+
+  @override
+  String get hub_monitor_title => 'MCP Hub Monitor';
+
+  @override
+  String get hub_monitor_status => 'MCP Hub Status';
+
+  @override
+  String get hub_monitor_running => 'Running';
+
+  @override
+  String get hub_monitor_stopped => 'Stopped';
+
+  @override
+  String get hub_monitor_port => 'Service Port';
+
+  @override
+  String get hub_monitor_mode => 'Running Mode';
+
+  @override
+  String get hub_monitor_connected_servers => 'Connected Servers';
+
+  @override
+  String get hub_monitor_available_tools => 'Available Tools';
+
+  @override
+  String get hub_monitor_service_address => 'Service Address';
+
+  @override
+  String get hub_monitor_not_running => 'Hub service is not running';
+
+  @override
+  String get hub_monitor_debug_info => 'Debug Info';
+
+  @override
+  String get hub_monitor_server_statistics => 'Server Statistics';
+
+  @override
+  String get hub_monitor_connected_servers_list => 'Connected Servers';
+
+  @override
+  String get hub_monitor_system_info => 'System Information';
+
+  @override
+  String get hub_monitor_unknown => 'Unknown';
+
+  @override
+  String get hub_monitor_count_unit => ' servers';
+
+  @override
+  String get hub_monitor_tools_unit => ' tools';
+
+  @override
+  String get servers_quick_actions => 'Quick Actions';
+
+  @override
+  String get servers_search_hint => 'Search servers...';
+
+  @override
+  String get servers_description_hint =>
+      'MCP servers added through installation wizard';
+
+  @override
+  String get servers_status_running => 'Running';
+
+  @override
+  String get servers_status_stopped => 'Stopped';
+
+  @override
+  String get servers_status_starting => 'Starting';
+
+  @override
+  String get servers_status_stopping => 'Stopping';
+
+  @override
+  String get servers_status_error => 'Error';
+
+  @override
+  String get servers_status_installing => 'Installing';
+
+  @override
+  String get servers_status_uninstalling => 'Uninstalling';
+
+  @override
+  String get servers_status_installed => 'Installed';
+
+  @override
+  String get servers_status_not_installed => 'Not Installed';
+
+  @override
+  String get servers_status_unknown => 'Unknown';
+
+  @override
+  String get servers_more_options => 'More Options';
+
+  @override
+  String get servers_no_servers => 'No servers yet';
+
+  @override
+  String get servers_no_servers_found => 'No matching servers found';
+
+  @override
+  String get servers_add_server_hint =>
+      'Click the floating button to start adding servers';
+
+  @override
+  String get servers_load_error => 'Load failed';
+
+  @override
+  String get servers_retry => 'Retry';
+
+  @override
+  String servers_starting_message(String serverName) {
+    return 'Starting server: $serverName...';
+  }
+
+  @override
+  String servers_stopping_message(String serverName) {
+    return 'Stopping server: $serverName...';
+  }
+
+  @override
+  String servers_restarting_message(String serverName) {
+    return 'Restarting server: $serverName...';
+  }
 }

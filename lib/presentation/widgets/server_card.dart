@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:convert';
 import '../../core/models/mcp_server.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../providers/servers_provider.dart';
 import '../themes/app_theme.dart';
 
@@ -24,6 +25,7 @@ class ServerCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Card(
@@ -128,7 +130,7 @@ class ServerCard extends ConsumerWidget {
                         ),
                         const SizedBox(width: 4),
                         Text(
-                          _getStatusText(server.status),
+                          _getStatusText(server.status, l10n),
                           style: TextStyle(
                             color: _getStatusColor(server.status),
                             fontWeight: FontWeight.w500,
@@ -147,49 +149,49 @@ class ServerCard extends ConsumerWidget {
                         IconButton(
                           icon: const Icon(Icons.play_arrow),
                           onPressed: onStart,
-                          tooltip: '启动',
+                          tooltip: l10n.servers_start,
                           iconSize: 20,
                         ),
                       if (server.status == McpServerStatus.running) ...[
                         IconButton(
                           icon: const Icon(Icons.refresh),
                           onPressed: onRestart,
-                          tooltip: '重启',
+                          tooltip: l10n.servers_restart,
                           iconSize: 20,
                         ),
                         IconButton(
                           icon: const Icon(Icons.stop),
                           onPressed: onStop,
-                          tooltip: '停止',
+                          tooltip: l10n.servers_stop,
                           iconSize: 20,
                         ),
                       ],
                       PopupMenuButton<String>(
                         icon: const Icon(Icons.more_vert, size: 20),
-                        tooltip: '更多选项',
-                        onSelected: (value) => _handleMenuSelection(context, ref, value),
+                        tooltip: l10n.servers_more_options,
+                        onSelected: (value) => _handleMenuSelection(context, ref, value, l10n),
                         itemBuilder: (context) => [
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'details',
                             child: ListTile(
-                              leading: Icon(Icons.info),
-                              title: Text('查看详情'),
+                              leading: const Icon(Icons.info),
+                              title: Text(l10n.servers_view_details),
                               contentPadding: EdgeInsets.zero,
                             ),
                           ),
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'show_config',
                             child: ListTile(
-                              leading: Icon(Icons.code),
-                              title: Text('显示配置'),
+                              leading: const Icon(Icons.code),
+                              title: Text(l10n.servers_show_config),
                               contentPadding: EdgeInsets.zero,
                             ),
                           ),
-                          const PopupMenuItem(
+                          PopupMenuItem(
                             value: 'delete',
                             child: ListTile(
-                              leading: Icon(Icons.delete),
-                              title: Text('删除服务器'),
+                              leading: const Icon(Icons.delete),
+                              title: Text(l10n.servers_delete_server),
                               contentPadding: EdgeInsets.zero,
                             ),
                           ),
@@ -268,28 +270,28 @@ class ServerCard extends ConsumerWidget {
     }
   }
 
-  String _getStatusText(McpServerStatus status) {
+  String _getStatusText(McpServerStatus status, AppLocalizations l10n) {
     switch (status) {
       case McpServerStatus.running:
-        return '运行中';
+        return l10n.servers_status_running;
       case McpServerStatus.stopped:
-        return '已停止';
+        return l10n.servers_status_stopped;
       case McpServerStatus.starting:
-        return '启动中';
+        return l10n.servers_status_starting;
       case McpServerStatus.stopping:
-        return '停止中';
+        return l10n.servers_status_stopping;
       case McpServerStatus.error:
-        return '错误';
+        return l10n.servers_status_error;
       case McpServerStatus.installing:
-        return '安装中';
+        return l10n.servers_status_installing;
       case McpServerStatus.uninstalling:
-        return '卸载中';
+        return l10n.servers_status_uninstalling;
       case McpServerStatus.installed:
-        return '已安装';
+        return l10n.servers_status_installed;
       case McpServerStatus.notInstalled:
-        return '未安装';
+        return l10n.servers_status_not_installed;
       default:
-        return '未知';
+        return l10n.servers_status_unknown;
     }
   }
 
@@ -322,25 +324,25 @@ class ServerCard extends ConsumerWidget {
     }
   }
 
-  void _handleMenuSelection(BuildContext context, WidgetRef ref, String value) {
+  void _handleMenuSelection(BuildContext context, WidgetRef ref, String value, AppLocalizations l10n) {
     switch (value) {
       case 'details':
-        _showServerDetails(context);
+        _showServerDetails(context, l10n);
         break;
       case 'show_config':
-        _showServerConfig(context);
+        _showServerConfig(context, l10n);
         break;
       case 'delete':
-        _confirmDelete(context, ref);
+        _confirmDelete(context, ref, l10n);
         break;
     }
   }
 
-  void _showServerDetails(BuildContext context) {
+  void _showServerDetails(BuildContext context, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Text('服务器详情 - ${server.name}'),
+        title: Text(l10n.server_card_details_title(server.name)),
         content: SingleChildScrollView(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -348,7 +350,7 @@ class ServerCard extends ConsumerWidget {
             children: [
               _buildDetailRow('名称', server.name),
               _buildDetailRow('描述', server.description ?? '无'),
-              _buildDetailRow('状态', _getStatusText(server.status)),
+              _buildDetailRow('状态', _getStatusText(server.status, l10n)),
               _buildDetailRow('安装类型', server.installType.toString().split('.').last),
               _buildDetailRow('命令', server.command ?? '无'),
               _buildDetailRow('参数', server.args?.join(' ') ?? '无'),
@@ -362,7 +364,7 @@ class ServerCard extends ConsumerWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('关闭'),
+            child: Text(l10n.common_close),
           ),
         ],
       ),
@@ -390,7 +392,7 @@ class ServerCard extends ConsumerWidget {
     );
   }
 
-  void _showServerConfig(BuildContext context) {
+  void _showServerConfig(BuildContext context, AppLocalizations l10n) {
     // 构建服务器配置的 JSON 格式
     final config = {
       'mcpServers': {
@@ -479,7 +481,7 @@ class ServerCard extends ConsumerWidget {
                       }
                     },
                     icon: const Icon(Icons.copy, size: 16),
-                    label: const Text('复制'),
+                    label: Text(l10n.common_copy),
                   ),
                 ],
               ),
@@ -490,16 +492,16 @@ class ServerCard extends ConsumerWidget {
     );
   }
 
-  void _confirmDelete(BuildContext context, WidgetRef ref) {
+  void _confirmDelete(BuildContext context, WidgetRef ref, AppLocalizations l10n) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('确认删除'),
+        title: Text(l10n.server_card_confirm_delete_title),
         content: Text('确定要删除服务器 "${server.name}" 吗？此操作不可撤销。'),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
+            child: Text(l10n.common_cancel),
           ),
           ElevatedButton(
             onPressed: () async {

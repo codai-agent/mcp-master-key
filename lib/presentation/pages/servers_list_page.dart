@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/models/mcp_server.dart';
-import '../../presentation/providers/servers_provider.dart';
+import '../../infrastructure/repositories/mcp_server_repository.dart';
+import '../../business/managers/mcp_process_manager.dart';
+import '../../l10n/generated/app_localizations.dart';
+import '../providers/servers_provider.dart';
 import '../widgets/server_card.dart';
 import 'installation_wizard_page.dart';
 
@@ -21,11 +24,12 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final serversAsync = ref.watch(serversListProvider);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MCP 服务器'),
+        title: Text(l10n.servers_title),
         automaticallyImplyLeading: false,
         actions: [
           IconButton(
@@ -48,7 +52,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                   children: [
                     Icon(Icons.flash_on, color: Theme.of(context).primaryColor, size: 20),
                     const SizedBox(width: 8),
-                    const Text('快速操作', style: TextStyle(fontWeight: FontWeight.w500)),
+                    Text(l10n.servers_quick_actions, style: TextStyle(fontWeight: FontWeight.w500)),
                     const Spacer(),
                     ElevatedButton.icon(
                       onPressed: () async {
@@ -62,7 +66,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                         }
                       },
                       icon: const Icon(Icons.download, size: 18),
-                      label: const Text('安装MCP服务器'),
+                      label: Text(l10n.servers_install),
                     ),
 
                   ],
@@ -78,8 +82,8 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
               children: [
                 Expanded(
                   child: TextField(
-                    decoration: const InputDecoration(
-                      hintText: '搜索服务器...',
+                    decoration: InputDecoration(
+                      hintText: l10n.servers_search_hint,
                       prefixIcon: Icon(Icons.search),
                       border: OutlineInputBorder(),
                       contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -95,10 +99,10 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                 const SizedBox(width: 8),
                 DropdownButton<String>(
                   value: _sortBy,
-                  items: const [
-                    DropdownMenuItem(value: 'name', child: Text('名称')),
-                    DropdownMenuItem(value: 'status', child: Text('状态')),
-                    DropdownMenuItem(value: 'created', child: Text('时间')),
+                  items: [
+                    DropdownMenuItem(value: 'name', child: Text(l10n.servers_sort_by_name)),
+                    DropdownMenuItem(value: 'status', child: Text(l10n.servers_sort_by_status)),
+                    DropdownMenuItem(value: 'created', child: Text(l10n.servers_sort_by_created)),
                   ],
                   onChanged: (value) {
                     if (value != null) {
@@ -138,14 +142,14 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                         ),
                         const SizedBox(height: 16),
                         Text(
-                          _searchQuery.isEmpty ? '暂无服务器' : '未找到匹配的服务器',
+                          _searchQuery.isEmpty ? l10n.servers_no_servers : l10n.servers_no_servers_found,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: Colors.grey[600],
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '点击浮动按钮开始添加服务器',
+                          l10n.servers_add_server_hint,
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.grey[500],
                           ),
@@ -164,9 +168,9 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                       padding: const EdgeInsets.only(bottom: 8),
                       child: ServerCard(
                         server: server,
-                        onStart: () => _startServer(server),
-                        onStop: () => _stopServer(server),
-                        onRestart: () => _restartServer(server),
+                        onStart: () => _startServer(server, l10n),
+                        onStop: () => _stopServer(server, l10n),
+                        onRestart: () => _restartServer(server, l10n),
                         onTap: () => _viewServerDetails(server),
                       ),
                     );
@@ -185,7 +189,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      '加载失败',
+                      l10n.servers_load_error,
                       style: Theme.of(context).textTheme.titleMedium,
                     ),
                     const SizedBox(height: 8),
@@ -201,7 +205,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                       onPressed: () {
                         ref.refresh(serversListProvider);
                       },
-                      child: const Text('重试'),
+                      child: Text(l10n.servers_retry),
                     ),
                   ],
                 ),
@@ -264,7 +268,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
     return filtered;
   }
 
-  void _startServer(McpServer server) async {
+  void _startServer(McpServer server, AppLocalizations l10n) async {
     try {
       // 立即显示启动中状态
       ScaffoldMessenger.of(context).showSnackBar(
@@ -277,7 +281,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
               ),
               const SizedBox(width: 12),
-              Text('正在启动服务器: ${server.name}...'),
+              Text(l10n.servers_starting_message(server.name)),
             ],
           ),
           duration: const Duration(seconds: 30), // 延长显示时间
@@ -305,7 +309,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
             children: [
               const Icon(Icons.rocket_launch, color: Colors.white),
               const SizedBox(width: 12),
-              Text('正在启动服务器: ${server.name}'),
+              Text(l10n.servers_starting_message(server.name)),
             ],
           ),
           backgroundColor: Colors.blue,
@@ -322,7 +326,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
             children: [
               const Icon(Icons.error, color: Colors.white),
               const SizedBox(width: 12),
-              Expanded(child: Text('启动失败: ${e.toString()}')),
+              Expanded(child: Text(l10n.servers_start_failed(e.toString()))),
             ],
           ),
           backgroundColor: Colors.red,
@@ -334,7 +338,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
     }
   }
 
-  void _stopServer(McpServer server) async {
+  void _stopServer(McpServer server, AppLocalizations l10n) async {
     try {
       // 立即显示停止中状态
       ScaffoldMessenger.of(context).showSnackBar(
@@ -347,7 +351,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                 child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
               ),
               const SizedBox(width: 12),
-              Text('正在停止服务器: ${server.name}...'),
+              Text(l10n.servers_stopping_message(server.name)),
             ],
           ),
           duration: const Duration(seconds: 30),
@@ -375,7 +379,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
             children: [
               const Icon(Icons.stop_circle, color: Colors.white),
               const SizedBox(width: 12),
-              Text('正在停止服务器: ${server.name}'),
+              Text(l10n.servers_stopping_message(server.name)),
             ],
           ),
           backgroundColor: Colors.orange,
@@ -392,7 +396,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
             children: [
               const Icon(Icons.error, color: Colors.white),
               const SizedBox(width: 12),
-              Expanded(child: Text('停止失败: ${e.toString()}')),
+              Expanded(child: Text(l10n.servers_stop_failed(e.toString()))),
             ],
           ),
           backgroundColor: Colors.red,
@@ -404,11 +408,11 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
     }
   }
 
-  void _restartServer(McpServer server) async {
+  void _restartServer(McpServer server, AppLocalizations l10n) async {
     try {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('正在重启服务器: ${server.name}'),
+          content: Text(l10n.servers_restarting_message(server.name)),
           duration: const Duration(seconds: 2),
         ),
       );
