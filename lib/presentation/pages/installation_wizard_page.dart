@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import '../../business/services/package_manager_service.dart';
 import '../../business/services/mcp_server_service.dart';
+import '../../business/parsers/mcp_config_parser.dart';
 import '../../core/models/mcp_server.dart';
 import '../../infrastructure/runtime/runtime_manager.dart';
 import '../widgets/json_config_editor.dart';
+import 'home_page.dart';
 
 /// 安装向导页面
 class InstallationWizardPage extends StatefulWidget {
@@ -1098,6 +1100,10 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
       });
       
       if (result.success) {
+        // 解析连接类型
+        final configParser = McpConfigParser.instance;
+        final connectionType = configParser.parseConnectionType(serverConfig);
+        
         // 只有在包安装成功后才添加到服务器列表，并设置状态为已安装
         await mcpServerService.addServer(
           name: _nameController.text.isNotEmpty 
@@ -1107,6 +1113,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
             ? _descriptionController.text
             : '通过安装向导添加的MCP服务器',
           installType: installType,
+          connectionType: connectionType,  // 使用解析的连接类型
           command: serverConfig['command'],
           args: args,
           env: Map<String, String>.from(serverConfig['env'] ?? {}),
@@ -1162,8 +1169,16 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   }
 
   void _finishWizard() {
-    // 返回true表示安装成功，需要刷新服务器列表
-    Navigator.of(context).pop(_installationSuccess);
+    // 检查是否是从导航推送进来的（有返回按钮）
+    if (Navigator.of(context).canPop()) {
+      // 如果可以返回，就返回到上一个页面
+      Navigator.of(context).pop(_installationSuccess);
+    } else {
+      // 如果不能返回，则跳转到主页
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => const HomePage()),
+      );
+    }
   }
 
   @override

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'servers_list_page.dart';
-import 'server_monitor_page.dart';
+import 'hub_monitor_page.dart';
 import 'settings_page.dart';
 import 'installation_wizard_page.dart';
 
@@ -29,7 +29,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     NavigationItem(
       icon: Icons.monitor,
       label: '监控',
-      page: const ServerMonitorPage(serverId: ''),
+      page: const HubMonitorPage(),
     ),
     NavigationItem(
       icon: Icons.settings,

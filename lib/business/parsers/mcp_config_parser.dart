@@ -31,6 +31,7 @@ class McpServerConfig {
   final String? installSource;
   final bool needsUserInput;
   final String? userInputReason;
+  final McpConnectionType connectionType;
 
   McpServerConfig({
     required this.name,
@@ -44,6 +45,7 @@ class McpServerConfig {
     this.installSource,
     this.needsUserInput = false,
     this.userInputReason,
+    this.connectionType = McpConnectionType.stdio, // 默认为stdio
   });
 }
 
@@ -116,12 +118,43 @@ class McpConfigParser {
     }
   }
 
+  /// 解析连接类型，兼容 type 和 transportType 字段
+  McpConnectionType parseConnectionType(Map<String, dynamic> config) {
+    // 优先检查 type 字段
+    String? typeValue = config['type'] as String?;
+    
+    // 如果没有 type 字段，检查 transportType 字段
+    if (typeValue == null) {
+      typeValue = config['transportType'] as String?;
+    }
+    
+    // 如果都没有，默认为 stdio
+    if (typeValue == null) {
+      return McpConnectionType.stdio;
+    }
+    
+    // 解析类型值
+    switch (typeValue.toLowerCase()) {
+      case 'sse':
+        return McpConnectionType.sse;
+      case 'stdio':
+        return McpConnectionType.stdio;
+      default:
+        // 如果是未知类型，默认为 stdio 并打印警告
+        print('Warning: Unknown connection type "$typeValue", defaulting to stdio');
+        return McpConnectionType.stdio;
+    }
+  }
+
   /// 解析单个服务器配置
   McpServerConfig _parseServerConfig(String name, Map<String, dynamic> config) {
     final command = config['command'] as String? ?? '';
     final args = (config['args'] as List<dynamic>?)?.cast<String>() ?? [];
     final env = (config['env'] as Map<String, dynamic>?)?.cast<String, String>() ?? {};
     final workingDirectory = config['cwd'] as String?;
+
+    // 解析连接类型，兼容 type 和 transportType 字段
+    final connectionType = parseConnectionType(config);
 
     // 分析安装策略
     final analysis = _analyzeInstallStrategy(command, args);
@@ -138,6 +171,7 @@ class McpConfigParser {
       installSource: analysis.installSource,
       needsUserInput: analysis.needsUserInput,
       userInputReason: analysis.userInputReason,
+      connectionType: connectionType,
     );
   }
 

@@ -2,15 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:window_manager/window_manager.dart';
 
-import 'infrastructure/runtime/runtime_initializer.dart';
-import 'infrastructure/database/database_service.dart';
-import 'business/services/mcp_server_service.dart';
-import 'business/services/mcp_hub_service.dart';
-import 'business/services/config_service.dart';
-import 'business/managers/mcp_process_manager.dart';
-import 'core/models/mcp_server.dart';
-import 'presentation/pages/home_page.dart';
-
+import 'presentation/pages/splash_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,53 +24,8 @@ void main() async {
     await windowManager.focus();
   });
 
-  // 先启动UI，避免黑屏
+  // 启动应用，使用启动画面处理初始化
   runApp(const ProviderScope(child: McpHubApp()));
-
-  // 🏗️ 在后台初始化服务，避免阻塞UI线程
-  _initializeServicesInBackground();
-}
-
-/// 后台初始化服务，避免阻塞UI线程
-Future<void> _initializeServicesInBackground() async {
-  // 🏗️ 初始化运行时环境
-  print('🏗️ Initializing runtime environment...');
-  try {
-    final runtimeInitializer = RuntimeInitializer.instance;
-    final runtimeSuccess = await runtimeInitializer.initializeAllRuntimes();
-    if (runtimeSuccess) {
-      print('✅ Runtime environment initialized successfully');
-      
-      // 初始化进程管理器
-      final processManager = McpProcessManager.instance;
-      await processManager.initialize();
-      print('✅ Process manager initialized');
-    } else {
-      print('⚠️ Runtime environment initialization failed, some features may not work');
-    }
-  } catch (e) {
-    print('❌ Runtime initialization error: $e');
-  }
-
-  // 💾 初始化数据库
-  print('💾 Initializing database...');
-  try {
-    final dbService = DatabaseService.instance;
-    await dbService.database; // 这会触发数据库初始化
-    print('✅ Database initialized successfully');
-  } catch (e) {
-    print('❌ Database initialization error: $e');
-  }
-
-  // 🌐 启动MCP Hub服务器
-  print('🌐 Starting MCP Hub Server...');
-  try {
-    final hubService = McpHubService.instance;
-    await hubService.startHub();
-    print('✅ MCP Hub Server started successfully');
-  } catch (e) {
-    print('❌ Failed to start MCP Hub Server: $e');
-  }
 }
 
 class McpHubApp extends StatelessWidget {
@@ -92,7 +39,7 @@ class McpHubApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomePage(),
+      home: const SplashPage(),
       debugShowCheckedModeBanner: false,
     );
   }

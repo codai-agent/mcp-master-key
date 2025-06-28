@@ -113,12 +113,12 @@ class McpHubService {
       if (_serverMode == 'streamable') {
         // 启动Streamable模式
         await _startStreamableMode(port);
+        _isRunning = true;
       } else {
         // 启动SSE模式（默认）
         await _startSseMode(port);
+        _isRunning = true;
       }
-
-      _isRunning = true;
       // 加载预配置的子服务器
       _loadPreconfiguredServers();
       
@@ -549,6 +549,43 @@ class McpHubService {
     });
   }
 
+  /// 根据服务器连接类型创建传输层
+  Future<dynamic> _createTransportForServer(
+    models.McpServer server, 
+    String actualCommand, 
+    List<String> actualArgs, 
+    Map<String, String> environment, 
+    String workingDirectory
+  ) async {
+    switch (server.connectionType) {
+      case models.McpConnectionType.stdio:
+        print('🔗 Creating STDIO transport for ${server.name}');
+        final serverParams = StdioServerParameters(
+          command: actualCommand,
+          args: actualArgs,
+          environment: environment,
+          workingDirectory: workingDirectory,
+          stderrMode: ProcessStartMode.normal,
+        );
+        return StdioClientTransport(serverParams);
+        
+      case models.McpConnectionType.sse:
+        print('🌐 Creating SSE transport for ${server.name}');
+        // 对于SSE模式，我们需要服务器的URL
+        // 这里假设服务器在端口上运行，或者从配置中获取URL
+        final port = server.port ?? 3000; // 默认端口
+        final url = 'http://localhost:$port/sse';
+        print('   📡 SSE URL: $url');
+        
+        // 注意：这里需要根据mcp_dart包的实际SSE传输实现来调整
+        // 目前先抛出异常提示需要实现
+        throw UnimplementedError('SSE transport not yet implemented. Please use stdio mode.');
+        
+      default:
+        throw Exception('Unsupported connection type: ${server.connectionType.name}');
+    }
+  }
+
     /// Hub统一启动并连接服务器（一体化操作）
   Future<void> _hubStartServer(models.McpServer server) async {
     try {
@@ -575,18 +612,10 @@ class McpHubService {
       print('   - Args: ${actualArgs.join(' ')}');
       print('   - Working directory: $workingDirectory');
       print('   - Environment variables: ${environment.length}');
+      print('   - Connection type: ${server.connectionType.name}');
 
-      // 创建StdioServerParameters
-      final serverParams = StdioServerParameters(
-        command: actualCommand,
-        args: actualArgs,
-        environment: environment,
-        workingDirectory: workingDirectory,
-        stderrMode: ProcessStartMode.normal,
-      );
-
-      // 创建StdioClientTransport（一体化启动+连接）
-      final transport = StdioClientTransport(serverParams);
+      // 根据连接类型创建不同的传输层
+      final transport = await _createTransportForServer(server, actualCommand, actualArgs, environment, workingDirectory);
 
       // 创建MCP客户端
       final client = Client(
@@ -1620,13 +1649,32 @@ class McpHubService {
 
   /// 获取服务器状态
   Map<String, dynamic> getStatus() {
-    if (!_isRunning || _httpServer == null) {
+    // 检查两种模式的运行状态
+    bool isActuallyRunning = false;
+    
+    if (_serverMode == 'streamable') {
+      // Streamable模式：检查_isRunning和streamableHub状态
+      isActuallyRunning = _isRunning && _streamableHub != null && _streamableHub!.isRunning;
+    } else {
+      // SSE模式：检查_isRunning和httpServer状态
+      isActuallyRunning = _isRunning && _httpServer != null;
+    }
+    
+    if (!isActuallyRunning) {
       return {
         'running': false,
         'port': null,
         'connected_servers': 0,
         'total_tools': 0,
         'total_resources': 0,
+        'server_mode': _serverMode,
+        'debug_info': {
+          '_isRunning': _isRunning,
+          '_httpServer_exists': _httpServer != null,
+          '_streamableHub_exists': _streamableHub != null,
+          '_streamableHub_running': _streamableHub?.isRunning ?? false,
+          'mode_check': _serverMode == 'streamable' ? 'streamable_mode' : 'sse_mode',
+        },
       };
     }
 
@@ -1643,6 +1691,7 @@ class McpHubService {
       'sse_endpoint': 'http://localhost:$_port/sse',
       'health_endpoint': 'http://localhost:$_port/health',
       'protocol_version': latestProtocolVersion,
+      'server_mode': _serverMode,
       'child_servers': _childServers.values.map((s) => s.toJson()).toList(),
     };
   }

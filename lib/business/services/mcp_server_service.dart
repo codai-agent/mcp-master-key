@@ -40,6 +40,7 @@ class McpServerService {
     String? workingDirectory,
     String? installSource,
     bool autoStart = false,
+    models.McpConnectionType connectionType = models.McpConnectionType.stdio,
   }) async {
     print('📝 Adding new server: $name');
     print('   📋 Original command: $command');
@@ -60,6 +61,7 @@ class McpServerService {
       name: name,
       description: description,
       installType: installType,
+      connectionType: connectionType,  // 使用解析的连接类型
       command: resolvedConfig.command,  // 使用解析后的完整路径
       args: resolvedConfig.args,        // 使用解析后的参数
       env: resolvedConfig.env,          // 使用解析后的环境变量
