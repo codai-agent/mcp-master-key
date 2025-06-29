@@ -16,6 +16,60 @@
 
 ---
 
+## ⚡ 快速开始
+
+### **方式一：下载预构建版本（推荐）**
+1. 访问 [Releases页面](https://github.com/codai-agent/mcp-master-key/releases)
+2. 下载适合您平台的安装包：
+   - **Windows**: `mcphub-windows-x64.zip`
+   - **macOS**: `mcphub-macos-arm64.dmg` (Apple Silicon) 或 `mcphub-macos-x64.dmg` (Intel)
+   - **Linux**: `mcphub-linux-x64.tar.gz`
+3. 安装并运行应用程序
+
+### **方式二：从源码构建**
+1. **克隆仓库**：
+   ```bash
+   git clone https://github.com/codai-agent/mcp-master-key.git
+   cd mcp-master-key
+   ```
+
+2. **下载平台运行时**：
+   - 前往 [Releases页面](https://github.com/codai-agent/mcp-master-key/releases)
+   - 下载平台对应的运行时文件：
+     - `nodejs.zip` - Node.js运行时环境
+     - `python.zip` - Python运行时环境
+   - 将它们放置到 `assets/runtimes/` 目录中：
+     ```
+     assets/
+     └── runtimes/
+         ├── nodejs.zip
+         └── python.zip
+     ```
+
+3. **构建应用程序**：
+   ```bash
+   # macOS平台
+   flutter build macos --debug
+   
+   # Windows平台
+   flutter build windows --debug
+   
+   # Linux平台
+   flutter build linux --debug
+   ```
+
+4. **运行应用程序**：
+   - 构建完成的应用程序将位于 `build/` 目录中
+   - 导航到对应平台的构建文件夹并运行可执行文件
+
+### **系统要求**
+- **操作系统**: Windows 10/11、macOS 10.14+ 或 Linux (推荐 Ubuntu 18.04+)
+- **内存**: 最低 4GB RAM，推荐 8GB
+- **存储空间**: 2GB 可用空间
+- **网络**: 需要互联网连接以下载 MCP 服务器
+
+---
+
 ## 🚀 核心功能
 <img width="1200" alt="ui" src="https://github.com/user-attachments/assets/1ec55933-ed7a-44cc-b3d7-77cd8e880e3c" />
 

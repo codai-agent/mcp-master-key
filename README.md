@@ -16,6 +16,60 @@
 
 ---
 
+## ⚡ Quick Start
+
+### **Option 1: Download Pre-built Release (Recommended)**
+1. Visit the [Releases page](https://github.com/codai-agent/mcp-master-key/releases)
+2. Download the appropriate package for your platform:
+   - **Windows**: `mcphub-windows-x64.zip`
+   - **macOS**: `mcphub-macos-arm64.dmg` (Apple Silicon) or `mcphub-macos-x64.dmg` (Intel)
+   - **Linux**: `mcphub-linux-x64.tar.gz`
+3. Install and run the application
+
+### **Option 2: Build from Source**
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/codai-agent/mcp-master-key.git
+   cd mcp-master-key
+   ```
+
+2. **Download platform runtimes**:
+   - Go to the [Releases page](https://github.com/codai-agent/mcp-master-key/releases)
+   - Download the platform-specific runtime files:
+     - `nodejs.zip` - Node.js runtime environment
+     - `python.zip` - Python runtime environment
+   - Place them in the `assets/runtimes/` directory:
+     ```
+     assets/
+     └── runtimes/
+         ├── nodejs.zip
+         └── python.zip
+     ```
+
+3. **Build the application**:
+   ```bash
+   # For macOS
+   flutter build macos --debug
+   
+   # For Windows
+   flutter build windows --debug
+   
+   # For Linux
+   flutter build linux --debug
+   ```
+
+4. **Run the application**:
+   - The built application will be available in the `build/` directory
+   - Navigate to the platform-specific build folder and run the executable
+
+### **System Requirements**
+- **Operating System**: Windows 10/11, macOS 10.14+, or Linux (Ubuntu 18.04+ recommended)
+- **Memory**: 4GB RAM minimum, 8GB recommended
+- **Storage**: 2GB available space
+- **Network**: Internet connection for downloading MCP servers
+
+---
+
 ## 🚀 Key Features
 <img width="1200" alt="11" src="https://github.com/user-attachments/assets/8abd4f57-cc1f-4a97-9d7a-8cf03b9aec77" />
 
