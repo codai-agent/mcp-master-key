@@ -625,12 +625,33 @@ class McpProcessManager {
           print('   📦 Using direct Node.js execution with args: ${args.join(' ')}');
           return args;
         } else {
-          // 其他平台保持原有的Node.js spawn方式
-          final args = [
-            '-e', 
-            'require("child_process").spawn("${server.installSource}", process.argv.slice(1), {stdio: "inherit"})'
-          ];
-          print('   📦 Using Node.js spawn on non-Windows with args: ${args.join(' ')}');
+          // 其他平台：恢复使用Node.js spawn方式（更好的兼容性）
+          await _ensureNpxPackageInstalled(server);
+          
+          // 使用Node.js spawn方式，这是npm生态系统的标准做法
+          // 确保在正确的工作目录下spawn，这样可以找到bin目录中的软链接
+          final workingDir = await getServerWorkingDirectory(server);
+          final binDir = path.join(workingDir, 'bin');
+          
+          // 从包名中提取可执行文件名
+          // 对于@wopal/mcp-server-hotnews，可执行文件名通常是mcp-server-hotnews
+          String executableName = server.installSource!;
+          if (executableName.contains('/')) {
+            // 对于scoped包（如@wopal/mcp-server-hotnews），通常可执行文件名是包名的后半部分
+            executableName = executableName.split('/').last;
+          }
+          
+          // 构建JavaScript代码，确保路径正确转义
+          final jsCode = '''
+process.chdir("${workingDir.replaceAll('\\', '\\\\')}");
+process.env.PATH = "${binDir.replaceAll('\\', '\\\\')}:" + (process.env.PATH || "");
+require("child_process").spawn("$executableName", process.argv.slice(1), {stdio: "inherit"});
+'''.trim();
+          
+          final args = ['-e', jsCode];
+          print('   📦 Using Node.js spawn method with enhanced PATH:');
+          print('   📋 Executable name: $executableName (from ${server.installSource})');
+          print('   📋 JavaScript code: ${jsCode.replaceAll('\n', '; ')}');
           return args;
         }
 
