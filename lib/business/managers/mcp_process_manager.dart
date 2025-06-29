@@ -562,10 +562,17 @@ class McpProcessManager {
     
     switch (server.installType) {
       case McpInstallType.npx:
-        // 对于NPX服务器，我们使用Node.js直接执行，避免shell依赖
-        final nodeExe = await _runtimeManager.getNodeExecutable();
-        print('   🟢 Using Node.js direct execution: $nodeExe');
-        return nodeExe;
+        if (Platform.isWindows) {
+          // Windows上使用node直接执行
+          final nodeExe = await _runtimeManager.getNodeExecutable();
+          print('   🟢 Using Node.js on Windows: $nodeExe');
+          return nodeExe;
+        } else {
+          // 其他平台使用Node.js
+          final nodeExe = await _runtimeManager.getNodeExecutable();
+          print('   🟢 Using Node.js on non-Windows: $nodeExe');
+          return nodeExe;
+        }
       
       case McpInstallType.uvx:
         // 🔧 智能UVX处理：检查是否应该直接使用Python
@@ -603,33 +610,29 @@ class McpProcessManager {
     
     switch (server.installType) {
       case McpInstallType.npx:
-        // 对于NPX服务器，我们需要：
-        // 1. 先安装包到全局或本地
-        // 2. 然后直接用node执行包的入口文件
-        
-        if (server.installSource != null) {
-          // 构建npx包的直接执行路径
-          final packageName = server.installSource!;
-          print('   📦 Preparing to execute NPX package: $packageName');
-          
-          // 首先尝试安装包
+        if (Platform.isWindows) {
+          // Windows上使用npm exec命令
+          // 首先确保包已安装
           await _ensureNpxPackageInstalled(server);
           
-          // 获取包的安装路径和入口文件
-          final packagePath = await _getNpxPackagePath(packageName);
-          if (packagePath != null) {
-            print('   🎯 Using direct package execution: $packagePath');
-            return [packagePath];
-          }
+          // 在Windows上，我们需要确保包在当前目录也安装了
+          final workingDir = await getServerWorkingDirectory(server);
+          await _ensureLocalPackageInstalled(server.installSource!, workingDir);
+          
+          // 修改为使用node直接运行包的入口文件
+          final packageDir = path.join(workingDir, 'node_modules', server.installSource!);
+          final args = [path.join(packageDir, 'build', 'index.js')];
+          print('   📦 Using direct Node.js execution with args: ${args.join(' ')}');
+          return args;
+        } else {
+          // 其他平台保持原有的Node.js spawn方式
+          final args = [
+            '-e', 
+            'require("child_process").spawn("${server.installSource}", process.argv.slice(1), {stdio: "inherit"})'
+          ];
+          print('   📦 Using Node.js spawn on non-Windows with args: ${args.join(' ')}');
+          return args;
         }
-        
-        // 如果无法直接执行，回退到npm exec但使用更简单的方式
-        final args = [
-          '-e', 
-          'require("child_process").spawn("${server.installSource}", process.argv.slice(1), {stdio: "inherit"})'
-        ];
-        print('   📦 Using Node.js spawn fallback with args: ${args.join(' ')}');
-        return args;
 
       case McpInstallType.uvx:
         // 🔧 智能UVX参数构建：检查是否应该直接使用Python
@@ -656,6 +659,65 @@ class McpProcessManager {
     }
   }
 
+  /// 确保包在本地目录也安装了（Windows特定）
+  Future<void> _ensureLocalPackageInstalled(String packageName, String workingDir) async {
+    print('   📦 Ensuring local package installation in: $workingDir');
+    
+    try {
+      final npmExe = await _runtimeManager.getNpmExecutable();
+      // 创建一个临时的McpServer对象用于环境变量
+      final now = DateTime.now();
+      final tempServer = McpServer(
+        id: 'temp',
+        name: 'temp',
+        command: 'npm',
+        args: [],
+        installType: McpInstallType.npx,
+        workingDirectory: workingDir,
+        createdAt: now,
+        updatedAt: now,
+      );
+      final env = await getServerEnvironment(tempServer);
+      
+      // 创建package.json如果不存在
+      final packageJsonFile = File(path.join(workingDir, 'package.json'));
+      if (!await packageJsonFile.exists()) {
+        final packageJson = {
+          'name': 'mcp-server-local',
+          'version': '1.0.0',
+          'private': true,
+          'dependencies': {}
+        };
+        await packageJsonFile.writeAsString(jsonEncode(packageJson));
+      }
+      
+      // 安装包到本地目录
+      final result = await Process.run(
+        npmExe,
+        ['install', '--save', packageName, '@modelcontextprotocol/sdk'],
+        workingDirectory: workingDir,
+        environment: env,
+      );
+      
+      if (result.exitCode == 0) {
+        print('   ✅ Package installed locally: $packageName');
+        
+        // 确保依赖项正确安装
+        print('   📦 Installing peer dependencies...');
+        await Process.run(
+          npmExe,
+          ['install', '--save-dev', '@modelcontextprotocol/sdk'],
+          workingDirectory: path.join(workingDir, 'node_modules', packageName),
+          environment: env,
+        );
+      } else {
+        print('   ⚠️ Local package installation warning: ${result.stderr}');
+      }
+    } catch (e) {
+      print('   ⚠️ Error installing local package: $e');
+    }
+  }
+
   /// 确保NPX包已安装
   Future<void> _ensureNpxPackageInstalled(McpServer server) async {
     if (server.installSource == null) return;
@@ -667,31 +729,62 @@ class McpProcessManager {
       final nodeExe = await _runtimeManager.getNodeExecutable();
       final npmExe = await _runtimeManager.getNpmExecutable();
       final workingDir = await getServerWorkingDirectory(server);
+      final env = await getServerEnvironment(server);
       
-      // 检查包是否已经安装
-      final isInstalled = await _isNpxPackageInstalled(packageName);
-      if (isInstalled) {
-        print('   ✅ Package already installed: $packageName');
-        return;
-      }
-      
-      print('   📥 Installing package globally: $packageName');
-      
-      // 使用npm全局安装包
-      final result = await Process.run(
-        npmExe,
-        ['install', '-g', packageName],
-        workingDirectory: workingDir,
-        environment: await getServerEnvironment(server),
-      );
-      
-      if (result.exitCode == 0) {
-        print('   ✅ Package installed successfully: $packageName');
+      if (Platform.isWindows) {
+        // Windows上需要特殊处理
+        print('   📥 Installing package on Windows...');
+        
+        // 1. 清理全局安装
+        await Process.run(
+          npmExe,
+          ['uninstall', '-g', packageName],
+          workingDirectory: workingDir,
+          environment: env,
+        );
+        
+        // 2. 重新全局安装
+        final result = await Process.run(
+          npmExe,
+          ['install', '-g', '--no-package-lock', packageName],
+          workingDirectory: workingDir,
+          environment: env,
+        );
+        
+        if (result.exitCode == 0) {
+          print('   ✅ Package installed globally: $packageName');
+        } else {
+          print('   ⚠️ Global package installation failed: ${result.stderr}');
+          throw Exception('Failed to install package globally: ${result.stderr}');
+        }
       } else {
-        print('   ⚠️ Package installation failed: ${result.stderr}');
+        // 其他平台保持原有逻辑
+        // 检查包是否已经安装
+        final isInstalled = await _isNpxPackageInstalled(packageName);
+        if (isInstalled) {
+          print('   ✅ Package already installed: $packageName');
+          return;
+        }
+        
+        print('   📥 Installing package globally: $packageName');
+        
+        final result = await Process.run(
+          npmExe,
+          ['install', '-g', packageName],
+          workingDirectory: workingDir,
+          environment: env,
+        );
+        
+        if (result.exitCode == 0) {
+          print('   ✅ Package installed successfully: $packageName');
+        } else {
+          print('   ⚠️ Package installation failed: ${result.stderr}');
+          throw Exception('Failed to install package: ${result.stderr}');
+        }
       }
     } catch (e) {
       print('   ⚠️ Error installing package: $e');
+      rethrow;
     }
   }
   
@@ -1133,5 +1226,49 @@ class McpProcessManager {
       print('   ❌ Error finding Python package: $e');
       return null;
     }
+  }
+
+  Future<Process> _startNodePackageProcess(String packageName, List<String> args) async {
+    final nodePath = await _runtimeManager.getNodeExecutable();
+    final npmPath = await _runtimeManager.getNpmExecutable();
+    
+    if (Platform.isWindows) {
+      // Windows上使用npm exec来执行包
+      return Process.start(
+        npmPath,
+        ['exec', packageName, ...args],
+        environment: _getNodeEnvironment(),
+        workingDirectory: path.dirname(nodePath),
+      );
+    } else {
+      // 其他平台保持原有的执行方式
+      return Process.start(
+        nodePath,
+        ['-e', 'require("child_process").spawn("$packageName", process.argv.slice(1), {stdio: "inherit"})'],
+        environment: _getNodeEnvironment(),
+        workingDirectory: path.dirname(nodePath),
+      );
+    }
+  }
+
+  Map<String, String> _getNodeEnvironment() {
+    final runtimeBase = _runtimeManager.getRuntimeBasePath();
+    final platform = _runtimeManager.getPlatformString();
+    final nodeBase = path.join(runtimeBase, 'nodejs', platform);
+    
+    final env = {
+      ...Platform.environment,
+      'NODE_PATH': path.join(nodeBase, 'node_modules'),
+      'NPM_CONFIG_PREFIX': nodeBase,
+      'NPM_CONFIG_CACHE': path.join(nodeBase, 'npm-cache'),
+      'NPM_CONFIG_REGISTRY': 'https://registry.npmjs.org/',
+    };
+    
+    if (Platform.isWindows) {
+      // Windows特定的环境变量
+      env['USERPROFILE'] = Platform.environment['USERPROFILE'] ?? '';
+    }
+    
+    return env;
   }
 } 

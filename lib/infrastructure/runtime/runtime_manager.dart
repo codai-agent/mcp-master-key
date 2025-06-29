@@ -332,4 +332,16 @@ class RuntimeManager {
   void reset() {
     _runtimeBasePath = null;
   }
+
+  /// 获取运行时基础路径（同步方法）
+  String getRuntimeBasePath() {
+    if (_runtimeBasePath != null) return _runtimeBasePath!;
+    _runtimeBasePath = PathConstants.getUserRuntimesPath();
+    return _runtimeBasePath!;
+  }
+
+  /// 获取平台标识字符串（如 'windows/x64'）
+  String getPlatformString() {
+    return '${_platformInfo.os}/${_platformInfo.arch}';
+  }
 } 
