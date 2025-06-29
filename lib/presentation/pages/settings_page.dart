@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/system_info_widget.dart';
@@ -7,6 +8,7 @@ import '../themes/app_theme.dart';
 import '../providers/theme_provider.dart';
 import '../providers/locale_provider.dart';
 import '../../l10n/generated/app_localizations.dart';
+import 'package:flutter/foundation.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({Key? key}) : super(key: key);
@@ -342,7 +344,104 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             const SizedBox(height: 16),
             
             // 系统信息
-            const SystemInfoWidget(),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.computer,
+                          color: Theme.of(context).primaryColor,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          '系统信息',
+                          style: Theme.of(context).textTheme.titleMedium,
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 120,
+                          child: Text(
+                            '操作系统:',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Text(
+                            _getOperatingSystemSimple(),
+                            style: const TextStyle(fontFamily: 'monospace'),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 8),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        SizedBox(
+                          width: 120,
+                          child: Text(
+                            '运行时状态:',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.w500,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                            decoration: BoxDecoration(
+                              color: Colors.orange[100],
+                              borderRadius: BorderRadius.circular(16),
+                              border: Border.all(color: Colors.orange, width: 1),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  Icons.construction,
+                                  size: 16,
+                                  color: Colors.orange[700],
+                                ),
+                                const SizedBox(width: 6),
+                                Text(
+                                  '开发中...',
+                                  style: TextStyle(
+                                    color: Colors.orange[700],
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      '详细的系统信息检查功能正在优化中，将在后续版本提供更稳定的体验。',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[600],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             
             const SizedBox(height: 16),
             
@@ -722,5 +821,18 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
 
   Widget _buildSystemInfoWithErrorHandling() {
     return const SystemInfoWidget();
+  }
+
+  String _getOperatingSystemSimple() {
+    try {
+      if (Platform.isWindows) return 'Windows';
+      if (Platform.isMacOS) return 'macOS';
+      if (Platform.isLinux) return 'Linux';
+      if (Platform.isAndroid) return 'Android';
+      if (Platform.isIOS) return 'iOS';
+      return 'Unknown';
+    } catch (e) {
+      return 'Unknown';
+    }
   }
 } 
