@@ -285,8 +285,22 @@ class McpProcessManager {
           '/bin',             // 基本系统工具 (realpath, dirname, etc.)
           '/usr/bin',         // 系统二进制文件
           '/usr/local/bin',   // 本地安装
-          '/opt/homebrew/bin', // Homebrew
+          '/opt/homebrew/bin', // Homebrew (Apple Silicon)
+          '/usr/local/homebrew/bin', // Homebrew (Intel)
         ];
+        
+        // macOS特定：确保系统工具路径优先
+        if (Platform.isMacOS) {
+          // 将系统路径插入到最前面，确保realpath、dirname等基础工具可用
+          final systemPaths = ['/bin', '/usr/bin'];
+          for (final systemPath in systemPaths.reversed) {
+            if (pathComponents.contains(systemPath)) {
+              pathComponents.remove(systemPath);
+            }
+            pathComponents.insert(0, systemPath);
+          }
+          print('   🍎 macOS: Prioritized system paths for basic tools');
+        }
       }
       
       for (final essentialPath in essentialPaths) {
@@ -586,6 +600,12 @@ class McpProcessManager {
           return pythonExe;
         }
         
+        // 🔧 macOS/Linux使用shell包装器来避免PATH问题
+        if (!Platform.isWindows && (server.command == 'uvx' || server.command.endsWith('/uvx'))) {
+          print('   🐚 Using shell wrapper for uvx on macOS/Linux');
+          return '/bin/sh';
+        }
+        
         if (server.command == 'uvx' || server.command.endsWith('/uvx')) {
           final uvxPath = await _runtimeManager.getUvxExecutable();
           print('   ⚡ Using UVX executable: $uvxPath');
@@ -656,7 +676,7 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
         }
 
       case McpInstallType.uvx:
-        // 🔧 智能UVX参数构建：检查是否应该直接使用Python
+        // 🔧 智能UVX参数构建：优先尝试直接Python执行以避免shell脚本问题
         print('   🔍 Checking if should use direct Python args...');
         final shouldUseDirectPython = await _shouldUseDirectPython(server);
         print('   📋 Should use direct Python: $shouldUseDirectPython');
@@ -665,6 +685,19 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
           final pythonModuleArgs = await _buildDirectPythonArgs(server);
           print('   🐍 Using direct Python module execution: ${pythonModuleArgs.join(' ')}');
           return pythonModuleArgs;
+        }
+        
+        // 🔧 macOS/Linux特殊处理：使用shell包装器来确保PATH正确传递
+        if (!Platform.isWindows && (server.command == 'uvx' || server.command.endsWith('/uvx'))) {
+          // 获取uvx的完整路径
+          final uvxPath = await _runtimeManager.getUvxExecutable();
+          // 创建一个shell包装器来确保环境变量正确传递
+          final shellArgs = [
+            '-c',
+            'export PATH="/bin:/usr/bin:\$PATH" && "$uvxPath" ${server.args.join(' ')}'
+          ];
+          print('   🐚 Using shell wrapper for uvx on macOS/Linux: ${shellArgs.join(' ')}');
+          return shellArgs;
         }
         
         if (server.command == 'uvx' || server.command.endsWith('/uvx')) {
