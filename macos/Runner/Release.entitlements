@@ -2,21 +2,48 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<!-- 完全禁用沙盒以支持隔离运行时环境 -->
 	<key>com.apple.security.app-sandbox</key>
+	<false/>
+	
+	<!-- 允许JIT编译（Node.js需要） -->
+	<key>com.apple.security.cs.allow-jit</key>
 	<true/>
-	<key>com.apple.security.cs.allow-dyld-environment-variables</key>
+	
+	<!-- 允许网络服务器 -->
+	<key>com.apple.security.network.server</key>
 	<true/>
-	<key>com.apple.security.cs.allow-unsigned-executable-memory</key>
-	<true/>
-	<key>com.apple.security.cs.disable-library-validation</key>
-	<true/>
-	<key>com.apple.security.files.downloads.read-write</key>
-	<true/>
-	<key>com.apple.security.files.user-selected.read-write</key>
-	<true/>
+	
+	<!-- 允许网络客户端连接 -->
 	<key>com.apple.security.network.client</key>
 	<true/>
-	<key>com.apple.security.network.server</key>
+	
+	<!-- 允许读写用户选择的文件 -->
+	<key>com.apple.security.files.user-selected.read-write</key>
+	<true/>
+	
+	<!-- 允许读写下载文件夹 -->
+	<key>com.apple.security.files.downloads.read-write</key>
+	<true/>
+	
+	<!-- 允许执行外部可执行文件（关键！） -->
+	<key>com.apple.security.cs.allow-unsigned-executable-memory</key>
+	<true/>
+	
+	<!-- 允许动态库加载 -->
+	<key>com.apple.security.cs.allow-dyld-environment-variables</key>
+	<true/>
+	
+	<!-- 禁用库验证（允许加载未签名的库） -->
+	<key>com.apple.security.cs.disable-library-validation</key>
+	<true/>
+	
+	<!-- 禁用运行时签名验证（关键！） -->
+	<key>com.apple.security.cs.disable-executable-page-protection</key>
+	<true/>
+	
+	<!-- 允许调试器附加 -->
+	<key>com.apple.security.cs.debugger</key>
 	<true/>
 </dict>
 </plist>
