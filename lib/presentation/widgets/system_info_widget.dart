@@ -3,11 +3,64 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 /// 系统信息小部件
-class SystemInfoWidget extends ConsumerWidget {
+class SystemInfoWidget extends ConsumerStatefulWidget {
   const SystemInfoWidget({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SystemInfoWidget> createState() => _SystemInfoWidgetState();
+}
+
+class _SystemInfoWidgetState extends ConsumerState<SystemInfoWidget> {
+  // 缓存系统状态，避免重复检查
+  Map<String, bool>? _runtimeStatus;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkRuntimeStatus();
+  }
+
+  Future<void> _checkRuntimeStatus() async {
+    if (!mounted) return;
+    
+    try {
+      final status = <String, bool>{};
+      
+      // 异步检查各个运行时
+      final futures = [
+        _checkPythonAvailableAsync().then((value) => status['Python'] = value),
+        _checkNodeAvailableAsync().then((value) => status['Node.js'] = value),
+        _checkGitAvailableAsync().then((value) => status['Git'] = value),
+        _checkUvAvailableAsync().then((value) => status['UV'] = value),
+      ];
+      
+      await Future.wait(futures);
+      
+      if (mounted) {
+        setState(() {
+          _runtimeStatus = status;
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      print('检查运行时状态出错: $e');
+      if (mounted) {
+        setState(() {
+          _runtimeStatus = {
+            'Python': false,
+            'Node.js': false,
+            'Git': false,
+            'UV': false,
+          };
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16.0),
@@ -34,7 +87,7 @@ class SystemInfoWidget extends ConsumerWidget {
             const SizedBox(height: 8),
             _buildSystemInfoRow('Dart版本', Platform.version.split(' ').first),
             const SizedBox(height: 8),
-            _buildSystemInfoRow('可执行文件路径', Platform.resolvedExecutable),
+            _buildSystemInfoRow('可执行文件路径', _getSafeExecutablePath()),
             const SizedBox(height: 16),
             _buildRuntimeStatus(),
           ],
@@ -61,6 +114,8 @@ class SystemInfoWidget extends ConsumerWidget {
           child: Text(
             value,
             style: const TextStyle(fontFamily: 'monospace'),
+            overflow: TextOverflow.ellipsis,
+            maxLines: 2,
           ),
         ),
       ],
@@ -79,15 +134,21 @@ class SystemInfoWidget extends ConsumerWidget {
           ),
         ),
         const SizedBox(height: 8),
-        Wrap(
-          spacing: 8.0,
-          children: [
-            _buildStatusChip('Python', _checkPythonAvailable()),
-            _buildStatusChip('Node.js', _checkNodeAvailable()),
-            _buildStatusChip('Git', _checkGitAvailable()),
-            _buildStatusChip('UV', _checkUvAvailable()),
-          ],
-        ),
+        if (_isLoading)
+          const Center(
+            child: SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+          )
+        else
+          Wrap(
+            spacing: 8.0,
+            children: _runtimeStatus?.entries
+                .map((entry) => _buildStatusChip(entry.key, entry.value))
+                .toList() ?? [],
+          ),
       ],
     );
   }
@@ -118,20 +179,32 @@ class SystemInfoWidget extends ConsumerWidget {
   }
 
   String _getProcessorArchitecture() {
-    final environment = Platform.environment;
-    final arch = environment['PROCESSOR_ARCHITECTURE'] ?? 
-                 environment['HOSTTYPE'] ?? 
-                 'Unknown';
-    return arch;
+    try {
+      final environment = Platform.environment;
+      final arch = environment['PROCESSOR_ARCHITECTURE'] ?? 
+                   environment['HOSTTYPE'] ?? 
+                   'Unknown';
+      return arch;
+    } catch (e) {
+      return 'Unknown';
+    }
   }
 
-  bool _checkPythonAvailable() {
+  String _getSafeExecutablePath() {
     try {
-      final result = Process.runSync('python', ['--version']);
+      return Platform.resolvedExecutable;
+    } catch (e) {
+      return 'Unknown';
+    }
+  }
+
+  Future<bool> _checkPythonAvailableAsync() async {
+    try {
+      final result = await Process.run('python', ['--version']);
       return result.exitCode == 0;
     } catch (e) {
       try {
-        final result = Process.runSync('python3', ['--version']);
+        final result = await Process.run('python3', ['--version']);
         return result.exitCode == 0;
       } catch (e) {
         return false;
@@ -139,27 +212,27 @@ class SystemInfoWidget extends ConsumerWidget {
     }
   }
 
-  bool _checkNodeAvailable() {
+  Future<bool> _checkNodeAvailableAsync() async {
     try {
-      final result = Process.runSync('node', ['--version']);
+      final result = await Process.run('node', ['--version']);
       return result.exitCode == 0;
     } catch (e) {
       return false;
     }
   }
 
-  bool _checkGitAvailable() {
+  Future<bool> _checkGitAvailableAsync() async {
     try {
-      final result = Process.runSync('git', ['--version']);
+      final result = await Process.run('git', ['--version']);
       return result.exitCode == 0;
     } catch (e) {
       return false;
     }
   }
 
-  bool _checkUvAvailable() {
+  Future<bool> _checkUvAvailableAsync() async {
     try {
-      final result = Process.runSync('uv', ['--version']);
+      final result = await Process.run('uv', ['--version']);
       return result.exitCode == 0;
     } catch (e) {
       return false;
