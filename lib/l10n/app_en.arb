@@ -32,6 +32,8 @@
   "common_next": "Next",
   "common_start_install": "Start Install",
   "common_installing": "Installing...",
+  "tooltip_github": "GitHub Repository",
+  "tooltip_mcp_client": "MCP Client",
   
   "nav_servers": "Server Management",
   "nav_install": "Install Server",

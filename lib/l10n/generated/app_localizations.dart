@@ -248,6 +248,18 @@ abstract class AppLocalizations {
   /// **'Installing...'**
   String get common_installing;
 
+  /// No description provided for @tooltip_github.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Repository'**
+  String get tooltip_github;
+
+  /// No description provided for @tooltip_mcp_client.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP Client'**
+  String get tooltip_mcp_client;
+
   /// No description provided for @nav_servers.
   ///
   /// In en, this message translates to:

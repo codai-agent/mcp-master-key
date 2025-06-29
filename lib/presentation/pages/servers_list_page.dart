@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:process_run/process_run.dart';
+import 'dart:io';
 import '../../core/models/mcp_server.dart';
 import '../../infrastructure/repositories/mcp_server_repository.dart';
 import '../../business/managers/mcp_process_manager.dart';
@@ -32,6 +34,45 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
         title: Text(l10n.servers_title),
         automaticallyImplyLeading: false,
         actions: [
+          // GitHub图标
+          Tooltip(
+            message: l10n.tooltip_github,
+            child: IconButton(
+              icon: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Image.asset(
+                  'assets/images/github.png',
+                  width: 20,
+                  height: 20,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(Icons.code);
+                  },
+                ),
+              ),
+              onPressed: () => _launchUrl('https://github.com/codai-agent/mcp-master-key'),
+            ),
+          ),
+          // CodAI图标
+          Tooltip(
+            message: l10n.tooltip_mcp_client,
+            child: IconButton(
+              icon: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Image.asset(
+                  'assets/images/codai.png',
+                  width: 20,
+                  height: 20,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(Icons.app_registration);
+                  },
+                ),
+              ),
+              onPressed: () => _launchUrl('https://github.com/codai-agent/codai/releases'),
+            ),
+          ),
+          // 刷新图标
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: () {
@@ -447,5 +488,53 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
         builder: (context) => ServerMonitorPage(serverId: server.id),
       ),
     );
+  }
+
+  /// 启动URL
+  Future<void> _launchUrl(String urlString) async {
+    try {
+      // 验证URL格式
+      if (urlString.isEmpty) {
+        throw 'URL不能为空';
+      }
+      
+      ProcessResult result;
+      if (Platform.isMacOS) {
+        result = await run('open', [urlString]);
+      } else if (Platform.isWindows) {
+        result = await run('cmd', ['/c', 'start', '""', urlString]);
+      } else if (Platform.isLinux) {
+        result = await run('xdg-open', [urlString]);
+      } else {
+        throw '不支持的平台: ${Platform.operatingSystem}';
+      }
+      
+      // 检查命令执行结果
+      if (result.exitCode != 0) {
+        final stderr = result.stderr?.toString() ?? '未知错误';
+        throw '命令执行失败 (退出码: ${result.exitCode}): $stderr';
+      }
+      
+      print('✅ 成功打开URL: $urlString');
+      
+    } catch (e) {
+      print('❌ 打开URL失败: $urlString, 错误: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('无法打开链接\n$urlString\n\n错误: ${e.toString()}'),
+            backgroundColor: Colors.red,
+            duration: const Duration(seconds: 4),
+            action: SnackBarAction(
+              label: '复制链接',
+              textColor: Colors.white,
+              onPressed: () {
+                // TODO: 实现复制到剪贴板功能
+              },
+            ),
+          ),
+        );
+      }
+    }
   }
 } 

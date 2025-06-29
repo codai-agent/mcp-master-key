@@ -84,6 +84,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get common_installing => 'Installing...';
 
   @override
+  String get tooltip_github => 'GitHub Repository';
+
+  @override
+  String get tooltip_mcp_client => 'MCP Client';
+
+  @override
   String get nav_servers => 'Server Management';
 
   @override

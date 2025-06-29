@@ -84,6 +84,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get common_installing => '安装中...';
 
   @override
+  String get tooltip_github => 'GitHub 地址';
+
+  @override
+  String get tooltip_mcp_client => 'MCP 客户端';
+
+  @override
   String get nav_servers => '服务器管理';
 
   @override
