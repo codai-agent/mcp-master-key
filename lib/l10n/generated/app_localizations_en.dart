@@ -87,7 +87,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tooltip_github => 'GitHub Repository';
 
   @override
-  String get tooltip_mcp_client => 'MCP Client';
+  String get tooltip_mcp_client => 'MCP Host';
+
+  @override
+  String get tooltip_feedback => 'Community & Feedback';
+
+  @override
+  String get tooltip_refresh => 'Refresh Services';
+
+  @override
+  String get feedback_dialog_title => 'Communication & Feedback';
+
+  @override
+  String get feedback_report_bug => 'Report Bug';
 
   @override
   String get nav_servers => 'Server Management';

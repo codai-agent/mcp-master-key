@@ -28,6 +28,10 @@
   "common_installing": "安装中...",
   "tooltip_github": "GitHub 地址",
   "tooltip_mcp_client": "MCP 客户端",
+  "tooltip_feedback": "交友与反馈",
+  "tooltip_refresh": "刷新服务",
+  "feedback_dialog_title": "交流反馈",
+  "feedback_report_bug": "报告Bug",
   
   "nav_servers": "服务器管理",
   "nav_install": "安装服务器",

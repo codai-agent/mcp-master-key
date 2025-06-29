@@ -257,8 +257,32 @@ abstract class AppLocalizations {
   /// No description provided for @tooltip_mcp_client.
   ///
   /// In en, this message translates to:
-  /// **'MCP Client'**
+  /// **'MCP Host'**
   String get tooltip_mcp_client;
+
+  /// No description provided for @tooltip_feedback.
+  ///
+  /// In en, this message translates to:
+  /// **'Community & Feedback'**
+  String get tooltip_feedback;
+
+  /// No description provided for @tooltip_refresh.
+  ///
+  /// In en, this message translates to:
+  /// **'Refresh Services'**
+  String get tooltip_refresh;
+
+  /// No description provided for @feedback_dialog_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Communication & Feedback'**
+  String get feedback_dialog_title;
+
+  /// No description provided for @feedback_report_bug.
+  ///
+  /// In en, this message translates to:
+  /// **'Report Bug'**
+  String get feedback_report_bug;
 
   /// No description provided for @nav_servers.
   ///

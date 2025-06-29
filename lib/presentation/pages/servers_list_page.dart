@@ -42,8 +42,8 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                 borderRadius: BorderRadius.circular(4),
                 child: Image.asset(
                   'assets/images/github.png',
-                  width: 20,
-                  height: 20,
+                  width: 30,
+                  height: 30,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
                     return const Icon(Icons.code);
@@ -61,8 +61,8 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                 borderRadius: BorderRadius.circular(4),
                 child: Image.asset(
                   'assets/images/codai.png',
-                  width: 20,
-                  height: 20,
+                  width: 30,
+                  height: 30,
                   fit: BoxFit.contain,
                   errorBuilder: (context, error, stackTrace) {
                     return const Icon(Icons.app_registration);
@@ -72,12 +72,45 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
               onPressed: () => _launchUrl('https://github.com/codai-agent/codai/releases'),
             ),
           ),
+          // QQ交流反馈图标
+          Tooltip(
+            message: l10n.tooltip_feedback,
+            child: IconButton(
+              icon: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Image.asset(
+                  'assets/images/qq.png',
+                  width: 30,
+                  height: 30,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(Icons.forum);
+                  },
+                ),
+              ),
+              onPressed: () => _showFeedbackDialog(context, l10n),
+            ),
+          ),
           // 刷新图标
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: () {
-              ref.refresh(serversListProvider);
-            },
+          Tooltip(
+            message: l10n.tooltip_refresh,
+            child: IconButton(
+              icon: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: Image.asset(
+                  'assets/images/refresh.png',
+                  width: 30,
+                  height: 30,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(Icons.refresh);
+                  },
+                ),
+              ),
+              onPressed: () {
+                ref.refresh(serversListProvider);
+              },
+            ),
           ),
         ],
       ),
@@ -536,5 +569,112 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
         );
       }
     }
+  }
+
+  /// 显示交流反馈对话框
+  void _showFeedbackDialog(BuildContext context, AppLocalizations l10n) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          child: Container(
+            width: 400,
+            padding: const EdgeInsets.all(0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // 标题栏
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor.withOpacity(0.1),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(12),
+                      topRight: Radius.circular(12),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        l10n.feedback_dialog_title,
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        icon: const Icon(Icons.close),
+                        iconSize: 20,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                // 内容区域
+                Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    children: [
+                      // QR码图片
+                      Container(
+                        width: 200,
+                        height: 200,
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: Colors.grey.withOpacity(0.3),
+                            width: 1,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: Image.asset(
+                            'assets/images/qr.png',
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return Container(
+                                color: Colors.grey.withOpacity(0.1),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.qr_code,
+                                    size: 80,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      
+                      const SizedBox(height: 24),
+                      
+                      // 报告Bug按钮
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            Navigator.of(context).pop();
+                            _launchUrl('https://github.com/codai-agent/mcp-master-key/issues');
+                          },
+                          icon: const Icon(Icons.bug_report),
+                          label: Text(l10n.feedback_report_bug),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 } 

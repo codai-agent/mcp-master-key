@@ -90,6 +90,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tooltip_mcp_client => 'MCP 客户端';
 
   @override
+  String get tooltip_feedback => '交友与反馈';
+
+  @override
+  String get tooltip_refresh => '刷新服务';
+
+  @override
+  String get feedback_dialog_title => '交流反馈';
+
+  @override
+  String get feedback_report_bug => '报告Bug';
+
+  @override
   String get nav_servers => '服务器管理';
 
   @override

@@ -33,7 +33,11 @@
   "common_start_install": "Start Install",
   "common_installing": "Installing...",
   "tooltip_github": "GitHub Repository",
-  "tooltip_mcp_client": "MCP Client",
+  "tooltip_mcp_client": "MCP Host",
+  "tooltip_feedback": "Community & Feedback",
+  "tooltip_refresh": "Refresh Services",
+  "feedback_dialog_title": "Communication & Feedback",
+  "feedback_report_bug": "Report Bug",
   
   "nav_servers": "Server Management",
   "nav_install": "Install Server",
