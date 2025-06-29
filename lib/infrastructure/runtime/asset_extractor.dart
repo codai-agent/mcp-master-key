@@ -25,13 +25,9 @@ class AssetExtractor {
   /// 提取所有运行时资源
   Future<void> extractAllRuntimes(String targetBasePath) async {
     print('🚀 Starting runtime extraction to: $targetBasePath');
+    print('📱 Platform: ${_platformInfo.os}/${_platformInfo.arch}');
     
     try {
-      // 检查平台支持
-      if (_platformInfo.os != 'macos' || _platformInfo.arch != 'arm64') {
-        throw Exception('Currently only macOS ARM64 is supported');
-      }
-
       // 确保目标目录存在
       final targetDir = Directory(targetBasePath);
       if (!await targetDir.exists()) {
@@ -202,6 +198,12 @@ class AssetExtractor {
   /// 主要解决NPX脚本中路径引用不正确的问题
   Future<void> _fixNodejsRuntimePaths(String targetBasePath) async {
     print('🔧 Fixing Node.js runtime paths...');
+    
+    // Windows平台暂时跳过路径修复（软链接支持有限）
+    if (Platform.isWindows) {
+      print('⚠️ Skipping Node.js path fixes on Windows platform');
+      return;
+    }
     
     try {
       // 动态构建Node.js路径（基于平台信息）
