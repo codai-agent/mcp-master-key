@@ -338,44 +338,57 @@ class ConfigService {
 
   // 下载设置相关的便捷方法
   
-  /// 是否使用中国镜像源
+  /// 是否使用中国镜像源 (从JSON文件，临时回退)
   Future<bool> getUseChinaMirrors() async {
-    return await getValue('download.use_china_mirrors', false) ?? false;
+    try {
+      return await getValue('download.use_china_mirrors', false) ?? false;
+    } catch (e) {
+      print('❌ Error getting china mirrors setting: $e');
+      return false;
+    }
   }
   
-  /// 设置是否使用中国镜像源
+  /// 设置是否使用中国镜像源 (保存到JSON文件，临时回退)
   Future<void> setUseChinaMirrors(bool enabled) async {
-    await setValue('download.use_china_mirrors', enabled);
+    try {
+      await setValue('download.use_china_mirrors', enabled);
+      print('✅ China mirrors setting saved: $enabled');
+    } catch (e) {
+      print('❌ Error saving china mirrors setting: $e');
+      rethrow;
+    }
   }
   
-  /// 获取Python镜像源URL
+  /// 获取Python镜像源URL (从数据库)
   Future<String> getPythonMirrorUrl() async {
     final useChinaMirrors = await getUseChinaMirrors();
     if (useChinaMirrors) {
-      return await getValue('download.python_mirror_url_china', 'https://pypi.tuna.tsinghua.edu.cn/simple') ?? 'https://pypi.tuna.tsinghua.edu.cn/simple';
+      return await _getConfigFromDatabase('download_python_mirror_url_china', 'https://pypi.tuna.tsinghua.edu.cn/simple');
     } else {
-      return await getValue('download.python_mirror_url', 'https://pypi.org/simple') ?? 'https://pypi.org/simple';
+      return await _getConfigFromDatabase('download_python_mirror_url', 'https://pypi.org/simple');
     }
   }
   
-  /// 获取NPM镜像源URL
+  /// 获取NPM镜像源URL (从数据库)
   Future<String> getNpmMirrorUrl() async {
     final useChinaMirrors = await getUseChinaMirrors();
     if (useChinaMirrors) {
-      return await getValue('download.npm_mirror_url_china', 'https://registry.npmmirror.com/') ?? 'https://registry.npmmirror.com/';
+      return await _getConfigFromDatabase('download_npm_mirror_url_china', 'https://registry.npmmirror.com/');
     } else {
-      return await getValue('download.npm_mirror_url', 'https://registry.npmjs.org/') ?? 'https://registry.npmjs.org/';
+      return await _getConfigFromDatabase('download_npm_mirror_url', 'https://registry.npmjs.org/');
     }
   }
   
-  /// 获取下载超时时间
+  /// 获取下载超时时间 (从数据库)
   Future<int> getDownloadTimeoutSeconds() async {
-    return await getValue('download.timeout_seconds', 120) ?? 120;
+    final timeout = await _getConfigFromDatabase('download_timeout_seconds', '120');
+    return int.tryParse(timeout) ?? 120;
   }
   
-  /// 获取并发下载数
+  /// 获取并发下载数 (从数据库)
   Future<int> getConcurrentDownloads() async {
-    return await getValue('download.concurrent_downloads', 4) ?? 4;
+    final concurrent = await _getConfigFromDatabase('download_concurrent_downloads', '4');
+    return int.tryParse(concurrent) ?? 4;
   }
 
   /// 将服务器对象转换为数据库映射

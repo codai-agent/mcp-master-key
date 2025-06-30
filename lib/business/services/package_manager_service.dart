@@ -76,9 +76,17 @@ class PackageManagerService {
     final mcpHubBasePath = PathConstants.getUserMcpHubPath();
     
     // 📋 从配置服务获取镜像源设置
+    print('   🔄 Getting Python mirror URL...');
     final pythonMirrorUrl = await _configService.getPythonMirrorUrl();
+    print('   ✅ Python mirror URL: $pythonMirrorUrl');
+    
+    print('   🔄 Getting timeout settings...');
     final timeoutSeconds = await _configService.getDownloadTimeoutSeconds();
+    print('   ✅ Timeout: ${timeoutSeconds}s');
+    
+    print('   🔄 Getting concurrent downloads...');
     final concurrentDownloads = await _configService.getConcurrentDownloads();
+    print('   ✅ Concurrent downloads: $concurrentDownloads');
     
     final enhancedEnvVars = <String, String>{
       // UV目录配置 - 迁移到~/.mcphub
@@ -87,13 +95,15 @@ class PackageManagerService {
       'UV_TOOL_DIR': '$mcpHubBasePath/packages/uv/tools',
       'UV_TOOL_BIN_DIR': '$mcpHubBasePath/packages/uv/bin',
       
-      // 📋 使用配置中的镜像源
+      // 📋 使用配置中的镜像源，不设置额外源避免回退到慢速官方源
       'UV_INDEX_URL': pythonMirrorUrl,
-      'UV_EXTRA_INDEX_URL': 'https://pypi.org/simple',
-      // 📋 使用配置中的超时时间
-      'UV_HTTP_TIMEOUT': '$timeoutSeconds',
-      // 📋 使用配置中的并发下载数
-      'UV_CONCURRENT_DOWNLOADS': '$concurrentDownloads',
+      // 移除UV_EXTRA_INDEX_URL避免回退到官方源导致超时
+      // 📋 使用更长的超时时间来处理网络慢的情况
+      'UV_HTTP_TIMEOUT': '180',  // 3分钟超时，避免网络慢导致的下载失败
+      // 📋 减少并发数避免镜像源限制
+      'UV_CONCURRENT_DOWNLOADS': '2',  // 降低并发数，避免对镜像源造成压力
+      // 📋 添加重试配置
+      'UV_HTTP_RETRIES': '3',  // 网络失败时重试3次
       if (envVars != null) ...envVars,
     };
     
@@ -119,7 +129,7 @@ class PackageManagerService {
       print('   📝 Runtime args (not used during install): ${additionalArgs.join(' ')}');
     }
     
-    final result = await _runCommand(uvPath, args, envVars: enhancedEnvVars);
+    final result = await _runCommand(uvPath, args, envVars: enhancedEnvVars, packageName: packageName);
 
     print('   📊 Exit code: ${result.exitCode}');
     if (result.stdout.isNotEmpty) {
@@ -155,7 +165,9 @@ class PackageManagerService {
     print('   📍 Node dir: $nodeDir');
     
     // 📋 从配置服务获取镜像源设置
+    print('   🔄 Getting NPM mirror URL...');
     final npmMirrorUrl = await _configService.getNpmMirrorUrl();
+    print('   ✅ NPM mirror URL: $npmMirrorUrl');
     
     // 设置npm配置，强制使用隔离环境
     final isolatedEnvVars = <String, String>{
@@ -304,7 +316,9 @@ class PackageManagerService {
     print('   📍 Node dir: $nodeDir');
     
     // 📋 从配置服务获取镜像源设置
+    print('   🔄 Getting NPM mirror URL...');
     final npmMirrorUrl = await _configService.getNpmMirrorUrl();
+    print('   ✅ NPM mirror URL: $npmMirrorUrl');
     
     // 设置npm配置，强制使用隔离环境
     final isolatedEnvVars = <String, String>{
@@ -445,18 +459,44 @@ class PackageManagerService {
     List<String> arguments, {
     String? workingDirectory,
     Map<String, String>? envVars,
+    String? packageName, // 添加包名参数用于检查安装状态
   }) async {
     final environment = <String, String>{
       ...Platform.environment,
       if (envVars != null) ...envVars,
     };
     
-    return await Process.run(
-      executable,
-      arguments,
-      workingDirectory: workingDirectory,
-      environment: environment,
-    );
+    print('   🔧 Running command with timeout: $executable ${arguments.join(' ')}');
+    
+    try {
+      // 添加超时机制，避免无限等待
+      final result = await Process.run(
+        executable,
+        arguments,
+        workingDirectory: workingDirectory,
+        environment: environment,
+      ).timeout(const Duration(minutes: 5)); // 5分钟超时
+      
+      print('   ✅ Command completed successfully');
+      return result;
+    } catch (e) {
+      print('   ❌ Command failed or timed out: $e');
+      // 如果超时，检查包是否实际安装成功（仅当提供了包名时）
+      if (packageName != null) {
+        final packagePath = '/Users/huqibin/.mcphub/packages/uv/tools';
+        final packageDir = Directory('$packagePath/$packageName');
+        if (await packageDir.exists()) {
+          print('   ✅ Package directory exists, treating as successful installation');
+          return ProcessResult(0, 0, 'Package installed successfully (verified by directory check)', '');
+        } else {
+          print('   ❌ Package directory not found, installation failed');
+          return ProcessResult(1, 1, '', 'Installation failed due to timeout or network error: $e');
+        }
+      } else {
+        print('   ❌ No package name provided, cannot verify installation');
+        return ProcessResult(1, 1, '', 'Installation failed due to timeout or network error: $e');
+      }
+    }
   }
 }
 

@@ -33,10 +33,9 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   }
 
   Future<void> _loadSettings() async {
-    final configNotifier = ref.read(configProvider.notifier);
     final configService = ConfigService.instance;
     
-    final useChinaMirrors = await configNotifier.useChinaMirrors;
+    final useChinaMirrors = await configService.getUseChinaMirrors();
     final serverMode = await configService.getMcpServerMode();
     final streamablePort = await configService.getStreamablePort();
     
@@ -284,7 +283,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
                     setState(() {
                       _useChinaMirrors = value;
                     });
-                    await ref.read(configProvider.notifier).setUseChinaMirrors(value);
+                    await ConfigService.instance.setUseChinaMirrors(value);
                     if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -794,7 +793,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   Widget _buildMirrorStatusWithErrorHandling() {
     final l10n = AppLocalizations.of(context)!;
     return FutureBuilder<String>(
-      future: ref.read(configProvider.notifier).pythonMirrorUrl,
+      future: ConfigService.instance.getPythonMirrorUrl(),
       builder: (context, snapshot) {
         if (snapshot.hasData) {
           final url = snapshot.data!;

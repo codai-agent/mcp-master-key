@@ -50,7 +50,7 @@ class AppConstants {
   // 超时配置
   static const Duration defaultCommandTimeout = Duration(minutes: 5);
   static const Duration defaultNetworkTimeout = Duration(seconds: 30);
-  static const Duration defaultStartupTimeout = Duration(seconds: 60);
+  static const Duration defaultStartupTimeout = Duration(seconds: 180); // 增加到3分钟，给服务器启动充足时间
   
   // 限制配置
   static const int maxLogFileSize = 10 * 1024 * 1024; // 10MB

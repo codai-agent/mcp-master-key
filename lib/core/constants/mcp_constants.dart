@@ -72,8 +72,8 @@ class McpConstants {
   static const int defaultPortEnd = 8999;
   
   // 超时配置
-  static const Duration defaultInitializeTimeout = Duration(seconds: 30);
-  static const Duration defaultRequestTimeout = Duration(seconds: 60);
+  static const Duration defaultInitializeTimeout = Duration(seconds: 120); // 增加到2分钟，给包启动充足时间
+  static const Duration defaultRequestTimeout = Duration(seconds: 180); // 增加到3分钟，避免网络慢导致超时
   static const Duration defaultShutdownTimeout = Duration(seconds: 10);
   
   // 重试配置

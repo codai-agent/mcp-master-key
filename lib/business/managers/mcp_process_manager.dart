@@ -440,9 +440,11 @@ class McpProcessManager {
         
         // 📋 使用配置中的Python包源
         environment['UV_INDEX_URL'] = pythonMirrorUrl;
-        environment['UV_EXTRA_INDEX_URL'] = 'https://pypi.org/simple';
-        environment['UV_HTTP_TIMEOUT'] = '$timeoutSeconds';
-        environment['UV_CONCURRENT_DOWNLOADS'] = '$concurrentDownloads';
+        // 移除UV_EXTRA_INDEX_URL避免回退到官方源导致超时
+        // environment['UV_EXTRA_INDEX_URL'] = 'https://pypi.org/simple';
+        environment['UV_HTTP_TIMEOUT'] = '180'; // 3分钟超时，避免网络慢导致的下载失败
+        environment['UV_CONCURRENT_DOWNLOADS'] = '2'; // 降低并发数，避免对镜像源造成压力
+        environment['UV_HTTP_RETRIES'] = '3'; // 网络失败时重试3次
         
         // 🐍 为直接Python执行添加PYTHONPATH
         final shouldUseDirectPython = await _shouldUseDirectPython(server);
@@ -589,14 +591,26 @@ class McpProcessManager {
         }
       
       case McpInstallType.uvx:
-        // 🔧 智能UVX处理：检查是否应该直接使用Python
-        print('   🔍 Checking if should use direct Python execution...');
-        final shouldUseDirectPython = await _shouldUseDirectPython(server);
-        print('   📋 Should use direct Python: $shouldUseDirectPython');
+        // 🔧 智能UVX处理：优先使用已安装的可执行文件
+        print('   🔍 Checking if should use direct execution...');
+        final shouldUseDirectExecution = await _shouldUseDirectPython(server);
+        print('   📋 Should use direct execution: $shouldUseDirectExecution');
         
-        if (shouldUseDirectPython) {
+        if (shouldUseDirectExecution) {
+          // 首先尝试找到已安装的可执行文件
+          if (server.args.isNotEmpty) {
+            final packageName = server.args.first;
+            final executablePath = await _findUvxExecutable(packageName);
+            
+            if (executablePath != null) {
+              print('   🚀 Using installed executable: $executablePath');
+              return executablePath;
+            }
+          }
+          
+          // 如果没找到可执行文件，回退到Python执行
           final pythonExe = await _runtimeManager.getPythonExecutable();
-          print('   🐍 Using direct Python execution to avoid shell script issues: $pythonExe');
+          print('   🐍 Using direct Python execution as fallback: $pythonExe');
           return pythonExe;
         }
         
@@ -676,14 +690,28 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
         }
 
       case McpInstallType.uvx:
-        // 🔧 智能UVX参数构建：优先尝试直接Python执行以避免shell脚本问题
-        print('   🔍 Checking if should use direct Python args...');
-        final shouldUseDirectPython = await _shouldUseDirectPython(server);
-        print('   📋 Should use direct Python: $shouldUseDirectPython');
+        // 🔧 智能UVX参数构建：优先使用已安装的可执行文件
+        print('   🔍 Checking if should use direct execution args...');
+        final shouldUseDirectExecution = await _shouldUseDirectPython(server);
+        print('   📋 Should use direct execution: $shouldUseDirectExecution');
         
-        if (shouldUseDirectPython) {
+        if (shouldUseDirectExecution) {
+          // 首先检查是否使用可执行文件
+          if (server.args.isNotEmpty) {
+            final packageName = server.args.first;
+            final executablePath = await _findUvxExecutable(packageName);
+            
+            if (executablePath != null) {
+              // 使用可执行文件时，跳过第一个参数（包名），只使用剩余的参数
+              final executableArgs = server.args.skip(1).toList();
+              print('   🚀 Using executable args: ${executableArgs.join(' ')}');
+              return executableArgs;
+            }
+          }
+          
+          // 如果没找到可执行文件，回退到Python模块执行
           final pythonModuleArgs = await _buildDirectPythonArgs(server);
-          print('   🐍 Using direct Python module execution: ${pythonModuleArgs.join(' ')}');
+          print('   🐍 Using direct Python module execution as fallback: ${pythonModuleArgs.join(' ')}');
           return pythonModuleArgs;
         }
         
@@ -1160,17 +1188,26 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
     return await _buildStartArgs(server);
   }
 
-  /// 检查是否应该直接使用Python执行而不是UVX脚本
+  /// 检查是否应该直接使用已安装的可执行文件而不是UVX脚本
   Future<bool> _shouldUseDirectPython(McpServer server) async {
     try {
       print('   🔍 _shouldUseDirectPython: Checking server args: ${server.args}');
       
-      // 如果服务器参数中包含已知的Python包名，我们可以尝试直接执行
+      // 如果服务器参数中包含已知的Python包名，检查是否已有可执行文件
       if (server.args.isNotEmpty) {
         final packageName = server.args.first;
         print('   📦 Package name to check: $packageName');
         
-        // 检查是否存在对应的Python包
+        // 首先检查UV tools目录中是否有可执行文件
+        final executablePath = await _findUvxExecutable(packageName);
+        print('   🔧 Executable path found: $executablePath');
+        
+        if (executablePath != null) {
+          print('   ✅ Found UVX executable, will use direct execution: $executablePath');
+          return true;
+        }
+        
+        // 如果没找到可执行文件，再检查Python包
         final packageDir = await _findPythonPackage(packageName);
         print('   📁 Package directory found: $packageDir');
         
@@ -1178,7 +1215,7 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
           print('   ✅ Found Python package for direct execution: $packageDir');
           return true;
         } else {
-          print('   ❌ Python package not found for: $packageName');
+          print('   ❌ Neither executable nor Python package found for: $packageName');
         }
       } else {
         print('   ⚠️ No args provided for server');
@@ -1186,7 +1223,7 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
       
       return false;
     } catch (e) {
-      print('   ❌ Error checking for direct Python execution: $e');
+      print('   ❌ Error checking for direct execution: $e');
       return false;
     }
   }
@@ -1206,6 +1243,51 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
     } catch (e) {
       print('   ⚠️ Error building direct Python args: $e');
       return server.args;
+    }
+  }
+
+  /// 查找UVX已安装的可执行文件（跨平台兼容）
+  Future<String?> _findUvxExecutable(String packageName) async {
+    try {
+      final mcpHubBasePath = PathConstants.getUserMcpHubPath();
+      final uvToolsDir = '$mcpHubBasePath/packages/uv/tools/$packageName';
+      
+      // 跨平台可执行文件路径
+      String executablePath;
+      if (Platform.isWindows) {
+        // Windows: Scripts目录，.exe后缀
+        executablePath = '$uvToolsDir/Scripts/$packageName.exe';
+        print('   🔍 Checking Windows UVX executable: $executablePath');
+        
+        if (await File(executablePath).exists()) {
+          print('   ✅ Found Windows UVX executable: $executablePath');
+          return executablePath;
+        }
+        
+        // 尝试没有.exe后缀的版本（有些包可能是脚本）
+        executablePath = '$uvToolsDir/Scripts/$packageName';
+        print('   🔍 Checking Windows UVX script: $executablePath');
+        
+        if (await File(executablePath).exists()) {
+          print('   ✅ Found Windows UVX script: $executablePath');
+          return executablePath;
+        }
+      } else {
+        // Unix/Linux/macOS: bin目录，无后缀
+        executablePath = '$uvToolsDir/bin/$packageName';
+        print('   🔍 Checking Unix UVX executable: $executablePath');
+        
+        if (await File(executablePath).exists()) {
+          print('   ✅ Found Unix UVX executable: $executablePath');
+          return executablePath;
+        }
+      }
+      
+      print('   ❌ UVX executable not found for platform: ${Platform.operatingSystem}');
+      return null;
+    } catch (e) {
+      print('   ❌ Error finding UVX executable: $e');
+      return null;
     }
   }
 
