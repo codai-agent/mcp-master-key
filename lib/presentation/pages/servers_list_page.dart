@@ -8,6 +8,7 @@ import '../../business/managers/mcp_process_manager.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../providers/servers_provider.dart';
 import '../widgets/server_card.dart';
+import '../widgets/mcp_config_dialog.dart';
 import 'installation_wizard_page.dart';
 
 import 'server_monitor_page.dart';
@@ -141,6 +142,22 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                       },
                       icon: const Icon(Icons.download, size: 18),
                       label: Text(l10n.servers_install),
+                    ),
+                    const SizedBox(width: 8),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        showDialog(
+                          context: context,
+                          barrierDismissible: true,
+                          builder: (context) => const McpConfigDialog(),
+                        );
+                      },
+                      icon: const Icon(Icons.view_module, size: 18),
+                      label: const Text('查看MCP配置'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.teal.withOpacity(0.1),
+                        foregroundColor: Colors.teal,
+                      ),
                     ),
 
                   ],

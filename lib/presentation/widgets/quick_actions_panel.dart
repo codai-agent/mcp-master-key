@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../pages/installation_wizard_page.dart';
+import 'mcp_config_dialog.dart';
 
 
 /// 快速动作面板
@@ -32,10 +33,10 @@ class QuickActionsPanel extends ConsumerWidget {
             GridView.count(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 2,
+              crossAxisCount: 3,
               crossAxisSpacing: 12,
               mainAxisSpacing: 12,
-              childAspectRatio: 2.5,
+              childAspectRatio: 2.2,
               children: [
                 _buildActionButton(
                   context,
@@ -52,6 +53,14 @@ class QuickActionsPanel extends ConsumerWidget {
                   subtitle: '通过安装向导添加',
                   color: Colors.green,
                   onTap: () => _navigateToInstallWizard(context),
+                ),
+                _buildActionButton(
+                  context,
+                  icon: Icons.view_module,
+                  label: '查看MCP配置',
+                  subtitle: '查看并复制配置',
+                  color: Colors.teal,
+                  onTap: () => _showMcpConfigDialog(context),
                 ),
                 _buildActionButton(
                   context,
@@ -146,6 +155,14 @@ class QuickActionsPanel extends ConsumerWidget {
       MaterialPageRoute(
         builder: (context) => const InstallationWizardPage(),
       ),
+    );
+  }
+
+  void _showMcpConfigDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) => const McpConfigDialog(),
     );
   }
 
