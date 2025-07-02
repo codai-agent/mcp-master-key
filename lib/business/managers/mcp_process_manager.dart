@@ -438,6 +438,11 @@ class McpProcessManager {
         environment['UV_TOOL_DIR'] = '$mcpHubBasePath/packages/uv/tools';
         environment['UV_TOOL_BIN_DIR'] = '$mcpHubBasePath/packages/uv/bin';
         
+        // 🎯 核心优化：指定UV使用内置Python，避免下载额外Python
+        final pythonExePath = await _runtimeManager.getPythonExecutable();
+        environment['UV_PYTHON'] = pythonExePath;
+        environment['UV_PYTHON_PREFERENCE'] = 'only-system'; // 只使用指定的Python，不自动下载
+        
         // 📋 使用配置中的Python包源
         environment['UV_INDEX_URL'] = pythonMirrorUrl;
         // 移除UV_EXTRA_INDEX_URL避免回退到官方源导致超时
@@ -459,6 +464,8 @@ class McpProcessManager {
         }
         
         print('   🐍 Added Python/UV environment variables:');
+        print('   - UV_PYTHON: ${environment['UV_PYTHON']} (using internal Python)');
+        print('   - UV_PYTHON_PREFERENCE: ${environment['UV_PYTHON_PREFERENCE']}');
         print('   - UV_CACHE_DIR: ${environment['UV_CACHE_DIR']}');
         print('   - UV_TOOL_DIR: ${environment['UV_TOOL_DIR']}');
         print('   - UV_INDEX_URL: ${environment['UV_INDEX_URL']}');

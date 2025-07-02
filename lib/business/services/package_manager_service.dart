@@ -88,12 +88,20 @@ class PackageManagerService {
     final concurrentDownloads = await _configService.getConcurrentDownloads();
     print('   ✅ Concurrent downloads: $concurrentDownloads');
     
+    // 🐍 获取内置Python路径 - 关键优化！
+    final pythonExePath = await _runtimeManager.getPythonExecutable();
+    print('   🔧 Using internal Python: $pythonExePath');
+
     final enhancedEnvVars = <String, String>{
       // UV目录配置 - 迁移到~/.mcphub
       'UV_CACHE_DIR': '$mcpHubBasePath/cache/uv',
       'UV_DATA_DIR': '$mcpHubBasePath/data/uv', 
       'UV_TOOL_DIR': '$mcpHubBasePath/packages/uv/tools',
       'UV_TOOL_BIN_DIR': '$mcpHubBasePath/packages/uv/bin',
+      
+      // 🎯 核心优化：指定UV使用内置Python，避免下载额外Python
+      'UV_PYTHON': pythonExePath,
+      'UV_PYTHON_PREFERENCE': 'only-system',  // 只使用指定的Python，不自动下载
       
       // 📋 使用配置中的镜像源，不设置额外源避免回退到慢速官方源
       'UV_INDEX_URL': pythonMirrorUrl,
@@ -108,6 +116,8 @@ class PackageManagerService {
     };
     
     print('   🔧 UV executable: $uvPath');
+    print('   🐍 Internal Python: ${enhancedEnvVars['UV_PYTHON']}');
+    print('   🎯 Python preference: ${enhancedEnvVars['UV_PYTHON_PREFERENCE']}');
     print('   📦 Package: $packageName');
     print('   📁 UV Cache Dir: ${enhancedEnvVars['UV_CACHE_DIR']}');
     print('   📁 UV Tool Dir: ${enhancedEnvVars['UV_TOOL_DIR']}');
