@@ -814,18 +814,17 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
       final env = await getServerEnvironment(server);
       
       if (Platform.isWindows) {
-        // Windows上需要特殊处理
-        print('   📥 Installing package on Windows...');
+        // Windows平台也使用智能检查，避免不必要的重装
+        print('   📥 Installing package on Windows with smart checking...');
         
-        // 1. 清理全局安装
-        await Process.run(
-          npmExe,
-          ['uninstall', '-g', packageName],
-          workingDirectory: workingDir,
-          environment: env,
-        );
+        // 1. 先检查包是否已经安装
+        final isInstalled = await _isNpxPackageInstalled(packageName);
+        if (isInstalled) {
+          print('   ✅ Package already installed: $packageName');
+          return;
+        }
         
-        // 2. 重新全局安装
+        // 2. 如果未安装，直接安装（无需先卸载）
         final result = await Process.run(
           npmExe,
           ['install', '-g', '--no-package-lock', packageName],
@@ -870,33 +869,46 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
     }
   }
   
-  /// 检查NPX包是否已安装
+  /// 检查NPX包是否已安装（跨平台兼容）
   Future<bool> _isNpxPackageInstalled(String packageName) async {
     try {
       final nodeExe = await _runtimeManager.getNodeExecutable();
-      final nodeModulesPath = path.join(
-        path.dirname(path.dirname(nodeExe)), 
-        'lib', 
-        'node_modules', 
-        packageName
-      );
+      final nodeBasePath = path.dirname(path.dirname(nodeExe));
       
-      return await Directory(nodeModulesPath).exists();
+      String nodeModulesPath;
+      if (Platform.isWindows) {
+        // Windows: 直接在node_modules目录下
+        nodeModulesPath = path.join(nodeBasePath, 'node_modules', packageName);
+      } else {
+        // Unix/Linux/macOS: lib/node_modules目录下
+        nodeModulesPath = path.join(nodeBasePath, 'lib', 'node_modules', packageName);
+      }
+      
+      print('   🔍 Checking package path: $nodeModulesPath');
+      final exists = await Directory(nodeModulesPath).exists();
+      print('   📋 Package exists: $exists');
+      
+      return exists;
     } catch (e) {
+      print('   ❌ Error checking package installation: $e');
       return false;
     }
   }
   
-  /// 获取NPX包的执行路径
+  /// 获取NPX包的执行路径（跨平台兼容）
   Future<String?> _getNpxPackagePath(String packageName) async {
     try {
       final nodeExe = await _runtimeManager.getNodeExecutable();
-      final nodeModulesPath = path.join(
-        path.dirname(path.dirname(nodeExe)), 
-        'lib', 
-        'node_modules', 
-        packageName
-      );
+      final nodeBasePath = path.dirname(path.dirname(nodeExe));
+      
+      String nodeModulesPath;
+      if (Platform.isWindows) {
+        // Windows: 直接在node_modules目录下
+        nodeModulesPath = path.join(nodeBasePath, 'node_modules', packageName);
+      } else {
+        // Unix/Linux/macOS: lib/node_modules目录下
+        nodeModulesPath = path.join(nodeBasePath, 'lib', 'node_modules', packageName);
+      }
       
       // 读取package.json获取bin信息
       final packageJsonPath = path.join(nodeModulesPath, 'package.json');
