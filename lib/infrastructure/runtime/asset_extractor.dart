@@ -2,6 +2,7 @@ import 'dart:io';
 import 'dart:typed_data';
 import 'package:flutter/services.dart';
 import 'package:archive/archive.dart';
+import 'package:path/path.dart' as path;
 
 import '../../core/constants/app_constants.dart';
 import '../../core/constants/path_constants.dart';
@@ -52,6 +53,9 @@ class AssetExtractor {
       // 修复Node.js运行时的NPX路径问题
       await _fixNodejsRuntimePaths(targetBasePath);
       
+      // 创建版本标记文件
+      await _createVersionMarker(targetBasePath);
+      
       print('✅ Runtime extraction completed successfully');
     } catch (e) {
       print('❌ Runtime extraction failed: $e');
@@ -93,15 +97,32 @@ class AssetExtractor {
             await targetFileDir.create(recursive: true);
           }
 
-          // 写入文件内容
-          await targetFile.writeAsBytes(file.content as List<int>);
+          // 智能文件更新：检查文件是否需要更新
+          bool needUpdate = true;
+          if (await targetFile.exists()) {
+            final existingSize = await targetFile.length();
+            final newContent = file.content as List<int>;
+            
+            // 如果大小相同，进一步检查内容
+            if (existingSize == newContent.length) {
+              final existingContent = await targetFile.readAsBytes();
+              if (_bytesEqual(existingContent, newContent)) {
+                needUpdate = false;
+                skippedCount++;
+              }
+            }
+          }
+
+          // 只有在需要更新时才写入文件
+          if (needUpdate) {
+            await targetFile.writeAsBytes(file.content as List<int>);
+            extractedCount++;
+          }
           
-          // 设置可执行权限（Unix-like系统）
+          // 设置可执行权限（Unix-like系统，无论是否更新都要确保权限正确）
           if (!Platform.isWindows) {
             await _setExecutablePermissionIfNeeded(targetFilePath);
           }
-
-          extractedCount++;
           
           // 每100个文件输出一次进度
           if (extractedCount % 100 == 0) {
@@ -139,22 +160,28 @@ class AssetExtractor {
     }
   }
 
-  /// 判断文件是否应该设置为可执行
+  /// 判断文件是否应该设置为可执行（跨平台兼容）
   bool _shouldBeExecutable(String filePath) {
-    final fileName = filePath.split('/').last;
+    // 在Windows上不需要设置权限
+    if (Platform.isWindows) {
+      return false;
+    }
     
-    // Python可执行文件
-    if (filePath.contains('/python/') && filePath.contains('/bin/')) {
+    final fileName = path.basename(filePath);
+    final normalizedPath = filePath.replaceAll('\\', '/'); // 标准化路径分隔符
+    
+    // Python可执行文件（只在bin目录下）
+    if (normalizedPath.contains('/python/') && normalizedPath.contains('/bin/')) {
       return _isPythonExecutable(fileName);
     }
     
     // UV可执行文件
-    if (filePath.contains('/uv-')) {
+    if (normalizedPath.contains('/uv-')) {
       return fileName == 'uv' || fileName == 'uvx';
     }
     
-    // Node.js可执行文件
-    if (filePath.contains('/nodejs/') && filePath.contains('/bin/')) {
+    // Node.js可执行文件（只在bin目录下）
+    if (normalizedPath.contains('/nodejs/') && normalizedPath.contains('/bin/')) {
       return _isNodeExecutable(fileName);
     }
     
@@ -293,25 +320,138 @@ class AssetExtractor {
     }
   }
 
-  /// 检查运行时是否已提取
+  /// 检查运行时是否已提取（改进版本）
   Future<bool> isRuntimeExtracted(String targetBasePath) async {
     print('🔍 Checking runtime extraction status...');
     
-    // 动态构建关键可执行文件路径（基于平台信息和版本常量）
+    try {
+      // 1. 检查版本标记文件
+      final versionMarkerPath = '$targetBasePath/.runtime_version';
+      final versionMarkerFile = File(versionMarkerPath);
+      
+      if (await versionMarkerFile.exists()) {
+        final versionData = await versionMarkerFile.readAsString();
+        final expectedVersion = _getRuntimeVersionString();
+        
+        if (versionData.trim() == expectedVersion) {
+          print('✅ Runtime version marker matches: $expectedVersion');
+          
+          // 2. 快速完整性检查
+          final integrityOk = await _quickIntegrityCheck(targetBasePath);
+          if (integrityOk) {
+            print('✅ Runtime integrity check passed');
+            return true;
+          } else {
+            print('❌ Runtime integrity check failed, need re-extraction');
+          }
+        } else {
+          print('❌ Runtime version mismatch - Expected: $expectedVersion, Found: ${versionData.trim()}');
+        }
+      } else {
+        print('❌ Runtime version marker not found');
+      }
+      
+      return false;
+    } catch (e) {
+      print('❌ Runtime check failed: $e');
+      return false;
+    }
+  }
+
+  /// 获取运行时版本字符串
+  String _getRuntimeVersionString() {
     final platform = _platformInfo;
-    final pythonExe = '$targetBasePath/python/${platform.os}/${platform.arch}/python-${AppConstants.pythonVersion}/bin/python3';
-    final uvExe = '$targetBasePath/python/${platform.os}/${platform.arch}/uv-${AppConstants.uvVersion}/uv';
-    final nodeExe = '$targetBasePath/nodejs/${platform.os}/${platform.arch}/node-v${AppConstants.nodeVersion}/bin/node';
+    return 'mcphub-runtime-v1.0.0_${AppConstants.pythonVersion}_${AppConstants.uvVersion}_${AppConstants.nodeVersion}_${platform.os}_${platform.arch}';
+  }
 
-    final pythonExists = await isFileExtracted(pythonExe);
-    final uvExists = await isFileExtracted(uvExe);
-    final nodeExists = await isFileExtracted(nodeExe);
+  /// 快速完整性检查（跨平台兼容）
+  Future<bool> _quickIntegrityCheck(String targetBasePath) async {
+    final platform = _platformInfo;
+    
+    // 构建跨平台的关键可执行文件路径
+    final criticalFiles = <String>[];
+    
+    // Python相关文件
+    if (platform.os == 'windows') {
+      criticalFiles.addAll([
+        '$targetBasePath/python/${platform.os}/${platform.arch}/python-${AppConstants.pythonVersion}/python.exe',
+        '$targetBasePath/python/${platform.os}/${platform.arch}/uv-${AppConstants.uvVersion}/uv.exe',
+      ]);
+    } else {
+      criticalFiles.addAll([
+        '$targetBasePath/python/${platform.os}/${platform.arch}/python-${AppConstants.pythonVersion}/bin/python3',
+        '$targetBasePath/python/${platform.os}/${platform.arch}/uv-${AppConstants.uvVersion}/uv',
+      ]);
+    }
+    
+    // Node.js相关文件
+    if (platform.os == 'windows') {
+      criticalFiles.addAll([
+        '$targetBasePath/nodejs/${platform.os}/${platform.arch}/node-v${AppConstants.nodeVersion}/node.exe',
+        '$targetBasePath/nodejs/${platform.os}/${platform.arch}/node-v${AppConstants.nodeVersion}/npm.cmd',
+        '$targetBasePath/nodejs/${platform.os}/${platform.arch}/node-v${AppConstants.nodeVersion}/npx.cmd',
+      ]);
+    } else {
+      criticalFiles.addAll([
+        '$targetBasePath/nodejs/${platform.os}/${platform.arch}/node-v${AppConstants.nodeVersion}/bin/node',
+        '$targetBasePath/nodejs/${platform.os}/${platform.arch}/node-v${AppConstants.nodeVersion}/bin/npm',
+        '$targetBasePath/nodejs/${platform.os}/${platform.arch}/node-v${AppConstants.nodeVersion}/bin/npx',
+      ]);
+    }
+    
+    // 检查关键可执行文件
+    for (final filePath in criticalFiles) {
+      final exists = await isFileExtracted(filePath);
+      if (!exists) {
+        print('❌ Critical file missing: $filePath');
+        return false;
+      }
+    }
+    
+    // 构建跨平台的关键目录结构
+    final criticalDirs = <String>[
+      '$targetBasePath/python/${platform.os}/${platform.arch}/python-${AppConstants.pythonVersion}/lib',
+    ];
+    
+    // Node.js目录结构（Windows和Unix不同）
+    if (platform.os == 'windows') {
+      criticalDirs.add('$targetBasePath/nodejs/${platform.os}/${platform.arch}/node-v${AppConstants.nodeVersion}/node_modules');
+    } else {
+      criticalDirs.add('$targetBasePath/nodejs/${platform.os}/${platform.arch}/node-v${AppConstants.nodeVersion}/lib/node_modules');
+    }
+    
+    // 检查关键目录
+    for (final dirPath in criticalDirs) {
+      final dir = Directory(dirPath);
+      if (!await dir.exists()) {
+        print('❌ Critical directory missing: $dirPath');
+        return false;
+      }
+    }
+    
+    return true;
+  }
 
-    print('📊 Runtime extraction check results:');
-    print('  🐍 Python ($pythonExe): ${pythonExists ? '✅' : '❌'}');
-    print('  ⚡ UV ($uvExe): ${uvExists ? '✅' : '❌'}');
-    print('  📦 Node.js ($nodeExe): ${nodeExists ? '✅' : '❌'}');
+  /// 创建版本标记文件
+  Future<void> _createVersionMarker(String targetBasePath) async {
+    try {
+      final versionMarkerPath = '$targetBasePath/.runtime_version';
+      final versionMarkerFile = File(versionMarkerPath);
+      final versionString = _getRuntimeVersionString();
+      
+      await versionMarkerFile.writeAsString(versionString);
+      print('✅ Created runtime version marker: $versionString');
+    } catch (e) {
+      print('⚠️ Warning: Failed to create version marker: $e');
+    }
+  }
 
-    return pythonExists && uvExists && nodeExists;
+  /// 比较两个字节数组是否相等
+  bool _bytesEqual(List<int> a, List<int> b) {
+    if (a.length != b.length) return false;
+    for (int i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
   }
 } 
