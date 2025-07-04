@@ -27,7 +27,7 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
   
   // 固定的 JSON 结构
   static const String _jsonPrefix = '{\n  "mcpServers": {';
-  static const String _jsonSuffix = '\n  }\n}';
+  static const String _jsonSuffix = '  }\n}';
   
   // 占位符提示文本
   static const String _placeholderText = '点击此处输入MCP服务器配置...\n\n示例格式：\n    "server-name": {\n        "command": "uvx",\n        "args": ["package-name"]\n    }';
@@ -127,33 +127,36 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
           
           // 可编辑的服务器配置部分
           SizedBox(
-            height: 12 * 14 * 1.5 + 24, // 12行 * 字体大小 * 行高 + padding (增加高度)
+            height: 8 * 14 * 1.5 + 24, // 12行 * 字体大小 * 行高 + padding (增加高度)
             child: Scrollbar(
-              child: TextField(
-                controller: _serverConfigController,
-                focusNode: _focusNode,
-                maxLines: null,
-                expands: true,
-                textAlignVertical: TextAlignVertical.top,
-                style: const TextStyle(
-                  fontFamily: 'monospace',
-                  fontSize: 14,
-                  height: 1.5,
-                ),
-                decoration: InputDecoration(
-                  hintText: widget.placeholderText ?? _placeholderText, // 使用传入的占位符或默认占位符
-                  hintStyle: const TextStyle(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24.0),
+                  child: TextField(
+                  controller: _serverConfigController,
+                  focusNode: _focusNode,
+                  maxLines: null,
+                  expands: true,
+                  textAlignVertical: TextAlignVertical.top,
+                  style: const TextStyle(
                     fontFamily: 'monospace',
                     fontSize: 14,
-                    color: Colors.grey,
                     height: 1.5,
                   ),
-                  border: InputBorder.none,
-                  contentPadding: const EdgeInsets.all(12),
+                  decoration: InputDecoration(
+                    hintText: widget.placeholderText ?? _placeholderText, // 使用传入的占位符或默认占位符
+                    hintStyle: const TextStyle(
+                      fontFamily: 'monospace',
+                      fontSize: 14,
+                      color: Colors.grey,
+                      height: 1.5,
+                    ),
+                    border: InputBorder.none,
+                    contentPadding: const EdgeInsets.all(12),
+                  ),
+                  onTap: () {
+                    _focusNode.requestFocus();
+                  },
                 ),
-                onTap: () {
-                  _focusNode.requestFocus();
-                },
               ),
             ),
           ),
@@ -161,7 +164,7 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
           // 固定的结尾部分
           Container(
             width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
             decoration: BoxDecoration(
               color: Colors.grey[100],
               borderRadius: const BorderRadius.only(

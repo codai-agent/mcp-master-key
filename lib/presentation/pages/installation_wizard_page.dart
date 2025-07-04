@@ -245,61 +245,61 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
             placeholderText: l10n.install_wizard_config_placeholder,
           ),
           
-          // 配置帮助
-          Container(
-            margin: const EdgeInsets.only(top: 8),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.blue[50],
-              borderRadius: BorderRadius.circular(4),
-              border: Border.all(color: Colors.blue[200]!),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  children: [
-                    Icon(Icons.info, size: 16, color: Colors.blue[700]),
-                    const SizedBox(width: 8),
-                    Text(
-                      '配置说明',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue[700],
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                          Text(l10n.install_wizard_auto_install_note),
-          Text(l10n.install_wizard_manual_install_note),
-          Text(l10n.install_wizard_env_support_note),
-              ],
-            ),
-          ),
+          // // 配置帮助
+          // Container(
+          //   margin: const EdgeInsets.only(top: 8),
+          //   padding: const EdgeInsets.all(12),
+          //   decoration: BoxDecoration(
+          //     color: Colors.blue[50],
+          //     borderRadius: BorderRadius.circular(4),
+          //     border: Border.all(color: Colors.blue[200]!),
+          //   ),
+          //   child: Column(
+          //     crossAxisAlignment: CrossAxisAlignment.start,
+          //     children: [
+          //       Row(
+          //         children: [
+          //           Icon(Icons.info, size: 16, color: Colors.blue[700]),
+          //           const SizedBox(width: 8),
+          //           Text(
+          //             '配置说明',
+          //             style: TextStyle(
+          //               fontWeight: FontWeight.bold,
+          //               color: Colors.blue[700],
+          //             ),
+          //           ),
+          //         ],
+          //       ),
+          //       const SizedBox(height: 8),
+          //                 Text(l10n.install_wizard_auto_install_note),
+          // Text(l10n.install_wizard_manual_install_note),
+          // Text(l10n.install_wizard_env_support_note),
+          //     ],
+          //   ),
+          // ),
           
-          // 配置示例按钮
-          const SizedBox(height: 16),
-          Wrap(
-            spacing: 8,
-            children: [
-              ElevatedButton.icon(
-                onPressed: () => _loadExampleConfig('uvx'),
-                icon: const Icon(Icons.code, size: 16),
-                label: Text(l10n.install_wizard_uvx_example),
-              ),
-              ElevatedButton.icon(
-                onPressed: () => _loadExampleConfig('npx'),
-                icon: const Icon(Icons.code, size: 16),
-                label: Text(l10n.install_wizard_npx_example),
-              ),
-              ElevatedButton.icon(
-                onPressed: () => _loadExampleConfig('python'),
-                icon: const Icon(Icons.code, size: 16),
-                label: Text(l10n.install_wizard_python_example),
-              ),
-            ],
-          ),
+          // // 配置示例按钮
+          // const SizedBox(height: 16),
+          // Wrap(
+          //   spacing: 8,
+          //   children: [
+          //     ElevatedButton.icon(
+          //       onPressed: () => _loadExampleConfig('uvx'),
+          //       icon: const Icon(Icons.code, size: 16),
+          //       label: Text(l10n.install_wizard_uvx_example),
+          //     ),
+          //     ElevatedButton.icon(
+          //       onPressed: () => _loadExampleConfig('npx'),
+          //       icon: const Icon(Icons.code, size: 16),
+          //       label: Text(l10n.install_wizard_npx_example),
+          //     ),
+          //     ElevatedButton.icon(
+          //       onPressed: () => _loadExampleConfig('python'),
+          //       icon: const Icon(Icons.code, size: 16),
+          //       label: Text(l10n.install_wizard_python_example),
+          //     ),
+          //   ],
+          // ),
         ],
       ),
     );
