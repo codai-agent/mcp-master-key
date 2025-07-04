@@ -13,6 +13,17 @@ import 'home_page.dart';
 class InstallationWizardPage extends StatefulWidget {
   const InstallationWizardPage({super.key});
 
+  /// 检查是否有正在进行的安装
+  static bool get hasActiveInstallation {
+    return _InstallationWizardPageState._persistentState.isNotEmpty;
+  }
+
+  /// 检查是否正在安装
+  static bool get isInstalling {
+    final state = _InstallationWizardPageState._persistentState;
+    return state['isInstalling'] == true;
+  }
+
   @override
   State<InstallationWizardPage> createState() => _InstallationWizardPageState();
 }
@@ -43,17 +54,103 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   bool _isInstalling = false;
   List<String> _installationLogs = [];
   bool _installationSuccess = false;
+  
+  // 自动切换状态
+  bool _isAutoAdvancing = false;
+  
+  // 🔥 简单的内存中状态保持
+  static final Map<String, dynamic> _persistentState = {};
 
   @override
   void initState() {
     super.initState();
-    // 初始化为空配置，显示占位符
-    _configController.text = '''
+    
+    // 🔄 恢复保存的状态（如果有的话）
+    _restoreState();
+    
+    // 如果没有保存的状态，初始化为空配置
+    if (_configController.text.isEmpty) {
+      _configController.text = '''
 {
   "mcpServers": {
   }
 }''';
-    _parseConfig();
+      _parseConfig();
+    }
+  }
+
+  /// 恢复保存的状态
+  void _restoreState() {
+    if (_persistentState.isNotEmpty) {
+      print('🔄 恢复安装向导状态...');
+      
+      setState(() {
+        _currentStep = _persistentState['currentStep'] ?? 0;
+        _configError = _persistentState['configError'] ?? '';
+        _parsedConfig = Map<String, dynamic>.from(_persistentState['parsedConfig'] ?? {});
+        _needsAdditionalInstall = _persistentState['needsAdditionalInstall'] ?? false;
+        _analysisResult = _persistentState['analysisResult'] ?? '';
+        _selectedInstallType = _persistentState['selectedInstallType'] ?? 'github';
+        _isInstalling = _persistentState['isInstalling'] ?? false;
+        _installationLogs = List<String>.from(_persistentState['installationLogs'] ?? []);
+        _installationSuccess = _persistentState['installationSuccess'] ?? false;
+        _isAutoAdvancing = _persistentState['isAutoAdvancing'] ?? false;
+        
+        // 恢复检测到的策略
+        final strategyName = _persistentState['detectedStrategy'];
+        if (strategyName != null) {
+          _detectedStrategy = InstallStrategy.values.firstWhere(
+            (s) => s.name == strategyName,
+            orElse: () => InstallStrategy.uvx,
+          );
+        }
+      });
+      
+      // 恢复控制器文本
+      _nameController.text = _persistentState['serverName'] ?? '';
+      _descriptionController.text = _persistentState['serverDescription'] ?? '';
+      _configController.text = _persistentState['configText'] ?? '';
+      _githubUrlController.text = _persistentState['githubUrl'] ?? '';
+      _localPathController.text = _persistentState['localPath'] ?? '';
+      
+      // 恢复页面位置
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_currentStep > 0 && _currentStep < 4) {
+          _pageController.animateToPage(
+            _currentStep,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      });
+    }
+  }
+
+  /// 保存当前状态
+  void _saveState() {
+    _persistentState.clear();
+    _persistentState.addAll({
+      'currentStep': _currentStep,
+      'configError': _configError,
+      'parsedConfig': Map<String, dynamic>.from(_parsedConfig),
+      'needsAdditionalInstall': _needsAdditionalInstall,
+      'analysisResult': _analysisResult,
+      'selectedInstallType': _selectedInstallType,
+      'isInstalling': _isInstalling,
+      'installationLogs': List<String>.from(_installationLogs),
+      'installationSuccess': _installationSuccess,
+      'isAutoAdvancing': _isAutoAdvancing,
+      'detectedStrategy': _detectedStrategy?.name,
+      
+      // 控制器文本
+      'serverName': _nameController.text,
+      'serverDescription': _descriptionController.text,
+      'configText': _configController.text,
+      'githubUrl': _githubUrlController.text,
+      'localPath': _localPathController.text,
+    });
+    
+    print('💾 安装向导状态已保存，当前步骤: $_currentStep');
   }
 
   @override
@@ -105,7 +202,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
                 if (_currentStep > 0)
                   Expanded(
                     child: OutlinedButton(
-                      onPressed: _previousStep,
+                      onPressed: _isAutoAdvancing ? null : _previousStep,
                       child: Text(l10n.common_previous),
                     ),
                   ),
@@ -211,7 +308,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
             controller: _nameController,
             decoration: InputDecoration(
               labelText: l10n.install_wizard_server_name,
-              hintText: '例如：热点新闻服务器',
+              hintText: l10n.install_wizard_server_name_example,
               border: const OutlineInputBorder(),
             ),
           ),
@@ -223,7 +320,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
             maxLines: 2,
             decoration: InputDecoration(
               labelText: l10n.install_wizard_server_description,
-              hintText: '简单描述这个MCP服务器的功能',
+              hintText: l10n.install_wizard_server_description_example,
               border: const OutlineInputBorder(),
             ),
           ),
@@ -231,7 +328,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
           
           // MCP配置
           Text(
-            'MCP服务器配置 *',
+            l10n.install_wizard_server_config_title,
             style: Theme.of(context).textTheme.titleMedium,
           ),
           const SizedBox(height: 8),
@@ -242,7 +339,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
               _parseConfig();
             },
             errorText: _configError.isNotEmpty ? _configError : null,
-            placeholderText: l10n.install_wizard_config_placeholder,
+            placeholderText: '${l10n.install_wizard_config_placeholder}\n\n    "server-name": {\n        "command": "uvx",\n        "args": ["package-name"]\n    }',
           ),
           
           // // 配置帮助
@@ -815,6 +912,11 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
         _analysisResult = l10n.install_wizard_custom_manual;
       }
     });
+    
+    // 🚀 如果不需要额外安装配置，则自动切换页面
+    if (!_needsAdditionalInstall) {
+      _autoAdvanceSteps();
+    }
   }
 
   // 加载示例配置
@@ -888,9 +990,14 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
 
   // 按钮行为
   VoidCallback? _getNextButtonAction() {
+    // 🔒 在自动切换过程中禁用按钮
+    if (_isAutoAdvancing) {
+      return null;
+    }
+    
     switch (_currentStep) {
       case 0:
-        return _parsedConfig.isNotEmpty && _configError.isEmpty ? _nextStep : null;
+        return _parsedConfig.isNotEmpty && _configError.isEmpty ? _analyzeConfigAndAdvance : null;
       case 1:
         return _nextStep;
       case 2:
@@ -901,6 +1008,18 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
           (_isInstalling ? null : _startInstallation);
     }
     return null;
+  }
+
+  /// 分析配置并自动切换页面
+  void _analyzeConfigAndAdvance() {
+    // 先切换到分析页面
+    _nextStep();
+    
+    // 触发分析（这会自动调用_autoAdvanceSteps）
+    // 分析逻辑已经在_parseConfig中完成，这里只是确保触发自动切换
+    if (!_needsAdditionalInstall) {
+      _autoAdvanceSteps();
+    }
   }
 
   String _getNextButtonText() {
@@ -935,10 +1054,60 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
       setState(() {
         _currentStep++;
       });
+      _saveState(); // 💾 保存状态
       _pageController.nextPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
       );
+    }
+  }
+
+  /// 自动进行页面切换（当不需要用户额外输入时）
+  Future<void> _autoAdvanceSteps() async {
+    // 从步骤1（分析安装策略）开始自动切换
+    if (_currentStep == 1 && !_needsAdditionalInstall) {
+      setState(() {
+        _isAutoAdvancing = true;
+      });
+      
+      // 等待一小段时间让用户看到分析结果
+      await Future.delayed(const Duration(milliseconds: 800));
+      
+      if (mounted) {
+        // 自动切换到步骤2（额外安装选项）
+              setState(() {
+        _currentStep = 2;
+      });
+      _saveState(); // 💾 保存状态
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
+        
+        // 再等待一小段时间
+        await Future.delayed(const Duration(milliseconds: 800));
+        
+        if (mounted) {
+          // 自动切换到步骤3（执行安装）
+                  setState(() {
+          _currentStep = 3;
+        });
+        _saveState(); // 💾 保存状态
+        _pageController.nextPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+          
+          // 等待页面切换动画完成
+          await Future.delayed(const Duration(milliseconds: 300));
+          
+          if (mounted) {
+            setState(() {
+              _isAutoAdvancing = false;
+            });
+          }
+        }
+      }
     }
   }
 
@@ -947,6 +1116,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
       setState(() {
         _currentStep--;
       });
+      _saveState(); // 💾 保存状态
       _pageController.previousPage(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -963,6 +1133,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
       _installationLogs.clear();
       _installationLogs.add('🚀 开始安装MCP服务器...');
     });
+    _saveState(); // 💾 保存状态
 
     try {
       final mcpServerService = McpServerService.instance;
@@ -1177,6 +1348,10 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   }
 
   void _finishWizard() {
+    // 🗑️ 清除保存的状态
+    _persistentState.clear();
+    print('🗑️ 安装完成，清除保存的状态');
+    
     // 检查是否是从导航推送进来的（有返回按钮）
     if (Navigator.of(context).canPop()) {
       // 如果可以返回，就返回到上一个页面

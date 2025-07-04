@@ -354,6 +354,16 @@ class AppLocalizationsEn extends AppLocalizations {
       'Click here to enter MCP server configuration...';
 
   @override
+  String get install_wizard_server_config_title => 'MCP Server Configuration *';
+
+  @override
+  String get install_wizard_server_name_example => 'e.g., Hot News Server';
+
+  @override
+  String get install_wizard_server_description_example =>
+      'Briefly describe the functionality of this MCP server';
+
+  @override
   String get install_wizard_analyze_config => 'Analyze Configuration';
 
   @override

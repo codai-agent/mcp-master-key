@@ -728,6 +728,24 @@ abstract class AppLocalizations {
   /// **'Click here to enter MCP server configuration...'**
   String get install_wizard_config_placeholder;
 
+  /// No description provided for @install_wizard_server_config_title.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP Server Configuration *'**
+  String get install_wizard_server_config_title;
+
+  /// No description provided for @install_wizard_server_name_example.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., Hot News Server'**
+  String get install_wizard_server_name_example;
+
+  /// No description provided for @install_wizard_server_description_example.
+  ///
+  /// In en, this message translates to:
+  /// **'Briefly describe the functionality of this MCP server'**
+  String get install_wizard_server_description_example;
+
   /// No description provided for @install_wizard_analyze_config.
   ///
   /// In en, this message translates to:

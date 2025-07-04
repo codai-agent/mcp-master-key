@@ -341,6 +341,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get install_wizard_config_placeholder => '点击此处输入MCP服务器配置...';
 
   @override
+  String get install_wizard_server_config_title => 'MCP服务器配置 *';
+
+  @override
+  String get install_wizard_server_name_example => '例如：热点新闻服务器';
+
+  @override
+  String get install_wizard_server_description_example => '简单描述这个MCP服务器的功能';
+
+  @override
   String get install_wizard_analyze_config => '分析配置';
 
   @override
