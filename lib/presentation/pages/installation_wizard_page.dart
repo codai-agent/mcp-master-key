@@ -61,6 +61,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   
   // 安装进程控制
   Process? _currentInstallProcess;
+  int? _currentInstallProcessPid; // 保存进程ID用于状态恢复
   
   // 🔥 简单的内存中状态保持
   static final Map<String, dynamic> _persistentState = {};
@@ -108,6 +109,12 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
             orElse: () => InstallStrategy.uvx,
           );
         }
+        
+        // 恢复进程ID并检查进程是否仍在运行
+        _currentInstallProcessPid = _persistentState['currentInstallProcessPid'];
+        if (_currentInstallProcessPid != null && _isInstalling) {
+          _checkInstallProcessStatus(_currentInstallProcessPid!);
+        }
       });
       
       // 恢复控制器文本
@@ -145,6 +152,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
       'installationSuccess': _installationSuccess,
       'isAutoAdvancing': _isAutoAdvancing,
       'detectedStrategy': _detectedStrategy?.name,
+      'currentInstallProcessPid': _currentInstallProcessPid, // 保存进程ID
       
       // 控制器文本
       'serverName': _nameController.text,
@@ -154,7 +162,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
       'localPath': _localPathController.text,
     });
     
-    print('💾 安装向导状态已保存，当前步骤: $_currentStep');
+    print('💾 安装向导状态已保存，当前步骤: $_currentStep, 进程ID: $_currentInstallProcessPid');
   }
 
   @override
@@ -1116,21 +1124,31 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   }
 
   void _previousStep() async {
-    // 如果当前在安装步骤且有进程在运行，需要确认取消
-    if (_currentStep == 3 && _currentInstallProcess != null) {
-      final shouldCancel = await _showCancelInstallDialog();
-      if (shouldCancel == true) {
-        _cancelCurrentInstall();
+    // 如果当前在安装步骤且正在安装中，需要确认取消
+    if (_currentStep == 3 && _isInstalling) {
+      // 检查是否有进程在运行（可能是恢复状态后）
+      if (_currentInstallProcess != null || _currentInstallProcessPid != null) {
+        final shouldCancel = await _showCancelInstallDialog();
+        if (shouldCancel == true) {
+          _cancelCurrentInstall();
+          setState(() {
+            _currentStep--;
+          });
+          _saveState(); // 💾 保存状态
+          _pageController.previousPage(
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+        return;
+      } else {
+        // 显示正在安装但没有进程引用，可能是进程已结束
         setState(() {
-          _currentStep--;
+          _isInstalling = false;
+          _installationLogs.add('⚠️ 检测到安装状态异常，已重置状态');
         });
-        _saveState(); // 💾 保存状态
-        _pageController.previousPage(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-        );
+        _saveState();
       }
-      return;
     }
     
     if (_currentStep > 0) {
@@ -1266,7 +1284,9 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
             onProcessStarted: (process) {
               setState(() {
                 _currentInstallProcess = process;
+                _currentInstallProcessPid = process.pid;
               });
+              _saveState(); // 保存进程ID
             },
           );
         } else if (installStrategy == InstallStrategy.npx && args.contains('-y')) {
@@ -1280,7 +1300,9 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
             onProcessStarted: (process) {
               setState(() {
                 _currentInstallProcess = process;
+                _currentInstallProcessPid = process.pid;
               });
+              _saveState(); // 保存进程ID
             },
           );
         } else {
@@ -1294,7 +1316,9 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
             onProcessStarted: (process) {
               setState(() {
                 _currentInstallProcess = process;
+                _currentInstallProcessPid = process.pid;
               });
+              _saveState(); // 保存进程ID
             },
           );
         }
@@ -1358,6 +1382,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
           _installationSuccess = true;
           _isInstalling = false;
           _currentInstallProcess = null; // 清理进程引用
+          _currentInstallProcessPid = null; // 清理进程ID
         });
         } catch (e) {
                   setState(() {
@@ -1366,6 +1391,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
           _installationSuccess = true;
           _isInstalling = false;
           _currentInstallProcess = null; // 清理进程引用
+          _currentInstallProcessPid = null; // 清理进程ID
         });
         }
       } else {
@@ -1373,6 +1399,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
           _installationSuccess = false;
           _isInstalling = false;
           _currentInstallProcess = null; // 清理进程引用
+          _currentInstallProcessPid = null; // 清理进程ID
         });
       }
 
@@ -1383,6 +1410,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
         _isInstalling = false;
         _installationSuccess = false;
         _currentInstallProcess = null; // 清理进程引用
+        _currentInstallProcessPid = null; // 清理进程ID
       });
     }
   }
@@ -1442,40 +1470,88 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   /// 取消当前安装进程
   void _cancelCurrentInstall() {
     if (_currentInstallProcess != null) {
-      try {
-        print('🔪 正在取消安装进程 ${_currentInstallProcess!.pid}...');
-        
-        if (Platform.isWindows) {
-          // Windows: 使用taskkill命令
-          Process.run('taskkill', ['/F', '/PID', '${_currentInstallProcess!.pid}']);
-        } else {
-          // Unix系统: 使用kill命令
-          _currentInstallProcess!.kill(ProcessSignal.sigterm);
-          
-          // 如果进程仍在运行，强制杀死
+      _killProcessById(_currentInstallProcess!.pid);
+    } else if (_currentInstallProcessPid != null) {
+      // 如果没有进程引用但有PID，直接通过PID杀死进程
+      _killProcessById(_currentInstallProcessPid!);
+    }
+  }
+
+  /// 通过PID杀死进程
+  void _killProcessById(int pid) {
+    try {
+      print('🔪 正在取消安装进程 $pid...');
+      
+      if (Platform.isWindows) {
+        // Windows: 使用taskkill命令
+        Process.run('taskkill', ['/F', '/PID', '$pid']);
+      } else {
+        // Unix系统: 使用kill命令
+        Process.run('kill', ['-TERM', '$pid']).then((_) {
+          // 如果进程仍在运行，3秒后强制杀死
           Future.delayed(const Duration(seconds: 3), () {
-            try {
-              _currentInstallProcess?.kill(ProcessSignal.sigkill);
-            } catch (e) {
-              // 进程可能已经结束
-            }
+            Process.run('kill', ['-KILL', '$pid']).catchError((e) {
+              // 进程可能已经结束，忽略错误
+              return ProcessResult(0, 1, '', e.toString());
+            });
           });
-        }
-        
-        setState(() {
-          _installationLogs.add(AppLocalizations.of(context)!.install_wizard_installation_cancelled);
-          _isInstalling = false;
-          _installationSuccess = false;
-          _currentInstallProcess = null;
-        });
-        
-        print('✅ 安装进程已取消');
-      } catch (e) {
-        print('❌ 取消安装进程失败: $e');
-        setState(() {
-          _installationLogs.add('❌ 取消安装进程失败: $e');
         });
       }
+      
+      setState(() {
+        _installationLogs.add(AppLocalizations.of(context)!.install_wizard_installation_cancelled);
+        _isInstalling = false;
+        _installationSuccess = false;
+        _currentInstallProcess = null;
+        _currentInstallProcessPid = null;
+      });
+      
+      print('✅ 安装进程已取消');
+    } catch (e) {
+      print('❌ 取消安装进程失败: $e');
+      setState(() {
+        _installationLogs.add('❌ 取消安装进程失败: $e');
+      });
+    }
+  }
+
+  /// 检查安装进程状态
+  void _checkInstallProcessStatus(int pid) async {
+    try {
+      ProcessResult result;
+      if (Platform.isWindows) {
+        // Windows: 使用tasklist命令检查进程
+        result = await Process.run('tasklist', ['/FI', 'PID eq $pid']);
+      } else {
+        // Unix系统: 使用ps命令检查进程
+        result = await Process.run('ps', ['-p', '$pid']);
+      }
+      
+      if (result.exitCode == 0 && result.stdout.toString().contains('$pid')) {
+        // 进程仍在运行
+        print('🔄 检测到安装进程 $pid 仍在运行');
+        setState(() {
+          _installationLogs.add('🔄 检测到之前的安装进程仍在运行...');
+        });
+      } else {
+        // 进程已结束，清理状态
+        print('⚠️ 安装进程 $pid 已结束，清理状态');
+        setState(() {
+          _isInstalling = false;
+          _currentInstallProcessPid = null;
+          _installationLogs.add('⚠️ 之前的安装进程已结束');
+        });
+        _saveState();
+      }
+    } catch (e) {
+      print('❌ 检查进程状态失败: $e');
+      // 检查失败，假设进程已结束
+      setState(() {
+        _isInstalling = false;
+        _currentInstallProcessPid = null;
+        _installationLogs.add('⚠️ 无法检查安装进程状态，假设已结束');
+      });
+      _saveState();
     }
   }
 
