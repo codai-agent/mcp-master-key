@@ -481,6 +481,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get install_wizard_local_path_label => '本地路径';
 
   @override
+  String get install_wizard_cancel_install_title => '取消安装';
+
+  @override
+  String get install_wizard_cancel_install_message =>
+      '检测到正在进行安装过程。\n\n如果取消，当前安装的进程将被终止，已下载的内容可能需要重新开始。\n\n您确定要取消安装吗？';
+
+  @override
+  String get install_wizard_continue_install => '继续安装';
+
+  @override
+  String get install_wizard_cancel_install => '取消安装';
+
+  @override
+  String get install_wizard_installation_cancelled => '🛑 安装已被用户取消';
+
+  @override
   String get monitor_title => 'Hub 监控';
 
   @override

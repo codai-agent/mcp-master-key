@@ -18,6 +18,50 @@ class PackageManagerService {
   }) : _runtimeManager = runtimeManager,
        _configService = configService ?? ConfigService.instance;
 
+  /// 安装包（支持取消）
+  Future<InstallResult> installPackageCancellable({
+    required String packageName,
+    required InstallStrategy strategy,
+    Map<String, String>? envVars,
+    List<String>? additionalArgs,
+    String? gitUrl,
+    String? localPath,
+    Function(Process)? onProcessStarted, // 进程启动回调
+  }) async {
+    try {
+      switch (strategy) {
+        case InstallStrategy.uvx:
+          return await _installWithUvxCancellable(packageName, envVars, additionalArgs, onProcessStarted);
+        case InstallStrategy.npx:
+          // NPX使用简化的可取消安装
+          return await _installWithNpxSimpleCancellable(packageName, envVars, additionalArgs, onProcessStarted);
+        case InstallStrategy.git:
+          if (gitUrl == null) {
+            throw Exception('Git安装需要提供Git URL');
+          }
+          return await _installFromGit(packageName, gitUrl, envVars);
+        case InstallStrategy.local:
+          if (localPath == null) {
+            throw Exception('本地安装需要提供本地路径');
+          }
+          return await _installFromLocal(packageName, localPath, envVars);
+        case InstallStrategy.pip:
+          // PIP使用简化的可取消安装
+          return await _installWithPipSimpleCancellable(packageName, envVars, additionalArgs, onProcessStarted);
+        case InstallStrategy.npm:
+          // NPM使用简化的可取消安装
+          return await _installWithNpmSimpleCancellable(packageName, envVars, additionalArgs, onProcessStarted);
+      }
+    } catch (e) {
+      return InstallResult(
+        success: false,
+        packageName: packageName,
+        strategy: strategy,
+        errorMessage: e.toString(),
+      );
+    }
+  }
+
   /// 安装包
   Future<InstallResult> installPackage({
     required String packageName,
@@ -140,6 +184,71 @@ class PackageManagerService {
     }
     
     final result = await _runCommand(uvPath, args, envVars: enhancedEnvVars, packageName: packageName);
+
+    print('   📊 Exit code: ${result.exitCode}');
+    if (result.stdout.isNotEmpty) {
+      print('   📝 Stdout: ${result.stdout}');
+    }
+    if (result.stderr.isNotEmpty) {
+      print('   ❌ Stderr: ${result.stderr}');
+    }
+
+    return InstallResult(
+      success: result.exitCode == 0,
+      packageName: packageName,
+      strategy: InstallStrategy.uvx,
+      output: result.stdout,
+      errorMessage: result.exitCode != 0 ? result.stderr : null,
+    );
+  }
+
+  /// 使用uvx安装（可取消版本）
+  Future<InstallResult> _installWithUvxCancellable(
+    String packageName,
+    Map<String, String>? envVars,
+    List<String>? additionalArgs,
+    Function(Process)? onProcessStarted,
+  ) async {
+    print('📦 Installing UVX package: $packageName (cancellable)');
+    
+    final uvPath = await _runtimeManager.getUvExecutable();
+    final mcpHubBasePath = PathConstants.getUserMcpHubPath();
+    
+    print('   🔄 Getting Python mirror URL...');
+    final pythonMirrorUrl = await _configService.getPythonMirrorUrl();
+    print('   ✅ Python mirror URL: $pythonMirrorUrl');
+    
+    final timeoutSeconds = await _configService.getDownloadTimeoutSeconds();
+    final concurrentDownloads = await _configService.getConcurrentDownloads();
+    
+    final pythonExePath = await _runtimeManager.getPythonExecutable();
+    print('   🔧 Using internal Python: $pythonExePath');
+
+    final enhancedEnvVars = <String, String>{
+      'UV_CACHE_DIR': '$mcpHubBasePath/cache/uv',
+      'UV_DATA_DIR': '$mcpHubBasePath/data/uv', 
+      'UV_TOOL_DIR': '$mcpHubBasePath/packages/uv/tools',
+      'UV_TOOL_BIN_DIR': '$mcpHubBasePath/packages/uv/bin',
+      'UV_PYTHON': pythonExePath,
+      'UV_PYTHON_PREFERENCE': 'only-system',
+      'UV_INDEX_URL': pythonMirrorUrl,
+      'UV_HTTP_TIMEOUT': '$timeoutSeconds',
+      'UV_CONCURRENT_DOWNLOADS': '$concurrentDownloads',
+      'UV_HTTP_RETRIES': '3',
+      if (envVars != null) ...envVars,
+    };
+
+    final args = ['tool', 'install', packageName];
+    
+    print('   📋 Command: $uvPath ${args.join(' ')}');
+    
+    final result = await _runCancellableCommand(
+      uvPath, 
+      args, 
+      envVars: enhancedEnvVars, 
+      packageName: packageName,
+      onProcessStarted: onProcessStarted,
+    );
 
     print('   📊 Exit code: ${result.exitCode}');
     if (result.stdout.isNotEmpty) {
@@ -463,7 +572,91 @@ class PackageManagerService {
     );
   }
 
-  /// 运行命令
+  /// 运行可取消的命令
+  Future<ProcessResult> _runCancellableCommand(
+    String executable,
+    List<String> arguments, {
+    String? workingDirectory,
+    Map<String, String>? envVars,
+    String? packageName,
+    Function(Process)? onProcessStarted, // 回调函数，传递进程实例
+  }) async {
+    final environment = <String, String>{
+      ...Platform.environment,
+      if (envVars != null) ...envVars,
+    };
+    
+    print('   🔧 Running cancellable command: $executable ${arguments.join(' ')}');
+    
+    try {
+      // 使用Process.start获得进程控制权
+      final process = await Process.start(
+        executable,
+        arguments,
+        workingDirectory: workingDirectory,
+        environment: environment,
+      );
+      
+      // 通过回调传递进程实例，允许外部控制
+      if (onProcessStarted != null) {
+        onProcessStarted(process);
+      }
+      
+      // 收集输出
+      final stdoutBuffer = StringBuffer();
+      final stderrBuffer = StringBuffer();
+      
+      // 监听输出流
+      process.stdout.transform(const SystemEncoding().decoder).listen((data) {
+        stdoutBuffer.write(data);
+        print('   📝 stdout: ${data.trim()}');
+      });
+      
+      process.stderr.transform(const SystemEncoding().decoder).listen((data) {
+        stderrBuffer.write(data);
+        print('   ❌ stderr: ${data.trim()}');
+      });
+      
+      // 等待进程完成，5分钟超时
+      final exitCode = await process.exitCode.timeout(
+        const Duration(minutes: 5),
+        onTimeout: () {
+          print('   ⏰ Command timed out, killing process...');
+          _killProcessCrossPlatform(process);
+          return -1;
+        },
+      );
+      
+      print('   ✅ Command completed with exit code: $exitCode');
+      
+      return ProcessResult(
+        process.pid,
+        exitCode,
+        stdoutBuffer.toString(),
+        stderrBuffer.toString(),
+      );
+      
+    } catch (e) {
+      print('   ❌ Command failed: $e');
+      
+      // 如果超时，检查包是否实际安装成功（仅当提供了包名时）
+      if (packageName != null) {
+        final packagePath = '/Users/huqibin/.mcphub/packages/uv/tools';
+        final packageDir = Directory('$packagePath/$packageName');
+        if (await packageDir.exists()) {
+          print('   ✅ Package directory exists, treating as successful installation');
+          return ProcessResult(0, 0, 'Package installed successfully (verified by directory check)', '');
+        } else {
+          print('   ❌ Package directory not found, installation failed');
+          return ProcessResult(1, 1, '', 'Installation failed: $e');
+        }
+      } else {
+        return ProcessResult(1, 1, '', 'Installation failed: $e');
+      }
+    }
+  }
+
+  /// 运行命令（保持向后兼容）
   Future<ProcessResult> _runCommand(
     String executable,
     List<String> arguments, {
@@ -507,6 +700,144 @@ class PackageManagerService {
         return ProcessResult(1, 1, '', 'Installation failed due to timeout or network error: $e');
       }
     }
+  }
+
+  /// 跨平台进程终止
+  void _killProcessCrossPlatform(Process process) {
+    try {
+      print('   🔪 Killing process ${process.pid}...');
+      
+      if (Platform.isWindows) {
+        // Windows: 使用taskkill命令
+        Process.run('taskkill', ['/F', '/PID', '${process.pid}']);
+      } else {
+        // Unix系统: 使用kill命令
+        process.kill(ProcessSignal.sigterm);
+        
+        // 如果进程仍在运行，强制杀死
+        Future.delayed(const Duration(seconds: 3), () {
+          try {
+            process.kill(ProcessSignal.sigkill);
+          } catch (e) {
+            // 进程可能已经结束
+          }
+        });
+      }
+      
+      print('   ✅ Process kill signal sent');
+    } catch (e) {
+      print('   ❌ Failed to kill process: $e');
+    }
+  }
+
+  /// NPX简化可取消安装
+  Future<InstallResult> _installWithNpxSimpleCancellable(
+    String packageName,
+    Map<String, String>? envVars,
+    List<String>? additionalArgs,
+    Function(Process)? onProcessStarted,
+  ) async {
+    print('📦 Installing NPX package: $packageName (cancellable)');
+    
+    final npmPath = await _runtimeManager.getNpmExecutable();
+    final nodePath = await _runtimeManager.getNodeExecutable();
+    final nodeDir = path.dirname(path.dirname(nodePath));
+    
+    final npmMirrorUrl = await _configService.getNpmMirrorUrl();
+    
+    final isolatedEnvVars = <String, String>{
+      'NODE_PATH': '$nodeDir/lib/node_modules',
+      'NPM_CONFIG_PREFIX': nodeDir,
+      'NPM_CONFIG_CACHE': '$nodeDir/.npm',
+      'NPM_CONFIG_REGISTRY': npmMirrorUrl,
+      if (envVars != null) ...envVars,
+    };
+    
+    final args = ['install', '-g', packageName];
+    print('   📋 Command: $npmPath ${args.join(' ')}');
+    
+    final result = await _runCancellableCommand(
+      npmPath, 
+      args, 
+      envVars: isolatedEnvVars,
+      onProcessStarted: onProcessStarted,
+    );
+
+    return InstallResult(
+      success: result.exitCode == 0,
+      packageName: packageName,
+      strategy: InstallStrategy.npx,
+      output: result.stdout,
+      errorMessage: result.exitCode != 0 ? result.stderr : null,
+    );
+  }
+
+  /// PIP简化可取消安装
+  Future<InstallResult> _installWithPipSimpleCancellable(
+    String packageName,
+    Map<String, String>? envVars,
+    List<String>? additionalArgs,
+    Function(Process)? onProcessStarted,
+  ) async {
+    final pythonPath = await _runtimeManager.getPythonExecutable();
+    final args = ['-m', 'pip', 'install', packageName, ...?additionalArgs];
+    
+    final result = await _runCancellableCommand(
+      pythonPath, 
+      args, 
+      envVars: envVars,
+      onProcessStarted: onProcessStarted,
+    );
+
+    return InstallResult(
+      success: result.exitCode == 0,
+      packageName: packageName,
+      strategy: InstallStrategy.pip,
+      output: result.stdout,
+      errorMessage: result.exitCode != 0 ? result.stderr : null,
+    );
+  }
+
+  /// NPM简化可取消安装
+  Future<InstallResult> _installWithNpmSimpleCancellable(
+    String packageName,
+    Map<String, String>? envVars,
+    List<String>? additionalArgs,
+    Function(Process)? onProcessStarted,
+  ) async {
+    print('📦 Installing NPM package: $packageName (cancellable)');
+    
+    final nodePath = await _runtimeManager.getNodeExecutable();
+    final npmPath = path.join(path.dirname(nodePath), 'npm');
+    final nodeDir = path.dirname(path.dirname(nodePath));
+    
+    final npmMirrorUrl = await _configService.getNpmMirrorUrl();
+    
+    final isolatedEnvVars = <String, String>{
+      'NODE_PATH': '$nodeDir/lib/node_modules',
+      'NPM_CONFIG_PREFIX': nodeDir,
+      'NPM_CONFIG_CACHE': '$nodeDir/.npm',
+      'NPM_CONFIG_REGISTRY': npmMirrorUrl,
+      if (envVars != null) ...envVars,
+    };
+    
+    final args = ['install', '-g', packageName, ...?additionalArgs];
+    print('   📋 Command: $npmPath ${args.join(' ')}');
+    
+    final result = await _runCancellableCommand(
+      npmPath, 
+      args, 
+      envVars: isolatedEnvVars,
+      onProcessStarted: onProcessStarted,
+    );
+
+    return InstallResult(
+      success: result.exitCode == 0,
+      packageName: packageName,
+      strategy: InstallStrategy.npm,
+      output: result.stdout,
+      errorMessage: result.exitCode != 0 ? result.stderr : null,
+    );
   }
 }
 

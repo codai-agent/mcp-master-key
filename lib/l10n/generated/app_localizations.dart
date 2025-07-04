@@ -998,6 +998,36 @@ abstract class AppLocalizations {
   /// **'Local Path'**
   String get install_wizard_local_path_label;
 
+  /// No description provided for @install_wizard_cancel_install_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Installation'**
+  String get install_wizard_cancel_install_title;
+
+  /// No description provided for @install_wizard_cancel_install_message.
+  ///
+  /// In en, this message translates to:
+  /// **'An installation process is currently in progress.\n\nIf cancelled, the current installation process will be terminated and downloaded content may need to be restarted.\n\nAre you sure you want to cancel the installation?'**
+  String get install_wizard_cancel_install_message;
+
+  /// No description provided for @install_wizard_continue_install.
+  ///
+  /// In en, this message translates to:
+  /// **'Continue Installation'**
+  String get install_wizard_continue_install;
+
+  /// No description provided for @install_wizard_cancel_install.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Installation'**
+  String get install_wizard_cancel_install;
+
+  /// No description provided for @install_wizard_installation_cancelled.
+  ///
+  /// In en, this message translates to:
+  /// **'🛑 Installation cancelled by user'**
+  String get install_wizard_installation_cancelled;
+
   /// No description provided for @monitor_title.
   ///
   /// In en, this message translates to:

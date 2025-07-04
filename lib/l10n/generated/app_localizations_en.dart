@@ -508,6 +508,23 @@ class AppLocalizationsEn extends AppLocalizations {
   String get install_wizard_local_path_label => 'Local Path';
 
   @override
+  String get install_wizard_cancel_install_title => 'Cancel Installation';
+
+  @override
+  String get install_wizard_cancel_install_message =>
+      'An installation process is currently in progress.\n\nIf cancelled, the current installation process will be terminated and downloaded content may need to be restarted.\n\nAre you sure you want to cancel the installation?';
+
+  @override
+  String get install_wizard_continue_install => 'Continue Installation';
+
+  @override
+  String get install_wizard_cancel_install => 'Cancel Installation';
+
+  @override
+  String get install_wizard_installation_cancelled =>
+      '🛑 Installation cancelled by user';
+
+  @override
   String get monitor_title => 'Hub Monitor';
 
   @override

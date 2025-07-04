@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
+import 'dart:io';
 import '../../business/services/package_manager_service.dart';
 import '../../business/services/mcp_server_service.dart';
 import '../../business/parsers/mcp_config_parser.dart';
@@ -57,6 +58,9 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   
   // 自动切换状态
   bool _isAutoAdvancing = false;
+  
+  // 安装进程控制
+  Process? _currentInstallProcess;
   
   // 🔥 简单的内存中状态保持
   static final Map<String, dynamic> _persistentState = {};
@@ -674,7 +678,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
     );
   }
 
-  // 第四步：执行安装
+  // 第四步：
   Widget _buildExecutionStep(AppLocalizations l10n) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
@@ -1111,7 +1115,24 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
     }
   }
 
-  void _previousStep() {
+  void _previousStep() async {
+    // 如果当前在安装步骤且有进程在运行，需要确认取消
+    if (_currentStep == 3 && _currentInstallProcess != null) {
+      final shouldCancel = await _showCancelInstallDialog();
+      if (shouldCancel == true) {
+        _cancelCurrentInstall();
+        setState(() {
+          _currentStep--;
+        });
+        _saveState(); // 💾 保存状态
+        _pageController.previousPage(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
+      }
+      return;
+    }
+    
     if (_currentStep > 0) {
       setState(() {
         _currentStep--;
@@ -1234,32 +1255,47 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
           );
         }
       } else {
-        // UVX/NPX自动安装
+        // UVX/NPX自动安装（使用可取消版本）
         if (installStrategy == InstallStrategy.uvx) {
           // 对于UVX：安装时只需要包名，运行时参数在启动时使用
-          result = await packageManager.installPackage(
+          result = await packageManager.installPackageCancellable(
             packageName: packageName,
             strategy: installStrategy,
             additionalArgs: null, // ❌ 不传递运行时参数给安装命令
             envVars: Map<String, String>.from(serverConfig['env'] ?? {}),
+            onProcessStarted: (process) {
+              setState(() {
+                _currentInstallProcess = process;
+              });
+            },
           );
         } else if (installStrategy == InstallStrategy.npx && args.contains('-y')) {
           // 对于NPX：移除-y参数，因为PackageManagerService会处理
           final filteredArgs = args.where((arg) => arg != '-y' && arg != packageName).toList();
-          result = await packageManager.installPackage(
+          result = await packageManager.installPackageCancellable(
             packageName: packageName,
             strategy: installStrategy,
             additionalArgs: filteredArgs.isNotEmpty ? filteredArgs : null,
             envVars: Map<String, String>.from(serverConfig['env'] ?? {}),
+            onProcessStarted: (process) {
+              setState(() {
+                _currentInstallProcess = process;
+              });
+            },
           );
         } else {
           // 其他情况：传递额外参数
           final additionalArgs = args.length > 1 ? args.sublist(1) : null;
-          result = await packageManager.installPackage(
+          result = await packageManager.installPackageCancellable(
             packageName: packageName,
             strategy: installStrategy,
             additionalArgs: additionalArgs,
             envVars: Map<String, String>.from(serverConfig['env'] ?? {}),
+            onProcessStarted: (process) {
+              setState(() {
+                _currentInstallProcess = process;
+              });
+            },
           );
         }
       }
@@ -1316,24 +1352,27 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
           // 更新状态为已安装
           await mcpServerService.updateServerStatus(addedServer.id, McpServerStatus.installed);
           
-          setState(() {
-            _installationLogs.add('✅ 服务器状态已更新为已安装');
-            _installationLogs.add('🎯 安装完成，可以在服务器列表中启动该服务器');
-            _installationSuccess = true;
-            _isInstalling = false;
-          });
+                  setState(() {
+          _installationLogs.add('✅ 服务器状态已更新为已安装');
+          _installationLogs.add('🎯 安装完成，可以在服务器列表中启动该服务器');
+          _installationSuccess = true;
+          _isInstalling = false;
+          _currentInstallProcess = null; // 清理进程引用
+        });
         } catch (e) {
-          setState(() {
-            _installationLogs.add('⚠️ 警告：无法更新服务器状态: $e');
-            _installationLogs.add('✅ 但服务器已成功添加，可以手动启动');
-            _installationSuccess = true;
-            _isInstalling = false;
-          });
+                  setState(() {
+          _installationLogs.add('⚠️ 警告：无法更新服务器状态: $e');
+          _installationLogs.add('✅ 但服务器已成功添加，可以手动启动');
+          _installationSuccess = true;
+          _isInstalling = false;
+          _currentInstallProcess = null; // 清理进程引用
+        });
         }
       } else {
         setState(() {
           _installationSuccess = false;
           _isInstalling = false;
+          _currentInstallProcess = null; // 清理进程引用
         });
       }
 
@@ -1343,6 +1382,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
         _installationLogs.add('🔍 错误详情: ${e.toString()}');
         _isInstalling = false;
         _installationSuccess = false;
+        _currentInstallProcess = null; // 清理进程引用
       });
     }
   }
@@ -1361,6 +1401,81 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(builder: (context) => const HomePage()),
       );
+    }
+  }
+
+  /// 显示取消安装确认对话框
+  Future<bool?> _showCancelInstallDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    
+    return showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Row(
+            children: [
+              const Icon(Icons.warning, color: Colors.orange),
+              const SizedBox(width: 8),
+              Text(l10n.install_wizard_cancel_install_title),
+            ],
+          ),
+          content: Text(l10n.install_wizard_cancel_install_message),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l10n.install_wizard_continue_install),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              style: TextButton.styleFrom(
+                foregroundColor: Colors.red,
+              ),
+              child: Text(l10n.install_wizard_cancel_install),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// 取消当前安装进程
+  void _cancelCurrentInstall() {
+    if (_currentInstallProcess != null) {
+      try {
+        print('🔪 正在取消安装进程 ${_currentInstallProcess!.pid}...');
+        
+        if (Platform.isWindows) {
+          // Windows: 使用taskkill命令
+          Process.run('taskkill', ['/F', '/PID', '${_currentInstallProcess!.pid}']);
+        } else {
+          // Unix系统: 使用kill命令
+          _currentInstallProcess!.kill(ProcessSignal.sigterm);
+          
+          // 如果进程仍在运行，强制杀死
+          Future.delayed(const Duration(seconds: 3), () {
+            try {
+              _currentInstallProcess?.kill(ProcessSignal.sigkill);
+            } catch (e) {
+              // 进程可能已经结束
+            }
+          });
+        }
+        
+        setState(() {
+          _installationLogs.add(AppLocalizations.of(context)!.install_wizard_installation_cancelled);
+          _isInstalling = false;
+          _installationSuccess = false;
+          _currentInstallProcess = null;
+        });
+        
+        print('✅ 安装进程已取消');
+      } catch (e) {
+        print('❌ 取消安装进程失败: $e');
+        setState(() {
+          _installationLogs.add('❌ 取消安装进程失败: $e');
+        });
+      }
     }
   }
 
