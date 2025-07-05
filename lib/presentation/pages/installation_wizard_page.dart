@@ -37,6 +37,7 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
   final TextEditingController _configController = TextEditingController();
+  final TextEditingController _commandController = TextEditingController(); // 命令解析输入框
   String _configError = '';
   Map<String, dynamic> _parsedConfig = {};
   
@@ -352,6 +353,29 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
             },
             errorText: _configError.isNotEmpty ? _configError : null,
             placeholderText: '${l10n.install_wizard_config_placeholder}\n\n    "server-name": {\n        "command": "uvx",\n        "args": ["package-name"]\n    }',
+          ),
+          
+          // 命令解析器
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
+                  controller: _commandController,
+                  decoration: InputDecoration(
+                    hintText: 'uvx/npx 安装命令',
+                    border: const OutlineInputBorder(),
+                    prefixIcon: const Icon(Icons.terminal),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              ElevatedButton.icon(
+                onPressed: _parseCommand,
+                icon: const Icon(Icons.transform, size: 16),
+                label: const Text('解析命令'),
+              ),
+            ],
           ),
           
           // // 配置帮助
@@ -897,9 +921,41 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
   void _analyzeInstallStrategy(AppLocalizations l10n) {
     if (_parsedConfig.isEmpty) return;
     
-    final mcpServers = _parsedConfig['mcpServers'] as Map<String, dynamic>;
-    final firstServer = mcpServers.values.first as Map<String, dynamic>;
-    final command = firstServer['command'] as String;
+    // 🔧 检查配置是否有效
+    if (!_parsedConfig.containsKey('mcpServers')) {
+      print('🔧 配置分析失败: 缺少mcpServers字段');
+      return;
+    }
+    
+    final mcpServersData = _parsedConfig['mcpServers'];
+    if (mcpServersData == null || mcpServersData is! Map<String, dynamic>) {
+      print('🔧 配置分析失败: mcpServers字段格式错误');
+      return;
+    }
+    
+    final mcpServers = mcpServersData as Map<String, dynamic>;
+    if (mcpServers.isEmpty) {
+      print('🔧 配置分析失败: mcpServers为空');
+      return;
+    }
+    
+    final firstServerData = mcpServers.values.first;
+    if (firstServerData == null || firstServerData is! Map<String, dynamic>) {
+      print('🔧 配置分析失败: 服务器配置格式错误');
+      return;
+    }
+    
+    final firstServer = firstServerData as Map<String, dynamic>;
+    
+    // 🔧 解析并清理配置，处理特殊格式
+    Map<String, dynamic> cleanedConfig;
+    try {
+      cleanedConfig = _cleanupServerConfig(firstServer);
+    } catch (e) {
+      print('🔧 配置清理失败: $e');
+      cleanedConfig = firstServer; // 使用原始配置
+    }
+    final command = cleanedConfig['command'] as String;
     
     setState(() {
       if (command == 'uvx') {
@@ -929,6 +985,320 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
     if (!_needsAdditionalInstall) {
       _autoAdvanceSteps();
     }
+  }
+
+  /// 清理和规范化服务器配置，处理特殊格式的兼容性
+  Map<String, dynamic> _cleanupServerConfig(Map<String, dynamic> serverConfig) {
+    final cleanedConfig = Map<String, dynamic>.from(serverConfig);
+    String? commandValue = cleanedConfig['command'];
+    if (commandValue == null) {
+      throw Exception('服务器配置缺少command字段');
+    }
+    String command = commandValue;
+    List<String> args = (cleanedConfig['args'] as List<dynamic>?)?.cast<String>() ?? [];
+    
+    // 🔧 处理第二种格式：Windows cmd 命令
+    if (command == 'cmd' && args.isNotEmpty) {
+      // 提取 /c 后面的实际命令
+      if (args[0] == '/c' && args.length > 1) {
+        command = args[1]; // 提取实际命令（如 npx）
+        args = args.sublist(2); // 移除 /c 和命令本身
+        
+        print('🔧 检测到Windows cmd格式，提取实际命令: $command');
+        print('🔧 剩余参数: ${args.join(' ')}');
+      }
+    }
+    
+    // 🔧 处理第一种和第二种格式：带有 @smithery/cli 的特殊NPX格式
+    if (command == 'npx' && args.isNotEmpty) {
+      // 查找是否包含 @smithery/cli@latest 模式
+      int smitheryIndex = -1;
+      for (int i = 0; i < args.length; i++) {
+        if (args[i].startsWith('@smithery/cli')) {
+          smitheryIndex = i;
+          break;
+        }
+      }
+      
+      if (smitheryIndex != -1) {
+        print('🔧 检测到@smithery/cli格式，需要清理参数');
+        print('🔧 原始参数: ${args.join(' ')}');
+        
+        // 移除 @smithery/cli@latest, run, --key, key值 这些参数
+        final List<String> cleanedArgs = [];
+        bool skipNext = false;
+        
+        for (int i = 0; i < args.length; i++) {
+          if (skipNext) {
+            skipNext = false;
+            continue;
+          }
+          
+          final arg = args[i];
+          
+          // 跳过 @smithery/cli@latest
+          if (arg.startsWith('@smithery/cli')) {
+            continue;
+          }
+          
+          // 跳过 run 命令
+          if (arg == 'run') {
+            continue;
+          }
+          
+          // 跳过 --key 及其对应的值
+          if (arg == '--key') {
+            skipNext = true; // 下一个参数是key的值，也要跳过
+            continue;
+          }
+          
+          // 保留其他参数
+          cleanedArgs.add(arg);
+        }
+        
+        args = cleanedArgs;
+        print('🔧 清理后的参数: ${args.join(' ')}');
+      }
+    }
+    
+    // 🔧 处理UVX命令的类似情况（如果将来需要）
+    if (command == 'uvx' && args.isNotEmpty) {
+      // 查找是否包含类似的特殊模式
+      int smitheryIndex = -1;
+      for (int i = 0; i < args.length; i++) {
+        if (args[i].startsWith('@smithery/cli')) {
+          smitheryIndex = i;
+          break;
+        }
+      }
+      
+      if (smitheryIndex != -1) {
+        print('🔧 检测到UVX中的@smithery/cli格式，需要清理参数');
+        print('🔧 原始参数: ${args.join(' ')}');
+        
+        // 同样的清理逻辑
+        final List<String> cleanedArgs = [];
+        bool skipNext = false;
+        
+        for (int i = 0; i < args.length; i++) {
+          if (skipNext) {
+            skipNext = false;
+            continue;
+          }
+          
+          final arg = args[i];
+          
+          // 跳过 @smithery/cli@latest
+          if (arg.startsWith('@smithery/cli')) {
+            continue;
+          }
+          
+          // 跳过 run 命令
+          if (arg == 'run') {
+            continue;
+          }
+          
+          // 跳过 --key 及其对应的值
+          if (arg == '--key') {
+            skipNext = true; // 下一个参数是key的值，也要跳过
+            continue;
+          }
+          
+          // 保留其他参数
+          cleanedArgs.add(arg);
+        }
+        
+        args = cleanedArgs;
+        print('🔧 UVX清理后的参数: ${args.join(' ')}');
+      }
+    }
+    
+    // 更新清理后的配置
+    cleanedConfig['command'] = command;
+    cleanedConfig['args'] = args;
+    
+    return cleanedConfig;
+  }
+
+  // 解析命令并生成配置
+  void _parseCommand() {
+    final command = _commandController.text.trim();
+    if (command.isEmpty) return;
+    
+    try {
+      final config = _parseCommandToConfig(command);
+      if (config != null) {
+        setState(() {
+          _configController.text = config;
+        });
+        _parseConfig();
+        
+        // 清空命令输入框
+        _commandController.clear();
+        
+        // 显示成功消息
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('命令解析成功！配置已自动填入'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('命令解析失败：$e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  // 将命令解析为MCP配置
+  String? _parseCommandToConfig(String command) {
+    final parts = _splitCommand(command);
+    if (parts.isEmpty) return null;
+    
+    String cmd = parts[0];
+    List<String> args = parts.sublist(1);
+    
+    // 处理不同的命令格式
+    if (cmd == 'npx' || cmd == 'uvx') {
+      // 清理参数，移除@smithery/cli相关内容
+      final cleanedArgs = _cleanCommandArgs(cmd, args);
+      
+      // 提取服务器名称
+      String serverName = _extractServerName(cleanedArgs);
+      
+      // 生成配置
+      final config = {
+        'mcpServers': {
+          serverName: {
+            'command': cmd,
+            'args': cleanedArgs,
+          }
+        }
+      };
+      
+      return const JsonEncoder.withIndent('  ').convert(config);
+    }
+    
+    return null;
+  }
+
+  // 清理命令参数
+  List<String> _cleanCommandArgs(String command, List<String> args) {
+    final cleanedArgs = <String>[];
+    bool skipNext = false;
+    
+    for (int i = 0; i < args.length; i++) {
+      if (skipNext) {
+        skipNext = false;
+        continue;
+      }
+      
+      final arg = args[i];
+      
+      // 跳过@smithery/cli相关内容
+      if (arg.startsWith('@smithery/cli')) {
+        continue;
+      }
+      
+      // 跳过run命令
+      if (arg == 'run') {
+        continue;
+      }
+      
+      // 跳过--key及其值
+      if (arg == '--key') {
+        skipNext = true;
+        continue;
+      }
+      
+      // 保留其他参数
+      cleanedArgs.add(arg);
+    }
+    
+    return cleanedArgs;
+  }
+
+  // 提取服务器名称
+  String _extractServerName(List<String> args) {
+    // 查找包名，通常是最后一个不以-开头的参数
+    for (int i = args.length - 1; i >= 0; i--) {
+      final arg = args[i];
+      if (!arg.startsWith('-')) {
+        // 提取包名的最后部分作为服务器名称
+        if (arg.startsWith('@')) {
+          // 处理@scope/package格式
+          final parts = arg.split('/');
+          if (parts.length >= 2) {
+            return parts.last.replaceAll('-', '_');
+          }
+        } else {
+          // 处理普通包名
+          return arg.replaceAll('-', '_');
+        }
+      }
+    }
+    
+    // 如果没有找到合适的名称，使用默认名称
+    return 'mcp_server';
+  }
+
+  // 从@smithery/cli命令中提取服务器名称
+  String _extractServerNameFromSmithery(List<String> args) {
+    // 对于@smithery/cli run @scope/package格式，目标包通常在run后面
+    for (int i = 0; i < args.length - 1; i++) {
+      if (args[i] == 'run') {
+        final targetPackage = args[i + 1];
+        if (targetPackage.startsWith('@')) {
+          // 提取包名的最后部分作为服务器名称
+          final parts = targetPackage.split('/');
+          if (parts.length >= 2) {
+            return parts.last.replaceAll('-', '_');
+          }
+        } else {
+          return targetPackage.replaceAll('-', '_');
+        }
+      }
+    }
+    
+    // 如果没有找到合适的名称，使用默认名称
+    return 'smithery_server';
+  }
+
+  // 分割命令，正确处理引号
+  List<String> _splitCommand(String command) {
+    final parts = <String>[];
+    var current = '';
+    var inQuotes = false;
+    var quoteChar = '';
+    
+    for (int i = 0; i < command.length; i++) {
+      final char = command[i];
+      
+      if (!inQuotes && (char == '"' || char == "'")) {
+        inQuotes = true;
+        quoteChar = char;
+      } else if (inQuotes && char == quoteChar) {
+        inQuotes = false;
+        quoteChar = '';
+      } else if (!inQuotes && char == ' ') {
+        if (current.isNotEmpty) {
+          parts.add(current);
+          current = '';
+        }
+      } else {
+        current += char;
+      }
+    }
+    
+    if (current.isNotEmpty) {
+      parts.add(current);
+    }
+    
+    return parts;
   }
 
   // 加载示例配置
@@ -1180,14 +1550,74 @@ class _InstallationWizardPageState extends State<InstallationWizardPage> {
         runtimeManager: RuntimeManager.instance,
       );
       
-      final mcpServers = _parsedConfig['mcpServers'] as Map<String, dynamic>;
+      // 🔧 添加调试信息
+      print('🔧 开始安装检查:');
+      print('🔧 _parsedConfig是否为空: ${_parsedConfig.isEmpty}');
+      print('🔧 _parsedConfig内容: $_parsedConfig');
+      print('🔧 _configController.text: ${_configController.text}');
+      
+      // 🔧 检查配置是否有效，如果为空则重新解析
+      if (_parsedConfig.isEmpty || !_parsedConfig.containsKey('mcpServers')) {
+        print('🔧 _parsedConfig为空，尝试重新解析配置...');
+        
+        // 重新解析配置
+        try {
+          final config = json.decode(_configController.text);
+          if (config is Map<String, dynamic> && config.containsKey('mcpServers')) {
+            setState(() {
+              _parsedConfig = config;
+            });
+            print('🔧 重新解析配置成功: $_parsedConfig');
+          } else {
+            throw Exception('配置格式无效');
+          }
+        } catch (e) {
+          throw Exception('配置无效：无法解析JSON配置 - $e');
+        }
+      }
+      
+      // 再次检查配置是否有效
+      if (_parsedConfig.isEmpty || !_parsedConfig.containsKey('mcpServers')) {
+        throw Exception('配置无效：缺少mcpServers字段');
+      }
+      
+      final mcpServersData = _parsedConfig['mcpServers'];
+      if (mcpServersData == null || mcpServersData is! Map<String, dynamic>) {
+        throw Exception('配置无效：mcpServers字段格式错误');
+      }
+      
+      final mcpServers = mcpServersData as Map<String, dynamic>;
+      if (mcpServers.isEmpty) {
+        throw Exception('配置无效：mcpServers为空');
+      }
+      
       final serverName = mcpServers.keys.first;
-      final serverConfig = mcpServers[serverName] as Map<String, dynamic>;
+      final originalServerConfigData = mcpServers[serverName];
+      if (originalServerConfigData == null || originalServerConfigData is! Map<String, dynamic>) {
+        throw Exception('配置无效：服务器配置格式错误');
+      }
+      
+      final originalServerConfig = originalServerConfigData as Map<String, dynamic>;
+      
+      // 🔧 应用配置清理，处理特殊格式
+      Map<String, dynamic> serverConfig;
+      try {
+        serverConfig = _cleanupServerConfig(originalServerConfig);
+      } catch (e) {
+        print('🔧 配置清理失败: $e');
+        serverConfig = originalServerConfig; // 使用原始配置
+      }
       
       setState(() {
         _installationLogs.add('📋 解析服务器配置: $serverName');
-        _installationLogs.add('📋 命令: ${serverConfig['command']}');
-        _installationLogs.add('📋 参数: ${serverConfig['args']}');
+        _installationLogs.add('📋 原始命令: ${originalServerConfig['command']}');
+        _installationLogs.add('📋 原始参数: ${originalServerConfig['args']}');
+        if (serverConfig['command'] != originalServerConfig['command'] || 
+            serverConfig['args'].toString() != originalServerConfig['args'].toString()) {
+          _installationLogs.add('🔧 检测到特殊格式，已自动清理:');
+          _installationLogs.add('📋 清理后命令: ${serverConfig['command']}');
+          _installationLogs.add('📋 清理后参数: ${serverConfig['args']}');
+        }
       });
       
       // 确定安装类型

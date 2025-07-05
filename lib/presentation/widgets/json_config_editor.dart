@@ -41,6 +41,15 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
   }
 
   @override
+  void didUpdateWidget(JsonConfigEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 当外部的 initialValue 发生变化时，重新初始化
+    if (widget.initialValue != oldWidget.initialValue) {
+      _initializeFromFullConfig();
+    }
+  }
+
+  @override
   void dispose() {
     _serverConfigController.dispose();
     _focusNode.dispose();

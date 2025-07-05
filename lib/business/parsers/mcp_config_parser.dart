@@ -148,13 +148,16 @@ class McpConfigParser {
 
   /// 解析单个服务器配置
   McpServerConfig _parseServerConfig(String name, Map<String, dynamic> config) {
-    final command = config['command'] as String? ?? '';
-    final args = (config['args'] as List<dynamic>?)?.cast<String>() ?? [];
-    final env = (config['env'] as Map<String, dynamic>?)?.cast<String, String>() ?? {};
-    final workingDirectory = config['cwd'] as String?;
+    // 🔧 应用配置清理，处理特殊格式
+    final cleanedConfig = _cleanupServerConfig(config);
+    
+    final command = cleanedConfig['command'] as String? ?? '';
+    final args = (cleanedConfig['args'] as List<dynamic>?)?.cast<String>() ?? [];
+    final env = (cleanedConfig['env'] as Map<String, dynamic>?)?.cast<String, String>() ?? {};
+    final workingDirectory = cleanedConfig['cwd'] as String?;
 
     // 解析连接类型，兼容 type 和 transportType 字段
-    final connectionType = parseConnectionType(config);
+    final connectionType = parseConnectionType(cleanedConfig);
 
     // 分析安装策略
     final analysis = _analyzeInstallStrategy(command, args);
@@ -390,6 +393,137 @@ class McpConfigParser {
   }
 }''';
   }
+
+  /// 清理和规范化服务器配置，处理特殊格式的兼容性
+  Map<String, dynamic> _cleanupServerConfig(Map<String, dynamic> serverConfig) {
+    final cleanedConfig = Map<String, dynamic>.from(serverConfig);
+    String command = cleanedConfig['command'] as String? ?? '';
+    List<String> args = (cleanedConfig['args'] as List<dynamic>?)?.cast<String>() ?? [];
+    
+    // 🔧 处理第二种格式：Windows cmd 命令
+    if (command == 'cmd' && args.isNotEmpty) {
+      // 提取 /c 后面的实际命令
+      if (args[0] == '/c' && args.length > 1) {
+        command = args[1]; // 提取实际命令（如 npx）
+        args = args.sublist(2); // 移除 /c 和命令本身
+        
+        print('🔧 MCP解析器检测到Windows cmd格式，提取实际命令: $command');
+        print('🔧 剩余参数: ${args.join(' ')}');
+      }
+    }
+    
+    // 🔧 处理第一种和第二种格式：带有 @smithery/cli 的特殊NPX格式
+    if (command == 'npx' && args.isNotEmpty) {
+      // 查找是否包含 @smithery/cli@latest 模式
+      int smitheryIndex = -1;
+      for (int i = 0; i < args.length; i++) {
+        if (args[i].startsWith('@smithery/cli')) {
+          smitheryIndex = i;
+          break;
+        }
+      }
+      
+      if (smitheryIndex != -1) {
+        print('🔧 MCP解析器检测到@smithery/cli格式，需要清理参数');
+        print('🔧 原始参数: ${args.join(' ')}');
+        
+        // 移除 @smithery/cli@latest, run, --key, key值 这些参数
+        final List<String> cleanedArgs = [];
+        bool skipNext = false;
+        
+        for (int i = 0; i < args.length; i++) {
+          if (skipNext) {
+            skipNext = false;
+            continue;
+          }
+          
+          final arg = args[i];
+          
+          // 跳过 @smithery/cli@latest
+          if (arg.startsWith('@smithery/cli')) {
+            continue;
+          }
+          
+          // 跳过 run 命令
+          if (arg == 'run') {
+            continue;
+          }
+          
+          // 跳过 --key 及其对应的值
+          if (arg == '--key') {
+            skipNext = true; // 下一个参数是key的值，也要跳过
+            continue;
+          }
+          
+          // 保留其他参数
+          cleanedArgs.add(arg);
+        }
+        
+        args = cleanedArgs;
+        print('🔧 MCP解析器清理后的参数: ${args.join(' ')}');
+      }
+    }
+    
+    // 🔧 处理UVX命令的类似情况（如果将来需要）
+    if (command == 'uvx' && args.isNotEmpty) {
+      // 查找是否包含类似的特殊模式
+      int smitheryIndex = -1;
+      for (int i = 0; i < args.length; i++) {
+        if (args[i].startsWith('@smithery/cli')) {
+          smitheryIndex = i;
+          break;
+        }
+      }
+      
+      if (smitheryIndex != -1) {
+        print('🔧 MCP解析器检测到UVX中的@smithery/cli格式，需要清理参数');
+        print('🔧 原始参数: ${args.join(' ')}');
+        
+        // 同样的清理逻辑
+        final List<String> cleanedArgs = [];
+        bool skipNext = false;
+        
+        for (int i = 0; i < args.length; i++) {
+          if (skipNext) {
+            skipNext = false;
+            continue;
+          }
+          
+          final arg = args[i];
+          
+          // 跳过 @smithery/cli@latest
+          if (arg.startsWith('@smithery/cli')) {
+            continue;
+          }
+          
+          // 跳过 run 命令
+          if (arg == 'run') {
+            continue;
+          }
+          
+          // 跳过 --key 及其对应的值
+          if (arg == '--key') {
+            skipNext = true; // 下一个参数是key的值，也要跳过
+            continue;
+          }
+          
+          // 保留其他参数
+          cleanedArgs.add(arg);
+        }
+        
+        args = cleanedArgs;
+        print('🔧 MCP解析器UVX清理后的参数: ${args.join(' ')}');
+      }
+    }
+    
+    // 更新清理后的配置
+    cleanedConfig['command'] = command;
+    cleanedConfig['args'] = args;
+    
+    return cleanedConfig;
+  }
+
+
 }
 
 /// 安装分析结果
