@@ -427,9 +427,10 @@ class McpConfigParser {
         print('🔧 MCP解析器检测到@smithery/cli格式，需要清理参数');
         print('🔧 原始参数: ${args.join(' ')}');
         
-        // 移除 @smithery/cli@latest, run, --key, key值 这些参数
+        // 移除 @smithery/cli@latest, run/inspect, --key, key值 这些参数
         final List<String> cleanedArgs = [];
         bool skipNext = false;
+        bool foundSmithery = false;
         
         for (int i = 0; i < args.length; i++) {
           if (skipNext) {
@@ -441,11 +442,13 @@ class McpConfigParser {
           
           // 跳过 @smithery/cli@latest
           if (arg.startsWith('@smithery/cli')) {
+            foundSmithery = true;
             continue;
           }
           
-          // 跳过 run 命令
-          if (arg == 'run') {
+          // 如果刚刚遇到了@smithery/cli，跳过紧跟的命令（run、inspect等）
+          if (foundSmithery && (arg == 'run' || arg == 'inspect')) {
+            foundSmithery = false; // 重置标志
             continue;
           }
           
@@ -457,6 +460,7 @@ class McpConfigParser {
           
           // 保留其他参数
           cleanedArgs.add(arg);
+          foundSmithery = false; // 重置标志
         }
         
         args = cleanedArgs;
@@ -464,55 +468,34 @@ class McpConfigParser {
       }
     }
     
-    // 🔧 处理UVX命令的类似情况（如果将来需要）
+    // 🔧 处理UVX命令（UVX是Python包管理器，不会有@smithery/cli包）
     if (command == 'uvx' && args.isNotEmpty) {
-      // 查找是否包含类似的特殊模式
-      int smitheryIndex = -1;
+      // UVX只需要清理--key参数（如果有的话）
+      final List<String> cleanedArgs = [];
+      bool skipNext = false;
+      
       for (int i = 0; i < args.length; i++) {
-        if (args[i].startsWith('@smithery/cli')) {
-          smitheryIndex = i;
-          break;
+        if (skipNext) {
+          skipNext = false;
+          continue;
         }
+        
+        final arg = args[i];
+        
+        // 跳过 --key 及其对应的值
+        if (arg == '--key') {
+          skipNext = true; // 下一个参数是key的值，也要跳过
+          continue;
+        }
+        
+        // 保留其他参数
+        cleanedArgs.add(arg);
       }
       
-      if (smitheryIndex != -1) {
-        print('🔧 MCP解析器检测到UVX中的@smithery/cli格式，需要清理参数');
-        print('🔧 原始参数: ${args.join(' ')}');
-        
-        // 同样的清理逻辑
-        final List<String> cleanedArgs = [];
-        bool skipNext = false;
-        
-        for (int i = 0; i < args.length; i++) {
-          if (skipNext) {
-            skipNext = false;
-            continue;
-          }
-          
-          final arg = args[i];
-          
-          // 跳过 @smithery/cli@latest
-          if (arg.startsWith('@smithery/cli')) {
-            continue;
-          }
-          
-          // 跳过 run 命令
-          if (arg == 'run') {
-            continue;
-          }
-          
-          // 跳过 --key 及其对应的值
-          if (arg == '--key') {
-            skipNext = true; // 下一个参数是key的值，也要跳过
-            continue;
-          }
-          
-          // 保留其他参数
-          cleanedArgs.add(arg);
-        }
-        
+      // 只有在清理了参数的情况下才更新
+      if (cleanedArgs.length != args.length) {
+        print('🔧 MCP解析器UVX清理--key参数: ${args.join(' ')} → ${cleanedArgs.join(' ')}');
         args = cleanedArgs;
-        print('🔧 MCP解析器UVX清理后的参数: ${args.join(' ')}');
       }
     }
     

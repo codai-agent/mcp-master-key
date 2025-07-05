@@ -744,16 +744,25 @@ class PackageManagerService {
     final nodeDir = path.dirname(path.dirname(nodePath));
     
     final npmMirrorUrl = await _configService.getNpmMirrorUrl();
+    print('🔧 Using NPM mirror URL: $npmMirrorUrl');
     
     final isolatedEnvVars = <String, String>{
       'NODE_PATH': '$nodeDir/lib/node_modules',
       'NPM_CONFIG_PREFIX': nodeDir,
       'NPM_CONFIG_CACHE': '$nodeDir/.npm',
       'NPM_CONFIG_REGISTRY': npmMirrorUrl,
+      'NPM_CONFIG_REPLACE_REGISTRY_HOST': '', // 清除replace-registry-host配置
       if (envVars != null) ...envVars,
     };
     
-    final args = ['install', '-g', packageName];
+    print('🔧 Environment variables:');
+    isolatedEnvVars.forEach((key, value) {
+      if (key.startsWith('NPM_')) {
+        print('   $key = $value');
+      }
+    });
+    
+    final args = ['install', '-g', packageName, '--registry', npmMirrorUrl, '--no-optional', '--no-fund', '--no-audit'];
     print('   📋 Command: $npmPath ${args.join(' ')}');
     
     final result = await _runCancellableCommand(
@@ -818,10 +827,11 @@ class PackageManagerService {
       'NPM_CONFIG_PREFIX': nodeDir,
       'NPM_CONFIG_CACHE': '$nodeDir/.npm',
       'NPM_CONFIG_REGISTRY': npmMirrorUrl,
+      'NPM_CONFIG_REPLACE_REGISTRY_HOST': '', // 清除replace-registry-host配置
       if (envVars != null) ...envVars,
     };
     
-    final args = ['install', '-g', packageName, ...?additionalArgs];
+    final args = ['install', '-g', packageName, '--registry', npmMirrorUrl, ...?additionalArgs];
     print('   📋 Command: $npmPath ${args.join(' ')}');
     
     final result = await _runCancellableCommand(

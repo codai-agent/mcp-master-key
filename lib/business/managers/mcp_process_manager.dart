@@ -986,10 +986,12 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
 
         // 安装包
         print('   📦 Running npm install...');
+        final env = await getServerEnvironment(server);
         final result = await Process.run(
           npmPath,
           ['install', server.installSource!],
           workingDirectory: serverDir,
+          environment: env,
         );
 
         print('   📋 NPM install result:');
@@ -1386,13 +1388,14 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
   Future<Process> _startNodePackageProcess(String packageName, List<String> args) async {
     final nodePath = await _runtimeManager.getNodeExecutable();
     final npmPath = await _runtimeManager.getNpmExecutable();
+    final nodeEnv = await _getNodeEnvironment();
     
     if (Platform.isWindows) {
       // Windows上使用npm exec来执行包
       return Process.start(
         npmPath,
         ['exec', packageName, ...args],
-        environment: _getNodeEnvironment(),
+        environment: nodeEnv,
         workingDirectory: path.dirname(nodePath),
       );
     } else {
@@ -1400,23 +1403,26 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
       return Process.start(
         nodePath,
         ['-e', 'require("child_process").spawn("$packageName", process.argv.slice(1), {stdio: "inherit"})'],
-        environment: _getNodeEnvironment(),
+        environment: nodeEnv,
         workingDirectory: path.dirname(nodePath),
       );
     }
   }
 
-  Map<String, String> _getNodeEnvironment() {
+  Future<Map<String, String>> _getNodeEnvironment() async {
     final runtimeBase = _runtimeManager.getRuntimeBasePath();
     final platform = _runtimeManager.getPlatformString();
     final nodeBase = path.join(runtimeBase, 'nodejs', platform);
+    
+    // 📋 从配置服务获取镜像源设置
+    final npmMirrorUrl = await _configService.getNpmMirrorUrl();
     
     final env = {
       ...Platform.environment,
       'NODE_PATH': path.join(nodeBase, 'node_modules'),
       'NPM_CONFIG_PREFIX': nodeBase,
       'NPM_CONFIG_CACHE': path.join(nodeBase, 'npm-cache'),
-      'NPM_CONFIG_REGISTRY': 'https://registry.npmjs.org/',
+      'NPM_CONFIG_REGISTRY': npmMirrorUrl,
     };
     
     if (Platform.isWindows) {

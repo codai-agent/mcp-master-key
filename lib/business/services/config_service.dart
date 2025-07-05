@@ -341,7 +341,9 @@ class ConfigService {
   /// 是否使用中国镜像源 (从JSON文件，临时回退)
   Future<bool> getUseChinaMirrors() async {
     try {
-      return await getValue('download.use_china_mirrors', false) ?? false;
+      final result = await getValue('download.use_china_mirrors', false) ?? false;
+      print('🔧 ConfigService.getUseChinaMirrors: $result');
+      return result;
     } catch (e) {
       print('❌ Error getting china mirrors setting: $e');
       return false;
@@ -359,24 +361,34 @@ class ConfigService {
     }
   }
   
-  /// 获取Python镜像源URL (从数据库)
+  /// 获取Python镜像源URL (统一从JSON文件读取)
   Future<String> getPythonMirrorUrl() async {
     final useChinaMirrors = await getUseChinaMirrors();
     if (useChinaMirrors) {
-      return await _getConfigFromDatabase('download_python_mirror_url_china', 'https://pypi.tuna.tsinghua.edu.cn/simple');
+      final url = await getValue('download.python_mirror_url_china', 'https://pypi.tuna.tsinghua.edu.cn/simple') ?? 'https://pypi.tuna.tsinghua.edu.cn/simple';
+      print('🔧 ConfigService.getPythonMirrorUrl: returning $url (China mirror)');
+      return url;
     } else {
-      return await _getConfigFromDatabase('download_python_mirror_url', 'https://pypi.org/simple');
+      final url = await getValue('download.python_mirror_url', 'https://pypi.org/simple') ?? 'https://pypi.org/simple';
+      print('🔧 ConfigService.getPythonMirrorUrl: returning $url (Official mirror)');
+      return url;
     }
   }
   
-  /// 获取NPM镜像源URL (从数据库)
+  /// 获取NPM镜像源URL (统一从JSON文件读取)
   Future<String> getNpmMirrorUrl() async {
     final useChinaMirrors = await getUseChinaMirrors();
+    print('🔧 ConfigService.getNpmMirrorUrl: useChinaMirrors = $useChinaMirrors');
+    
+    String mirrorUrl;
     if (useChinaMirrors) {
-      return await _getConfigFromDatabase('download_npm_mirror_url_china', 'https://registry.npmmirror.com/');
+      mirrorUrl = await getValue('download.npm_mirror_url_china', 'https://registry.npmmirror.com/') ?? 'https://registry.npmmirror.com/';
     } else {
-      return await _getConfigFromDatabase('download_npm_mirror_url', 'https://registry.npmjs.org/');
+      mirrorUrl = await getValue('download.npm_mirror_url', 'https://registry.npmjs.org/') ?? 'https://registry.npmjs.org/';
     }
+    
+    print('🔧 ConfigService.getNpmMirrorUrl: returning $mirrorUrl');
+    return mirrorUrl;
   }
   
   /// 获取下载超时时间 (从数据库)
@@ -480,12 +492,16 @@ class ConfigService {
       );
       
       if (results.isNotEmpty) {
-        return results.first['value'] as String;
+        final value = results.first['value'] as String;
+        print('🔧 _getConfigFromDatabase: $key = $value (from database)');
+        return value;
       }
       
+      print('🔧 _getConfigFromDatabase: $key = $defaultValue (default, not found in database)');
       return defaultValue;
     } catch (e) {
       print('❌ Error getting config from database: $e');
+      print('🔧 _getConfigFromDatabase: $key = $defaultValue (default, due to error)');
       return defaultValue;
     }
   }
