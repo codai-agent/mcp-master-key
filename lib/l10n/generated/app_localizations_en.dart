@@ -259,7 +259,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get install_error => 'Installation failed';
 
   @override
-  String get install_wizard_title => 'MCP Server Installation Wizard';
+  String get install_wizard_title => 'Installation Wizard';
 
   @override
   String get install_wizard_auto_install_note =>
@@ -305,7 +305,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get install_wizard_local_path => 'Local Path';
 
   @override
-  String get install_wizard_local_path_desc => 'Install from local file system';
+  String get install_wizard_local_path_desc => 'Install from local path';
 
   @override
   String get install_wizard_auto_analyze_note =>
@@ -523,6 +523,243 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get install_wizard_installation_cancelled =>
       '🛑 Installation cancelled by user';
+
+  @override
+  String get install_wizard_options_title => 'Installation Options';
+
+  @override
+  String get install_wizard_options_needed =>
+      'Need to configure additional installation options';
+
+  @override
+  String get install_wizard_options_default =>
+      'Use default installation options';
+
+  @override
+  String get install_wizard_source_type_title => 'Installation Source Type';
+
+  @override
+  String get install_wizard_github_repo => 'GitHub Repository';
+
+  @override
+  String get install_wizard_github_repo_desc =>
+      'Install from GitHub repository';
+
+  @override
+  String get install_wizard_github_url_label => 'GitHub Repository URL';
+
+  @override
+  String get install_wizard_github_url_hint =>
+      'https://github.com/user/repo.git';
+
+  @override
+  String get install_wizard_local_path_hint => '/path/to/mcp-server';
+
+  @override
+  String get install_wizard_auto_install_title => 'Auto Install';
+
+  @override
+  String get install_wizard_auto_install_desc =>
+      'System will automatically handle the installation process, no additional configuration needed';
+
+  @override
+  String get install_wizard_step_1 => '1';
+
+  @override
+  String get install_wizard_step_2 => '2';
+
+  @override
+  String get install_wizard_step_3 => '3';
+
+  @override
+  String get install_wizard_step_4 => '4';
+
+  @override
+  String get install_wizard_step_configure_short => 'Configure';
+
+  @override
+  String get install_wizard_step_analyze_short => 'Analyze';
+
+  @override
+  String get install_wizard_step_options_short => 'Options';
+
+  @override
+  String get install_wizard_step_execute_short => 'Execute';
+
+  @override
+  String get config_step_title => 'Configure MCP Server';
+
+  @override
+  String get config_step_subtitle =>
+      'Please enter the basic information and configuration for the MCP server';
+
+  @override
+  String get config_step_basic_info => 'Basic Information';
+
+  @override
+  String get config_step_server_name => 'Server Name (Optional)';
+
+  @override
+  String get config_step_server_name_hint => 'e.g., my-mcp-server';
+
+  @override
+  String get config_step_server_description => 'Server Description (Optional)';
+
+  @override
+  String get config_step_server_description_hint =>
+      'e.g., MCP server for file operations';
+
+  @override
+  String get config_step_quick_config => 'Quick Configuration';
+
+  @override
+  String get config_step_command_parse => 'Command Parse';
+
+  @override
+  String get config_step_command_parse_desc =>
+      'If you have an existing installation command, you can paste it here to automatically generate configuration';
+
+  @override
+  String get config_step_install_command => 'Installation Command';
+
+  @override
+  String get config_step_install_command_hint =>
+      'e.g., npx -y @modelcontextprotocol/server-filesystem';
+
+  @override
+  String get config_step_parse_command => 'Parse Command';
+
+  @override
+  String get config_step_parse_command_tooltip => 'Parse Command';
+
+  @override
+  String get config_step_clear => 'Clear';
+
+  @override
+  String get config_step_mcp_config => 'MCP Configuration';
+
+  @override
+  String get config_step_config_parse_success =>
+      'Configuration parsed successfully!';
+
+  @override
+  String get config_step_input_command_required =>
+      'Please enter installation command';
+
+  @override
+  String get config_step_command_parse_success =>
+      'Command parsed successfully! Configuration has been automatically filled in';
+
+  @override
+  String config_step_command_parse_failed(Object error) {
+    return 'Command parsing failed: $error';
+  }
+
+  @override
+  String get analysis_step_title => 'Analyze Installation Strategy';
+
+  @override
+  String get analysis_step_subtitle => 'Analyzing MCP server configuration...';
+
+  @override
+  String get analysis_step_result => 'Analysis Result';
+
+  @override
+  String get analysis_step_install_type => 'Installation Type';
+
+  @override
+  String get analysis_step_install_method => 'Installation Method';
+
+  @override
+  String get analysis_step_status => 'Status';
+
+  @override
+  String get analysis_step_manual_config => 'Manual configuration required';
+
+  @override
+  String get analysis_step_auto_install => 'Auto install';
+
+  @override
+  String get analysis_step_analyzing => 'Analyzing configuration...';
+
+  @override
+  String get analysis_step_auto_advancing =>
+      'Automatically advancing to next step...';
+
+  @override
+  String get analysis_step_install_type_uvx => 'UVX (Python Package Manager)';
+
+  @override
+  String get analysis_step_install_type_npx => 'NPX (Node.js Package Manager)';
+
+  @override
+  String get analysis_step_install_type_smithery =>
+      'Smithery (MCP Package Manager)';
+
+  @override
+  String get analysis_step_install_type_local_python => 'Local Python Package';
+
+  @override
+  String get analysis_step_install_type_local_jar => 'Local JAR Package';
+
+  @override
+  String get analysis_step_install_type_local_executable => 'Local Executable';
+
+  @override
+  String get analysis_step_install_type_unknown => 'Unknown Type';
+
+  @override
+  String get execution_step_title => 'Execute Installation';
+
+  @override
+  String get execution_step_subtitle_completed => 'Installation completed!';
+
+  @override
+  String get execution_step_subtitle_installing => 'Installing MCP server...';
+
+  @override
+  String get execution_step_subtitle_ready => 'Ready to install MCP server';
+
+  @override
+  String get execution_step_summary => 'Installation Summary';
+
+  @override
+  String get execution_step_server_name => 'Server Name';
+
+  @override
+  String get execution_step_unnamed => 'Unnamed';
+
+  @override
+  String get execution_step_description => 'Description';
+
+  @override
+  String get execution_step_install_type => 'Installation Type';
+
+  @override
+  String get execution_step_install_source => 'Installation Source';
+
+  @override
+  String get execution_step_github_repo => 'GitHub Repository';
+
+  @override
+  String get execution_step_local_path => 'Local Path';
+
+  @override
+  String get execution_step_install_logs => 'Installation Logs';
+
+  @override
+  String get execution_step_waiting_install =>
+      'Waiting to start installation...';
+
+  @override
+  String get execution_step_cancel_install => 'Cancel Installation';
+
+  @override
+  String get execution_step_install_completed => 'Installation Completed!';
+
+  @override
+  String get execution_step_server_list_hint =>
+      'You can start this server in the server list';
 
   @override
   String get monitor_title => 'Hub Monitor';

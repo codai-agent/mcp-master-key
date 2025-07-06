@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 import '../installation_wizard_controller.dart';
 
 /// 执行步骤组件
@@ -12,20 +13,21 @@ class ExecutionStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '执行安装',
+            l10n.execution_step_title,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
             controller.state.installationSuccess 
-              ? '安装已完成！' 
-              : (controller.state.isInstalling ? '正在安装MCP服务器...' : '准备安装MCP服务器'),
+              ? l10n.execution_step_subtitle_completed
+              : (controller.state.isInstalling ? l10n.execution_step_subtitle_installing : l10n.execution_step_subtitle_ready),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: controller.state.installationSuccess 
                 ? Colors.green[600]
@@ -53,7 +55,7 @@ class ExecutionStep extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '安装摘要',
+                      l10n.execution_step_summary,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -62,29 +64,29 @@ class ExecutionStep extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 _buildSummaryItem(
-                  '服务器名称', 
+                  l10n.execution_step_server_name, 
                   controller.state.serverName.isNotEmpty 
                     ? controller.state.serverName 
-                    : '未命名'
+                    : l10n.execution_step_unnamed
                 ),
                 if (controller.state.serverDescription.isNotEmpty) ...[
                   const SizedBox(height: 8),
-                  _buildSummaryItem('描述', controller.state.serverDescription),
+                  _buildSummaryItem(l10n.execution_step_description, controller.state.serverDescription),
                 ],
                 if (controller.state.detectedInstallType != null) ...[
                   const SizedBox(height: 8),
                   _buildSummaryItem(
-                    '安装类型', 
-                    _getInstallTypeDisplayName(controller.state.detectedInstallType!)
+                    l10n.execution_step_install_type, 
+                    _getInstallTypeDisplayName(controller.state.detectedInstallType!, l10n)
                   ),
                 ],
                 if (controller.state.needsAdditionalInstall) ...[
                   const SizedBox(height: 8),
                   _buildSummaryItem(
-                    '安装源', 
+                    l10n.execution_step_install_source, 
                     controller.state.selectedInstallType == 'github' 
-                      ? 'GitHub仓库' 
-                      : '本地路径'
+                      ? l10n.execution_step_github_repo
+                      : l10n.execution_step_local_path
                   ),
                 ],
               ],
@@ -113,7 +115,7 @@ class ExecutionStep extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        '安装日志',
+                        l10n.execution_step_install_logs,
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                           color: Colors.green,
                           fontWeight: FontWeight.bold,
@@ -139,7 +141,7 @@ class ExecutionStep extends StatelessWidget {
                         children: [
                           if (controller.state.installationLogs.isEmpty)
                             Text(
-                              '等待开始安装...',
+                              l10n.execution_step_waiting_install,
                               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                                 color: Colors.grey[400],
                                 fontFamily: 'monospace',
@@ -176,7 +178,7 @@ class ExecutionStep extends StatelessWidget {
                   child: OutlinedButton.icon(
                     onPressed: () => _showCancelDialog(context),
                     icon: const Icon(Icons.cancel, color: Colors.red),
-                    label: const Text('取消安装'),
+                    label: Text(l10n.execution_step_cancel_install),
                     style: OutlinedButton.styleFrom(
                       foregroundColor: Colors.red,
                       side: const BorderSide(color: Colors.red),
@@ -203,7 +205,7 @@ class ExecutionStep extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '安装完成！',
+                          l10n.execution_step_install_completed,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: Colors.green[700],
                             fontWeight: FontWeight.bold,
@@ -211,7 +213,7 @@ class ExecutionStep extends StatelessWidget {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '您可以在服务器列表中启动该服务器',
+                          l10n.execution_step_server_list_hint,
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.green[600],
                           ),
@@ -254,22 +256,22 @@ class ExecutionStep extends StatelessWidget {
     );
   }
 
-  String _getInstallTypeDisplayName(dynamic installType) {
+  String _getInstallTypeDisplayName(dynamic installType, AppLocalizations l10n) {
     switch (installType.toString()) {
       case 'McpInstallType.uvx':
-        return 'UVX (Python包管理器)';
+        return l10n.analysis_step_install_type_uvx;
       case 'McpInstallType.npx':
-        return 'NPX (Node.js包管理器)';
+        return l10n.analysis_step_install_type_npx;
       case 'McpInstallType.smithery':
-        return 'Smithery (MCP包管理器)';
+        return l10n.analysis_step_install_type_smithery;
       case 'McpInstallType.localPython':
-        return '本地Python包';
+        return l10n.analysis_step_install_type_local_python;
       case 'McpInstallType.localJar':
-        return '本地JAR包';
+        return l10n.analysis_step_install_type_local_jar;
       case 'McpInstallType.localExecutable':
-        return '本地可执行文件';
+        return l10n.analysis_step_install_type_local_executable;
       default:
-        return '未知类型';
+        return l10n.analysis_step_install_type_unknown;
     }
   }
 

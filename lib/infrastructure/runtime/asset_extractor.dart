@@ -361,7 +361,7 @@ class AssetExtractor {
   /// 获取运行时版本字符串
   String _getRuntimeVersionString() {
     final platform = _platformInfo;
-    return 'mcphub-runtime-v1.0.0_${AppConstants.pythonVersion}_${AppConstants.uvVersion}_${AppConstants.nodeVersion}_${platform.os}_${platform.arch}';
+    return 'mcphub-runtime-v${AppVersion.version}_${AppConstants.pythonVersion}_${AppConstants.uvVersion}_${AppConstants.nodeVersion}_${platform.os}_${platform.arch}';
   }
 
   /// 快速完整性检查（跨平台兼容）

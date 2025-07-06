@@ -5,6 +5,7 @@ import 'dart:math';
 import 'dart:collection';
 import 'package:mcp_dart/mcp_dart.dart';
 import '../../business/services/mcp_hub_service.dart';
+import '../../core/constants/app_constants.dart';
 
 /// 生成UUID的辅助函数 (参考官方示例)
 String generateUUID() {
@@ -221,7 +222,7 @@ class StreamableMcpHub {
     print('🆕 Creating new MCP server instance for session');
     
     final server = McpServer(
-      Implementation(name: 'streamable-mcp-hub', version: '1.0.0'),
+              Implementation(name: 'streamable-mcp-hub', version: AppVersion.hubVersion),
       options: ServerOptions(
         capabilities: ServerCapabilities(
           tools: ServerCapabilitiesTools(),

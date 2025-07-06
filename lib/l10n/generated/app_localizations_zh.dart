@@ -256,7 +256,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get install_error => '安装失败';
 
   @override
-  String get install_wizard_title => 'MCP服务器安装向导';
+  String get install_wizard_title => '安装向导';
 
   @override
   String get install_wizard_auto_install_note => '• 如果使用 uvx/npx 命令，系统会自动安装包';
@@ -295,7 +295,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get install_wizard_local_path => '本地路径';
 
   @override
-  String get install_wizard_local_path_desc => '从本地文件系统安装';
+  String get install_wizard_local_path_desc => '从本地路径安装';
 
   @override
   String get install_wizard_auto_analyze_note => '系统将自动分析仓库结构并确定最佳安装命令。';
@@ -495,6 +495,229 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get install_wizard_installation_cancelled => '🛑 安装已被用户取消';
+
+  @override
+  String get install_wizard_options_title => '安装选项';
+
+  @override
+  String get install_wizard_options_needed => '需要配置额外的安装选项';
+
+  @override
+  String get install_wizard_options_default => '使用默认安装选项';
+
+  @override
+  String get install_wizard_source_type_title => '安装源类型';
+
+  @override
+  String get install_wizard_github_repo => 'GitHub仓库';
+
+  @override
+  String get install_wizard_github_repo_desc => '从GitHub仓库安装';
+
+  @override
+  String get install_wizard_github_url_label => 'GitHub仓库URL';
+
+  @override
+  String get install_wizard_github_url_hint =>
+      'https://github.com/user/repo.git';
+
+  @override
+  String get install_wizard_local_path_hint => '/path/to/mcp-server';
+
+  @override
+  String get install_wizard_auto_install_title => '自动安装';
+
+  @override
+  String get install_wizard_auto_install_desc => '系统将自动处理安装过程，无需额外配置';
+
+  @override
+  String get install_wizard_step_1 => '1';
+
+  @override
+  String get install_wizard_step_2 => '2';
+
+  @override
+  String get install_wizard_step_3 => '3';
+
+  @override
+  String get install_wizard_step_4 => '4';
+
+  @override
+  String get install_wizard_step_configure_short => '配置';
+
+  @override
+  String get install_wizard_step_analyze_short => '分析';
+
+  @override
+  String get install_wizard_step_options_short => '选项';
+
+  @override
+  String get install_wizard_step_execute_short => '执行';
+
+  @override
+  String get config_step_title => '配置MCP服务器';
+
+  @override
+  String get config_step_subtitle => '请输入MCP服务器的基本信息和配置';
+
+  @override
+  String get config_step_basic_info => '基本信息';
+
+  @override
+  String get config_step_server_name => '服务器名称（可选）';
+
+  @override
+  String get config_step_server_name_hint => '例如：my-mcp-server';
+
+  @override
+  String get config_step_server_description => '服务器描述（可选）';
+
+  @override
+  String get config_step_server_description_hint => '例如：用于文件操作的MCP服务器';
+
+  @override
+  String get config_step_quick_config => '快速配置';
+
+  @override
+  String get config_step_command_parse => '命令解析';
+
+  @override
+  String get config_step_command_parse_desc => '如果您有现成的安装命令，可以直接粘贴到这里自动生成配置';
+
+  @override
+  String get config_step_install_command => '安装命令';
+
+  @override
+  String get config_step_install_command_hint =>
+      '例如：npx -y @modelcontextprotocol/server-filesystem';
+
+  @override
+  String get config_step_parse_command => '解析命令';
+
+  @override
+  String get config_step_parse_command_tooltip => '解析命令';
+
+  @override
+  String get config_step_clear => '清空';
+
+  @override
+  String get config_step_mcp_config => 'MCP配置';
+
+  @override
+  String get config_step_config_parse_success => '配置解析成功！';
+
+  @override
+  String get config_step_input_command_required => '请输入安装命令';
+
+  @override
+  String get config_step_command_parse_success => '命令解析成功！配置已自动填入';
+
+  @override
+  String config_step_command_parse_failed(Object error) {
+    return '命令解析失败：$error';
+  }
+
+  @override
+  String get analysis_step_title => '分析安装策略';
+
+  @override
+  String get analysis_step_subtitle => '正在分析MCP服务器配置...';
+
+  @override
+  String get analysis_step_result => '分析结果';
+
+  @override
+  String get analysis_step_install_type => '安装类型';
+
+  @override
+  String get analysis_step_install_method => '安装方式';
+
+  @override
+  String get analysis_step_status => '状态';
+
+  @override
+  String get analysis_step_manual_config => '需要手动配置';
+
+  @override
+  String get analysis_step_auto_install => '自动安装';
+
+  @override
+  String get analysis_step_analyzing => '正在分析配置...';
+
+  @override
+  String get analysis_step_auto_advancing => '正在自动切换到下一步...';
+
+  @override
+  String get analysis_step_install_type_uvx => 'UVX (Python包管理器)';
+
+  @override
+  String get analysis_step_install_type_npx => 'NPX (Node.js包管理器)';
+
+  @override
+  String get analysis_step_install_type_smithery => 'Smithery (MCP包管理器)';
+
+  @override
+  String get analysis_step_install_type_local_python => '本地Python包';
+
+  @override
+  String get analysis_step_install_type_local_jar => '本地JAR包';
+
+  @override
+  String get analysis_step_install_type_local_executable => '本地可执行文件';
+
+  @override
+  String get analysis_step_install_type_unknown => '未知类型';
+
+  @override
+  String get execution_step_title => '执行安装';
+
+  @override
+  String get execution_step_subtitle_completed => '安装已完成！';
+
+  @override
+  String get execution_step_subtitle_installing => '正在安装MCP服务器...';
+
+  @override
+  String get execution_step_subtitle_ready => '准备安装MCP服务器';
+
+  @override
+  String get execution_step_summary => '安装摘要';
+
+  @override
+  String get execution_step_server_name => '服务器名称';
+
+  @override
+  String get execution_step_unnamed => '未命名';
+
+  @override
+  String get execution_step_description => '描述';
+
+  @override
+  String get execution_step_install_type => '安装类型';
+
+  @override
+  String get execution_step_install_source => '安装源';
+
+  @override
+  String get execution_step_github_repo => 'GitHub仓库';
+
+  @override
+  String get execution_step_local_path => '本地路径';
+
+  @override
+  String get execution_step_install_logs => '安装日志';
+
+  @override
+  String get execution_step_waiting_install => '等待开始安装...';
+
+  @override
+  String get execution_step_cancel_install => '取消安装';
+
+  @override
+  String get execution_step_install_completed => '安装完成！';
+
+  @override
+  String get execution_step_server_list_hint => '您可以在服务器列表中启动该服务器';
 
   @override
   String get monitor_title => 'Hub 监控';

@@ -65,7 +65,7 @@ class McpConstants {
   // MCP Hub特定配置
   static const String hubServerName = 'mcp-hub';
   static const String hubServerDescription = 'MCP Hub aggregation server';
-  static const String hubServerVersion = '1.0.0';
+  static const String hubServerVersion = '0.0.2';
   
   // 默认端口范围
   static const int defaultPortStart = 8080;

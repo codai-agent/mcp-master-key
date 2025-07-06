@@ -12,6 +12,7 @@ import '../../infrastructure/mcp/mcp_hub_server.dart';
 import '../providers/servers_provider.dart';
 import '../widgets/server_stats_widget.dart';
 import '../widgets/system_info_widget.dart';
+import '../../core/constants/app_constants.dart';
 
 class HubMonitorPage extends ConsumerStatefulWidget {
   const HubMonitorPage({Key? key}) : super(key: key);
@@ -416,8 +417,8 @@ class _HubMonitorPageState extends ConsumerState<HubMonitorPage> {
               ],
             ),
             const SizedBox(height: 16),
-            _buildInfoRow('协议版本', '2024-11-05'),
-            _buildInfoRow('应用版本', '1.0.0'),
+            _buildInfoRow('协议版本', '2025-07-01'),
+            _buildInfoRow('应用版本', AppVersion.displayVersion),
             _buildInfoRow('运行模式', _hubStatus?['running'] == true ? 'SSE' : '未运行'),
             _buildInfoRow('数据更新', '每 5 秒自动刷新'),
           ],

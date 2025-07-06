@@ -6,6 +6,7 @@ import 'installation_wizard/wizard_steps/config_step.dart';
 import 'installation_wizard/wizard_steps/analysis_step.dart';
 import 'installation_wizard/wizard_steps/execution_step.dart';
 import 'home_page.dart';
+import '../../l10n/generated/app_localizations.dart';
 
 /// 新的安装向导页面
 class InstallationWizardPageNew extends StatefulWidget {
@@ -58,10 +59,11 @@ class _InstallationWizardPageNewState extends State<InstallationWizardPageNew> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     
     return Scaffold(
         appBar: AppBar(
-          title: const Text('安装向导'),
+          title: Text(l10n.install_wizard_title),
           automaticallyImplyLeading: true,
         ),
         body: Column(
@@ -71,13 +73,13 @@ class _InstallationWizardPageNewState extends State<InstallationWizardPageNew> {
               padding: const EdgeInsets.all(16),
               child: Row(
                 children: [
-                  _buildStepIndicator(WizardStep.configure, '配置', '必需'),
+                  _buildStepIndicator(WizardStep.configure, l10n.install_wizard_step_configure_short, l10n.install_wizard_step_required),
                   _buildStepConnector(),
-                  _buildStepIndicator(WizardStep.analyze, '分析', '自动'),
+                  _buildStepIndicator(WizardStep.analyze, l10n.install_wizard_step_analyze_short, l10n.install_wizard_step_auto),
                   _buildStepConnector(),
-                  _buildStepIndicator(WizardStep.options, '选项', '可选'),
+                  _buildStepIndicator(WizardStep.options, l10n.install_wizard_step_options_short, l10n.install_wizard_step_optional),
                   _buildStepConnector(),
-                  _buildStepIndicator(WizardStep.execute, '执行', '完成'),
+                  _buildStepIndicator(WizardStep.execute, l10n.install_wizard_step_execute_short, l10n.install_wizard_step_complete),
                 ],
               ),
             ),
@@ -90,7 +92,7 @@ class _InstallationWizardPageNewState extends State<InstallationWizardPageNew> {
                 children: [
                   ConfigStep(controller: _controller),
                   AnalysisStep(controller: _controller),
-                  _buildOptionsStep(), // 选项步骤
+                  _buildOptionsStep(l10n), // 选项步骤
                   ExecutionStep(controller: _controller),
                 ],
               ),
@@ -105,14 +107,14 @@ class _InstallationWizardPageNewState extends State<InstallationWizardPageNew> {
                     Expanded(
                       child: OutlinedButton(
                         onPressed: _controller.state.isAutoAdvancing ? null : _getPreviousButtonAction(),
-                        child: const Text('上一步'),
+                        child: Text(l10n.common_previous),
                       ),
                     ),
                   if (_controller.state.currentStep.index > 0) const SizedBox(width: 16),
                   Expanded(
                     child: ElevatedButton(
                       onPressed: _getNextButtonAction(),
-                      child: Text(_getNextButtonText()),
+                      child: Text(_getNextButtonText(l10n)),
                     ),
                   ),
                 ],
@@ -181,21 +183,21 @@ class _InstallationWizardPageNewState extends State<InstallationWizardPageNew> {
   }
 
   // 构建选项步骤
-  Widget _buildOptionsStep() {
+  Widget _buildOptionsStep(AppLocalizations l10n) {
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '安装选项',
+            l10n.install_wizard_options_title,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
             _controller.state.needsAdditionalInstall 
-              ? '需要配置额外的安装选项'
-              : '使用默认安装选项',
+              ? l10n.install_wizard_options_needed
+              : l10n.install_wizard_options_default,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.grey[600],
             ),
@@ -205,14 +207,14 @@ class _InstallationWizardPageNewState extends State<InstallationWizardPageNew> {
           if (_controller.state.needsAdditionalInstall) ...[
             // 安装类型选择
             Text(
-              '安装源类型',
+              l10n.install_wizard_source_type_title,
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: 12),
             
             RadioListTile<String>(
-              title: const Text('GitHub仓库'),
-              subtitle: const Text('从GitHub仓库安装'),
+              title: Text(l10n.install_wizard_github_repo),
+              subtitle: Text(l10n.install_wizard_github_repo_desc),
               value: 'github',
               groupValue: _controller.state.selectedInstallType,
               onChanged: (value) {
@@ -223,8 +225,8 @@ class _InstallationWizardPageNewState extends State<InstallationWizardPageNew> {
             ),
             
             RadioListTile<String>(
-              title: const Text('本地路径'),
-              subtitle: const Text('从本地路径安装'),
+              title: Text(l10n.install_wizard_local_path),
+              subtitle: Text(l10n.install_wizard_local_path_desc),
               value: 'local',
               groupValue: _controller.state.selectedInstallType,
               onChanged: (value) {
@@ -240,19 +242,19 @@ class _InstallationWizardPageNewState extends State<InstallationWizardPageNew> {
             if (_controller.state.selectedInstallType == 'github') ...[
               TextField(
                 onChanged: _controller.updateGithubUrl,
-                decoration: const InputDecoration(
-                  labelText: 'GitHub仓库URL',
-                  hintText: 'https://github.com/user/repo.git',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.link),
+                decoration: InputDecoration(
+                  labelText: l10n.install_wizard_github_url_label,
+                  hintText: l10n.install_wizard_github_url_hint,
+                  border: const OutlineInputBorder(),
+                  prefixIcon: const Icon(Icons.link),
                 ),
               ),
             ] else if (_controller.state.selectedInstallType == 'local') ...[
               TextField(
                 onChanged: _controller.updateLocalPath,
                 decoration: InputDecoration(
-                  labelText: '本地路径',
-                  hintText: '/path/to/mcp-server',
+                  labelText: l10n.install_wizard_local_path_label,
+                  hintText: l10n.install_wizard_local_path_hint,
                   border: const OutlineInputBorder(),
                   prefixIcon: const Icon(Icons.folder),
                   suffixIcon: IconButton(
@@ -282,7 +284,7 @@ class _InstallationWizardPageNewState extends State<InstallationWizardPageNew> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '自动安装',
+                          l10n.install_wizard_auto_install_title,
                           style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: Colors.green[700],
                             fontWeight: FontWeight.bold,
@@ -290,7 +292,7 @@ class _InstallationWizardPageNewState extends State<InstallationWizardPageNew> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          '系统将自动处理安装过程，无需额外配置',
+                          l10n.install_wizard_auto_install_desc,
                           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                             color: Colors.green[600],
                           ),
@@ -348,18 +350,18 @@ class _InstallationWizardPageNewState extends State<InstallationWizardPageNew> {
     }
   }
 
-  String _getNextButtonText() {
+  String _getNextButtonText(AppLocalizations l10n) {
     switch (_controller.state.currentStep) {
       case WizardStep.configure:
-        return '分析配置';
+        return l10n.install_wizard_analyze_config;
       case WizardStep.analyze:
-        return '下一步';
+        return l10n.common_next;
       case WizardStep.options:
-        return '开始安装';
+        return l10n.common_start_install;
       case WizardStep.execute:
         return _controller.state.installationSuccess 
-          ? '完成' 
-          : (_controller.state.isInstalling ? '安装中...' : '开始安装');
+          ? l10n.install_wizard_finish 
+          : (_controller.state.isInstalling ? l10n.common_installing : l10n.common_start_install);
     }
   }
 

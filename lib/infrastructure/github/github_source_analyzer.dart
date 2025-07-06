@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:dio/dio.dart';
+import '../../core/constants/app_constants.dart';
 
 /// GitHub仓库信息
 class GitHubRepository {
@@ -95,7 +96,7 @@ class GitHubSourceAnalyzer {
     _dio.options.receiveTimeout = const Duration(seconds: 30);
     _dio.options.headers = {
       'Accept': 'application/vnd.github.v3+json',
-      'User-Agent': 'MCP-Hub/1.0.0',
+              'User-Agent': AppConstants.mcpUserAgent,
     };
   }
 

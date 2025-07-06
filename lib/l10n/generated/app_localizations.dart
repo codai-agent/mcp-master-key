@@ -563,7 +563,7 @@ abstract class AppLocalizations {
   /// No description provided for @install_wizard_title.
   ///
   /// In en, this message translates to:
-  /// **'MCP Server Installation Wizard'**
+  /// **'Installation Wizard'**
   String get install_wizard_title;
 
   /// No description provided for @install_wizard_auto_install_note.
@@ -641,7 +641,7 @@ abstract class AppLocalizations {
   /// No description provided for @install_wizard_local_path_desc.
   ///
   /// In en, this message translates to:
-  /// **'Install from local file system'**
+  /// **'Install from local path'**
   String get install_wizard_local_path_desc;
 
   /// No description provided for @install_wizard_auto_analyze_note.
@@ -1027,6 +1027,444 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'🛑 Installation cancelled by user'**
   String get install_wizard_installation_cancelled;
+
+  /// No description provided for @install_wizard_options_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Options'**
+  String get install_wizard_options_title;
+
+  /// No description provided for @install_wizard_options_needed.
+  ///
+  /// In en, this message translates to:
+  /// **'Need to configure additional installation options'**
+  String get install_wizard_options_needed;
+
+  /// No description provided for @install_wizard_options_default.
+  ///
+  /// In en, this message translates to:
+  /// **'Use default installation options'**
+  String get install_wizard_options_default;
+
+  /// No description provided for @install_wizard_source_type_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Source Type'**
+  String get install_wizard_source_type_title;
+
+  /// No description provided for @install_wizard_github_repo.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Repository'**
+  String get install_wizard_github_repo;
+
+  /// No description provided for @install_wizard_github_repo_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'Install from GitHub repository'**
+  String get install_wizard_github_repo_desc;
+
+  /// No description provided for @install_wizard_github_url_label.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Repository URL'**
+  String get install_wizard_github_url_label;
+
+  /// No description provided for @install_wizard_github_url_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'https://github.com/user/repo.git'**
+  String get install_wizard_github_url_hint;
+
+  /// No description provided for @install_wizard_local_path_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'/path/to/mcp-server'**
+  String get install_wizard_local_path_hint;
+
+  /// No description provided for @install_wizard_auto_install_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto Install'**
+  String get install_wizard_auto_install_title;
+
+  /// No description provided for @install_wizard_auto_install_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'System will automatically handle the installation process, no additional configuration needed'**
+  String get install_wizard_auto_install_desc;
+
+  /// No description provided for @install_wizard_step_1.
+  ///
+  /// In en, this message translates to:
+  /// **'1'**
+  String get install_wizard_step_1;
+
+  /// No description provided for @install_wizard_step_2.
+  ///
+  /// In en, this message translates to:
+  /// **'2'**
+  String get install_wizard_step_2;
+
+  /// No description provided for @install_wizard_step_3.
+  ///
+  /// In en, this message translates to:
+  /// **'3'**
+  String get install_wizard_step_3;
+
+  /// No description provided for @install_wizard_step_4.
+  ///
+  /// In en, this message translates to:
+  /// **'4'**
+  String get install_wizard_step_4;
+
+  /// No description provided for @install_wizard_step_configure_short.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure'**
+  String get install_wizard_step_configure_short;
+
+  /// No description provided for @install_wizard_step_analyze_short.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze'**
+  String get install_wizard_step_analyze_short;
+
+  /// No description provided for @install_wizard_step_options_short.
+  ///
+  /// In en, this message translates to:
+  /// **'Options'**
+  String get install_wizard_step_options_short;
+
+  /// No description provided for @install_wizard_step_execute_short.
+  ///
+  /// In en, this message translates to:
+  /// **'Execute'**
+  String get install_wizard_step_execute_short;
+
+  /// No description provided for @config_step_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Configure MCP Server'**
+  String get config_step_title;
+
+  /// No description provided for @config_step_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter the basic information and configuration for the MCP server'**
+  String get config_step_subtitle;
+
+  /// No description provided for @config_step_basic_info.
+  ///
+  /// In en, this message translates to:
+  /// **'Basic Information'**
+  String get config_step_basic_info;
+
+  /// No description provided for @config_step_server_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Name (Optional)'**
+  String get config_step_server_name;
+
+  /// No description provided for @config_step_server_name_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., my-mcp-server'**
+  String get config_step_server_name_hint;
+
+  /// No description provided for @config_step_server_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Description (Optional)'**
+  String get config_step_server_description;
+
+  /// No description provided for @config_step_server_description_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., MCP server for file operations'**
+  String get config_step_server_description_hint;
+
+  /// No description provided for @config_step_quick_config.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Configuration'**
+  String get config_step_quick_config;
+
+  /// No description provided for @config_step_command_parse.
+  ///
+  /// In en, this message translates to:
+  /// **'Command Parse'**
+  String get config_step_command_parse;
+
+  /// No description provided for @config_step_command_parse_desc.
+  ///
+  /// In en, this message translates to:
+  /// **'If you have an existing installation command, you can paste it here to automatically generate configuration'**
+  String get config_step_command_parse_desc;
+
+  /// No description provided for @config_step_install_command.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Command'**
+  String get config_step_install_command;
+
+  /// No description provided for @config_step_install_command_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g., npx -y @modelcontextprotocol/server-filesystem'**
+  String get config_step_install_command_hint;
+
+  /// No description provided for @config_step_parse_command.
+  ///
+  /// In en, this message translates to:
+  /// **'Parse Command'**
+  String get config_step_parse_command;
+
+  /// No description provided for @config_step_parse_command_tooltip.
+  ///
+  /// In en, this message translates to:
+  /// **'Parse Command'**
+  String get config_step_parse_command_tooltip;
+
+  /// No description provided for @config_step_clear.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear'**
+  String get config_step_clear;
+
+  /// No description provided for @config_step_mcp_config.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP Configuration'**
+  String get config_step_mcp_config;
+
+  /// No description provided for @config_step_config_parse_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Configuration parsed successfully!'**
+  String get config_step_config_parse_success;
+
+  /// No description provided for @config_step_input_command_required.
+  ///
+  /// In en, this message translates to:
+  /// **'Please enter installation command'**
+  String get config_step_input_command_required;
+
+  /// No description provided for @config_step_command_parse_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Command parsed successfully! Configuration has been automatically filled in'**
+  String get config_step_command_parse_success;
+
+  /// No description provided for @config_step_command_parse_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Command parsing failed: {error}'**
+  String config_step_command_parse_failed(Object error);
+
+  /// No description provided for @analysis_step_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyze Installation Strategy'**
+  String get analysis_step_title;
+
+  /// No description provided for @analysis_step_subtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing MCP server configuration...'**
+  String get analysis_step_subtitle;
+
+  /// No description provided for @analysis_step_result.
+  ///
+  /// In en, this message translates to:
+  /// **'Analysis Result'**
+  String get analysis_step_result;
+
+  /// No description provided for @analysis_step_install_type.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Type'**
+  String get analysis_step_install_type;
+
+  /// No description provided for @analysis_step_install_method.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Method'**
+  String get analysis_step_install_method;
+
+  /// No description provided for @analysis_step_status.
+  ///
+  /// In en, this message translates to:
+  /// **'Status'**
+  String get analysis_step_status;
+
+  /// No description provided for @analysis_step_manual_config.
+  ///
+  /// In en, this message translates to:
+  /// **'Manual configuration required'**
+  String get analysis_step_manual_config;
+
+  /// No description provided for @analysis_step_auto_install.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto install'**
+  String get analysis_step_auto_install;
+
+  /// No description provided for @analysis_step_analyzing.
+  ///
+  /// In en, this message translates to:
+  /// **'Analyzing configuration...'**
+  String get analysis_step_analyzing;
+
+  /// No description provided for @analysis_step_auto_advancing.
+  ///
+  /// In en, this message translates to:
+  /// **'Automatically advancing to next step...'**
+  String get analysis_step_auto_advancing;
+
+  /// No description provided for @analysis_step_install_type_uvx.
+  ///
+  /// In en, this message translates to:
+  /// **'UVX (Python Package Manager)'**
+  String get analysis_step_install_type_uvx;
+
+  /// No description provided for @analysis_step_install_type_npx.
+  ///
+  /// In en, this message translates to:
+  /// **'NPX (Node.js Package Manager)'**
+  String get analysis_step_install_type_npx;
+
+  /// No description provided for @analysis_step_install_type_smithery.
+  ///
+  /// In en, this message translates to:
+  /// **'Smithery (MCP Package Manager)'**
+  String get analysis_step_install_type_smithery;
+
+  /// No description provided for @analysis_step_install_type_local_python.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Python Package'**
+  String get analysis_step_install_type_local_python;
+
+  /// No description provided for @analysis_step_install_type_local_jar.
+  ///
+  /// In en, this message translates to:
+  /// **'Local JAR Package'**
+  String get analysis_step_install_type_local_jar;
+
+  /// No description provided for @analysis_step_install_type_local_executable.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Executable'**
+  String get analysis_step_install_type_local_executable;
+
+  /// No description provided for @analysis_step_install_type_unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown Type'**
+  String get analysis_step_install_type_unknown;
+
+  /// No description provided for @execution_step_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Execute Installation'**
+  String get execution_step_title;
+
+  /// No description provided for @execution_step_subtitle_completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation completed!'**
+  String get execution_step_subtitle_completed;
+
+  /// No description provided for @execution_step_subtitle_installing.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing MCP server...'**
+  String get execution_step_subtitle_installing;
+
+  /// No description provided for @execution_step_subtitle_ready.
+  ///
+  /// In en, this message translates to:
+  /// **'Ready to install MCP server'**
+  String get execution_step_subtitle_ready;
+
+  /// No description provided for @execution_step_summary.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Summary'**
+  String get execution_step_summary;
+
+  /// No description provided for @execution_step_server_name.
+  ///
+  /// In en, this message translates to:
+  /// **'Server Name'**
+  String get execution_step_server_name;
+
+  /// No description provided for @execution_step_unnamed.
+  ///
+  /// In en, this message translates to:
+  /// **'Unnamed'**
+  String get execution_step_unnamed;
+
+  /// No description provided for @execution_step_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get execution_step_description;
+
+  /// No description provided for @execution_step_install_type.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Type'**
+  String get execution_step_install_type;
+
+  /// No description provided for @execution_step_install_source.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Source'**
+  String get execution_step_install_source;
+
+  /// No description provided for @execution_step_github_repo.
+  ///
+  /// In en, this message translates to:
+  /// **'GitHub Repository'**
+  String get execution_step_github_repo;
+
+  /// No description provided for @execution_step_local_path.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Path'**
+  String get execution_step_local_path;
+
+  /// No description provided for @execution_step_install_logs.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Logs'**
+  String get execution_step_install_logs;
+
+  /// No description provided for @execution_step_waiting_install.
+  ///
+  /// In en, this message translates to:
+  /// **'Waiting to start installation...'**
+  String get execution_step_waiting_install;
+
+  /// No description provided for @execution_step_cancel_install.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel Installation'**
+  String get execution_step_cancel_install;
+
+  /// No description provided for @execution_step_install_completed.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation Completed!'**
+  String get execution_step_install_completed;
+
+  /// No description provided for @execution_step_server_list_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'You can start this server in the server list'**
+  String get execution_step_server_list_hint;
 
   /// No description provided for @monitor_title.
   ///

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../installation_wizard_controller.dart';
 import '../../../widgets/json_config_editor.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 /// 配置步骤组件
 class ConfigStep extends StatefulWidget {
@@ -55,18 +56,20 @@ class _ConfigStepState extends State<ConfigStep> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '配置MCP服务器',
+            l10n.config_step_title,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            '请输入MCP服务器的基本信息和配置',
+            l10n.config_step_subtitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.grey[600],
             ),
@@ -79,34 +82,34 @@ class _ConfigStepState extends State<ConfigStep> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // 基本信息
-                  _buildSectionHeader('基本信息'),
+                  _buildSectionHeader(l10n.config_step_basic_info),
                   const SizedBox(height: 12),
                   
                   TextField(
                     controller: _nameController,
-                    decoration: const InputDecoration(
-                      labelText: '服务器名称（可选）',
-                      hintText: '例如：my-mcp-server',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.label),
+                    decoration: InputDecoration(
+                      labelText: l10n.config_step_server_name,
+                      hintText: l10n.config_step_server_name_hint,
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.label),
                     ),
                   ),
                   const SizedBox(height: 16),
                   
                   TextField(
                     controller: _descriptionController,
-                    decoration: const InputDecoration(
-                      labelText: '服务器描述（可选）',
-                      hintText: '例如：用于文件操作的MCP服务器',
-                      border: OutlineInputBorder(),
-                      prefixIcon: Icon(Icons.description),
+                    decoration: InputDecoration(
+                      labelText: l10n.config_step_server_description,
+                      hintText: l10n.config_step_server_description_hint,
+                      border: const OutlineInputBorder(),
+                      prefixIcon: const Icon(Icons.description),
                     ),
                     maxLines: 2,
                   ),
                   const SizedBox(height: 24),
                   
                   // 快速命令解析
-                  _buildSectionHeader('快速配置'),
+                  _buildSectionHeader(l10n.config_step_quick_config),
                   const SizedBox(height: 12),
                   
                   Container(
@@ -124,7 +127,7 @@ class _ConfigStepState extends State<ConfigStep> {
                             Icon(Icons.flash_on, color: Colors.blue[700]),
                             const SizedBox(width: 8),
                             Text(
-                              '命令解析',
+                              l10n.config_step_command_parse,
                               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                                 fontWeight: FontWeight.bold,
                                 color: Colors.blue[700],
@@ -134,7 +137,7 @@ class _ConfigStepState extends State<ConfigStep> {
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          '如果您有现成的安装命令，可以直接粘贴到这里自动生成配置',
+                          l10n.config_step_command_parse_desc,
                           style: Theme.of(context).textTheme.bodySmall?.copyWith(
                             color: Colors.blue[600],
                           ),
@@ -144,14 +147,14 @@ class _ConfigStepState extends State<ConfigStep> {
                         TextField(
                           controller: _commandController,
                           decoration: InputDecoration(
-                            labelText: '安装命令',
-                            hintText: '例如：npx -y @modelcontextprotocol/server-filesystem',
+                            labelText: l10n.config_step_install_command,
+                            hintText: l10n.config_step_install_command_hint,
                             border: const OutlineInputBorder(),
                             prefixIcon: const Icon(Icons.terminal),
                             suffixIcon: IconButton(
                               icon: const Icon(Icons.auto_fix_high),
                               onPressed: _parseCommand,
-                              tooltip: '解析命令',
+                              tooltip: l10n.config_step_parse_command_tooltip,
                             ),
                           ),
                         ),
@@ -162,7 +165,7 @@ class _ConfigStepState extends State<ConfigStep> {
                             ElevatedButton.icon(
                               onPressed: _parseCommand,
                               icon: const Icon(Icons.auto_fix_high, size: 16),
-                              label: const Text('解析命令'),
+                              label: Text(l10n.config_step_parse_command),
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.blue[600],
                                 foregroundColor: Colors.white,
@@ -173,7 +176,7 @@ class _ConfigStepState extends State<ConfigStep> {
                               onPressed: () {
                                 _commandController.clear();
                               },
-                              child: const Text('清空'),
+                              child: Text(l10n.config_step_clear),
                             ),
                           ],
                         ),
@@ -183,7 +186,7 @@ class _ConfigStepState extends State<ConfigStep> {
                   const SizedBox(height: 24),
                   
                   // MCP配置
-                  _buildSectionHeader('MCP配置'),
+                  _buildSectionHeader(l10n.config_step_mcp_config),
                   const SizedBox(height: 12),
                   
                   Container(
@@ -239,10 +242,10 @@ class _ConfigStepState extends State<ConfigStep> {
                         children: [
                           const Icon(Icons.check_circle, color: Colors.green),
                           const SizedBox(width: 8),
-                          const Expanded(
+                          Expanded(
                             child: Text(
-                              '配置解析成功！',
-                              style: TextStyle(color: Colors.green),
+                              l10n.config_step_config_parse_success,
+                              style: const TextStyle(color: Colors.green),
                             ),
                           ),
                         ],
@@ -267,11 +270,12 @@ class _ConfigStepState extends State<ConfigStep> {
   }
 
   void _parseCommand() {
+    final l10n = AppLocalizations.of(context)!;
     final command = _commandController.text.trim();
     if (command.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('请输入安装命令'),
+        SnackBar(
+          content: Text(l10n.config_step_input_command_required),
           backgroundColor: Colors.orange,
         ),
       );
@@ -289,8 +293,8 @@ class _ConfigStepState extends State<ConfigStep> {
       
       // 显示成功消息
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('命令解析成功！配置已自动填入'),
+        SnackBar(
+          content: Text(l10n.config_step_command_parse_success),
           backgroundColor: Colors.green,
         ),
       );

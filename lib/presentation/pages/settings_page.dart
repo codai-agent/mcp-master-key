@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../widgets/system_info_widget.dart';
 import '../providers/servers_provider.dart';
 import '../../business/services/config_service.dart';
+import '../../core/constants/app_constants.dart';
 import '../themes/app_theme.dart';
 import '../providers/theme_provider.dart';
 import '../providers/locale_provider.dart';
@@ -450,7 +451,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
               children: [
                 ListTile(
                   title: const Text('版本'),
-                  subtitle: const Text('MCP Master Key v0.0.1'),
+                  subtitle: Text('${AppVersion.appName} ${AppVersion.displayVersion}'),
                   trailing: const Icon(Icons.info_outline),
                 ),
                 ListTile(

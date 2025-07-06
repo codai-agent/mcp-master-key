@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../installation_wizard_controller.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 /// 分析步骤组件
 class AnalysisStep extends StatelessWidget {
@@ -12,18 +13,20 @@ class AnalysisStep extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '分析安装策略',
+            l10n.analysis_step_title,
             style: Theme.of(context).textTheme.headlineSmall,
           ),
           const SizedBox(height: 8),
           Text(
-            '正在分析MCP服务器配置...',
+            l10n.analysis_step_subtitle,
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
               color: Colors.grey[600],
             ),
@@ -59,7 +62,7 @@ class AnalysisStep extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      '分析结果',
+                      l10n.analysis_step_result,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                         fontWeight: FontWeight.bold,
                       ),
@@ -70,25 +73,25 @@ class AnalysisStep extends StatelessWidget {
                 
                 if (controller.state.detectedInstallType != null) ...[
                   _buildAnalysisItem(
-                    '安装类型',
-                    _getInstallTypeDisplayName(controller.state.detectedInstallType!),
+                    l10n.analysis_step_install_type,
+                    _getInstallTypeDisplayName(controller.state.detectedInstallType!, l10n),
                     Icons.settings,
                   ),
                   const SizedBox(height: 8),
                   _buildAnalysisItem(
-                    '安装方式',
-                    controller.state.needsAdditionalInstall ? '需要手动配置' : '自动安装',
+                    l10n.analysis_step_install_method,
+                    controller.state.needsAdditionalInstall ? l10n.analysis_step_manual_config : l10n.analysis_step_auto_install,
                     controller.state.needsAdditionalInstall ? Icons.settings : Icons.auto_mode,
                   ),
                   const SizedBox(height: 8),
                   _buildAnalysisItem(
-                    '状态',
+                    l10n.analysis_step_status,
                     controller.state.analysisResult,
                     Icons.info,
                   ),
                 ] else ...[
                   Text(
-                    '正在分析配置...',
+                    l10n.analysis_step_analyzing,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                 ],
@@ -116,7 +119,7 @@ class AnalysisStep extends StatelessWidget {
                   ),
                   const SizedBox(width: 12),
                   Text(
-                    '正在自动切换到下一步...',
+                    l10n.analysis_step_auto_advancing,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                       color: Colors.blue[800],
                     ),
@@ -149,22 +152,22 @@ class AnalysisStep extends StatelessWidget {
     );
   }
 
-  String _getInstallTypeDisplayName(dynamic installType) {
+  String _getInstallTypeDisplayName(dynamic installType, AppLocalizations l10n) {
     switch (installType.toString()) {
       case 'McpInstallType.uvx':
-        return 'UVX (Python包管理器)';
+        return l10n.analysis_step_install_type_uvx;
       case 'McpInstallType.npx':
-        return 'NPX (Node.js包管理器)';
+        return l10n.analysis_step_install_type_npx;
       case 'McpInstallType.smithery':
-        return 'Smithery (MCP包管理器)';
+        return l10n.analysis_step_install_type_smithery;
       case 'McpInstallType.localPython':
-        return '本地Python包';
+        return l10n.analysis_step_install_type_local_python;
       case 'McpInstallType.localJar':
-        return '本地JAR包';
+        return l10n.analysis_step_install_type_local_jar;
       case 'McpInstallType.localExecutable':
-        return '本地可执行文件';
+        return l10n.analysis_step_install_type_local_executable;
       default:
-        return '未知类型';
+        return l10n.analysis_step_install_type_unknown;
     }
   }
 } 

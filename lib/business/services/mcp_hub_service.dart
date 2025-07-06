@@ -6,6 +6,7 @@ import 'package:mcp_dart/mcp_dart.dart' hide McpServer;
 import 'package:mcp_dart/mcp_dart.dart' as mcp_dart show McpServer;
 
 import '../../core/models/mcp_server.dart' as models;
+import '../../core/constants/app_constants.dart';
 import '../../infrastructure/repositories/mcp_server_repository.dart';
 import '../../infrastructure/runtime/runtime_manager.dart';
 import '../../infrastructure/mcp/mcp_tools_aggregator.dart';
@@ -143,7 +144,7 @@ class McpHubService {
     
     // 创建MCP服务器实例
     _mcpServer = mcp_dart.McpServer(
-      Implementation(name: "mcp-hub", version: "1.0.0"),
+      Implementation(name: "mcp-hub", version: AppVersion.hubVersion),
       options: ServerOptions(
         capabilities: ServerCapabilities(
           tools: ServerCapabilitiesTools(),
@@ -639,7 +640,7 @@ class McpHubService {
 
       // 创建MCP客户端
       final client = Client(
-        Implementation(name: "mcp-hub-client", version: "1.0.0"),
+        Implementation(name: AppVersion.appName, version: AppVersion.version),
         options: ClientOptions(
           capabilities: ClientCapabilities(),
         ),
@@ -914,7 +915,7 @@ class McpHubService {
 
       // 创建MCP客户端
       final client = Client(
-        Implementation(name: "mcp-hub-client", version: "1.0.0"),
+        Implementation(name: AppVersion.appName, version: AppVersion.version),
         options: ClientOptions(
           capabilities: ClientCapabilities(),
         ),
@@ -1410,7 +1411,7 @@ class McpHubService {
     
     // 创建新的MCP服务器实例
     _mcpServer = mcp_dart.McpServer(
-      Implementation(name: "mcp-hub", version: "1.0.0"),
+      Implementation(name: "mcp-hub", version: AppVersion.hubVersion),
       options: ServerOptions(
         capabilities: ServerCapabilities(
           tools: ServerCapabilitiesTools(),
@@ -1456,7 +1457,7 @@ class McpHubService {
 
     try {
       final client = Client(
-        Implementation(name: "mcp-hub-client", version: "1.0.0"),
+        Implementation(name: AppVersion.appName, version: AppVersion.version),
         options: ClientOptions(
           capabilities: ClientCapabilities(),
         ),

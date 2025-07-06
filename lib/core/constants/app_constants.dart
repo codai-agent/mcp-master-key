@@ -2,7 +2,7 @@
 class AppConstants {
   // 应用信息
   static const String appName = 'MCP Hub';
-  static const String appVersion = '1.0.0';
+  static const String appVersion = '0.0.2';
   static const String appDescription = 'A cross-platform desktop application for managing MCP servers';
   
   // 运行时版本
@@ -45,7 +45,7 @@ class AppConstants {
   
   // MCP协议
   static const String mcpProtocolVersion = '2024-11-05';
-  static const String mcpUserAgent = 'MCP-Hub/1.0.0';
+  static const String mcpUserAgent = 'MCP-Hub/0.0.2';
   
   // 超时配置
   static const Duration defaultCommandTimeout = Duration(minutes: 5);
@@ -56,4 +56,20 @@ class AppConstants {
   static const int maxLogFileSize = 10 * 1024 * 1024; // 10MB
   static const int maxConcurrentServers = 50;
   static const int maxRetryAttempts = 3;
+}
+
+/// 应用程序版本信息
+class AppVersion {
+  static const String version = '0.0.2';
+  static const String buildNumber = '1';
+  static const String fullVersion = '$version+$buildNumber';
+  static const String displayVersion = 'v$version';
+  
+  // 应用信息
+  static const String appName = 'MCP Master Key';
+  static const String appDescription = 'A cross-platform desktop application for managing MCP servers';
+  
+  // Hub服务版本
+  static const String hubVersion = '0.0.2';
+  static const String hubImplementationName = 'mcp-hub-client';
 } 
