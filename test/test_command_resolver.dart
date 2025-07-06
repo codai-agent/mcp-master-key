@@ -42,7 +42,7 @@ void main() async {
       command: '/usr/local/bin/my-custom-server',
       args: ['--config', 'config.json'],
       env: {},
-      installType: McpInstallType.localPath,
+      installType: McpInstallType.localExecutable,
     );
     
     print('   📋 Local Path Resolution Result:');

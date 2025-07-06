@@ -268,7 +268,7 @@ class McpConfigParser {
   /// 分析本地路径
   _InstallAnalysis _analyzeLocalPath(String command) {
     return _InstallAnalysis(
-      installType: McpInstallType.localPath,
+      installType: McpInstallType.localExecutable,
       strategy: McpInstallStrategy.localPath,
       needsUserInput: true,
       userInputReason: '本地路径需要用户确认或调整路径映射',

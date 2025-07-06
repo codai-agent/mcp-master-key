@@ -55,8 +55,15 @@ class McpProcessManager {
           return await _installNpxServer(server);
         case McpInstallType.uvx:
           return await _installUvxServer(server);
-        case McpInstallType.localPath:
-          return await _setupLocalPathServer(server);
+        case McpInstallType.smithery:
+          throw Exception('Smithery install type not yet implemented');
+        case McpInstallType.localPython:
+          throw Exception('Local Python install type not yet implemented');
+        case McpInstallType.localJar:
+          throw Exception('Local JAR install type not yet implemented');
+        case McpInstallType.localExecutable:
+          throw Exception('Local executable install type not yet implemented');
+        // 移除了老的localPath，现在使用具体的本地类型
         case McpInstallType.github:
           return await _installGithubServer(server);
         case McpInstallType.preInstalled:
@@ -635,8 +642,14 @@ class McpProcessManager {
         print('   ➡️ Using original command: ${server.command}');
         return server.command;
 
-      case McpInstallType.localPath:
-        print('   📁 Using local path: ${server.command}');
+      case McpInstallType.localPython:
+        print('   🐍 Using local Python path: ${server.command}');
+        return server.command;
+      case McpInstallType.localJar:
+        print('   ☕ Using local JAR path: ${server.command}');
+        return server.command;
+      case McpInstallType.localExecutable:
+        print('   🔧 Using local executable path: ${server.command}');
         return server.command;
 
       default:
@@ -1028,19 +1041,7 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
     return true;
   }
 
-  /// 设置本地路径服务器
-  Future<bool> _setupLocalPathServer(McpServer server) async {
-    print('📁 Setting up local path server...');
-    
-    final localPath = server.command;
-    if (await File(localPath).exists() || await Directory(localPath).exists()) {
-      print('✅ Local path exists: $localPath');
-      return true;
-    } else {
-      print('❌ Local path not found: $localPath');
-      return false;
-    }
-  }
+  // 移除了_setupLocalPathServer方法，现在使用具体的本地类型管理器
 
   /// 安装GitHub服务器
   Future<bool> _installGithubServer(McpServer server) async {

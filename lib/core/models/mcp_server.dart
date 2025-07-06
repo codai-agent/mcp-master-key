@@ -73,12 +73,18 @@ extension McpConnectionTypeExtension on McpConnectionType {
 
 /// MCP服务器安装类型
 enum McpInstallType {
-  /// npx命令安装
+  /// npx命令安装（原始node包）
   npx,
-  /// uvx命令安装
+  /// uvx命令安装（python包）
   uvx,
-  /// 本地路径
-  localPath,
+  /// smithery CLI管理的包
+  smithery,
+  /// 本地路径Python包
+  localPython,
+  /// 本地路径JAR包
+  localJar,
+  /// 本地路径可执行程序
+  localExecutable,
   /// GitHub仓库
   github,
   /// 预安装命令
@@ -93,8 +99,14 @@ extension McpInstallTypeExtension on McpInstallType {
         return 'npx';
       case McpInstallType.uvx:
         return 'uvx';
-      case McpInstallType.localPath:
-        return 'localPath';
+      case McpInstallType.smithery:
+        return 'smithery';
+      case McpInstallType.localPython:
+        return 'localPython';
+      case McpInstallType.localJar:
+        return 'localJar';
+      case McpInstallType.localExecutable:
+        return 'localExecutable';
       case McpInstallType.github:
         return 'github';
       case McpInstallType.preInstalled:

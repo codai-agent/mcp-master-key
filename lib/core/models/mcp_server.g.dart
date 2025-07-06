@@ -95,7 +95,10 @@ const _$McpConnectionTypeEnumMap = {
 const _$McpInstallTypeEnumMap = {
   McpInstallType.npx: 'npx',
   McpInstallType.uvx: 'uvx',
-  McpInstallType.localPath: 'localPath',
+  McpInstallType.smithery: 'smithery',
+  McpInstallType.localPython: 'localPython',
+  McpInstallType.localJar: 'localJar',
+  McpInstallType.localExecutable: 'localExecutable',
   McpInstallType.github: 'github',
   McpInstallType.preInstalled: 'preInstalled',
 };

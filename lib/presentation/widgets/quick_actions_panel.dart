@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../pages/installation_wizard_page.dart';
+import '../pages/installation_wizard_page_new.dart';
 import 'mcp_config_dialog.dart';
 
 
@@ -153,7 +153,7 @@ class QuickActionsPanel extends ConsumerWidget {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const InstallationWizardPage(),
+        builder: (context) => const InstallationWizardPageNew(),
       ),
     );
   }

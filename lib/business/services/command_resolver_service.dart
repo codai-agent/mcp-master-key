@@ -67,11 +67,35 @@ class CommandResolverService {
           return pipPath;
         }
         break;
-        
-      case McpInstallType.localPath:
-        // 本地路径不需要转换，直接返回
-        print('   ℹ️ Local path command kept as-is: $command');
+      
+      case McpInstallType.smithery:
+        // Smithery安装类型处理
+        print('   ℹ️ Smithery command kept as-is: $command');
         return command;
+        
+      case McpInstallType.localPython:
+        // 本地Python包处理
+        if (command == 'python' || command == 'python3') {
+          final pythonPath = await _runtimeManager.getPythonExecutable();
+          print('   ✅ Resolved python for local Python package -> $pythonPath');
+          return pythonPath;
+        }
+        break;
+        
+      case McpInstallType.localJar:
+        // 本地JAR包处理
+        if (command == 'java') {
+          print('   ℹ️ Java command kept as-is: $command');
+          return command;
+        }
+        break;
+        
+      case McpInstallType.localExecutable:
+        // 本地可执行文件处理
+        print('   ℹ️ Local executable command kept as-is: $command');
+        return command;
+        
+      // 移除了老的localPath，现在使用具体的本地类型
         
       case McpInstallType.github:
         // GitHub克隆的项目可能需要解析Python或Node命令

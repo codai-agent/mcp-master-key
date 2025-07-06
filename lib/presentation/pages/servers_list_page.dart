@@ -9,7 +9,7 @@ import '../../l10n/generated/app_localizations.dart';
 import '../providers/servers_provider.dart';
 import '../widgets/server_card.dart';
 import '../widgets/mcp_config_dialog.dart';
-import 'installation_wizard_page.dart';
+import 'installation_wizard_page_new.dart';
 
 import 'server_monitor_page.dart';
 
@@ -133,7 +133,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                       onPressed: () async {
                         final result = await Navigator.push<bool>(
                           context,
-                          MaterialPageRoute(builder: (context) => const InstallationWizardPage()),
+                          MaterialPageRoute(builder: (context) => const InstallationWizardPageNew()),
                         );
                         // 如果安装成功，刷新服务器列表
                         if (result == true && mounted) {
