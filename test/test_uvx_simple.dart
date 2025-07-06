@@ -1,8 +1,8 @@
 import 'dart:io';
-import 'lib/core/models/mcp_server.dart';
-import 'lib/business/services/install_service.dart';
-import 'lib/business/services/process_service.dart';
-import 'lib/infrastructure/runtime/runtime_manager.dart';
+import '../lib/core/models/mcp_server.dart';
+import '../lib/business/services/install_service.dart';
+import '../lib/business/services/process_service.dart';
+import '../lib/infrastructure/runtime/runtime_manager.dart';
 
 Future<void> main() async {
   print('🚀 Testing UVX Refactor Implementation');

@@ -2,19 +2,21 @@
 
 <div align="center">
   <img src="https://github.com/user-attachments/assets/49a8b11b-0d2e-4b35-8c48-235140d9cd49" alt="MCP Hub Logo" width="200" height="200">
-  
+
   # MCP Master Key
-  
+
   **The Ultimate MCP Server Management Platform**
-  
+
   *A cross-platform desktop application for managing Model Context Protocol (MCP) servers*
-  
+
   ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
   ![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white)
   ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 </div>
 
 ---
+
+## ⚡  [**guidance document**](https://github.com/codai-agent/mcp-master-key/blob/main/guide-en.md) 
 
 ## ⚡ Quick Start
 
@@ -59,8 +61,43 @@
    ```
 
 4. **Run the application**:
+
    - The built application will be available in the `build/` directory
    - Navigate to the platform-specific build folder and run the executable
+
+5. **MCP host/client（codai/cline/cursor/cherry sutido...）config**：
+
+   - SSE：
+
+   "mcphub": {
+
+   ​      "autoApprove": [],
+
+   ​      "disabled": false,
+
+   ​      "timeout": 60,
+
+   ​      "type": "sse",
+
+   ​      "url": "http://127.0.0.1:3000/sse"
+
+   ​    }
+
+   - Streamable：
+
+   "mcphub_streamable": {
+
+   ​      "autoApprove": [],
+
+   ​      "disabled": true,
+
+   ​      "timeout": 60,
+
+   ​      "type": "streamableHttp",
+
+   ​      "url": "http://127.0.0.1:3001/mcp"
+
+   ​    }
 
 ### **System Requirements**
 - **Operating System**: Windows 10/11, macOS 10.14+, or Linux (Ubuntu 18.04+ recommended)

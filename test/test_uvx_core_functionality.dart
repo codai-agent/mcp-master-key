@@ -1,12 +1,12 @@
 #!/usr/bin/env dart
 
 import 'dart:io';
-import 'lib/core/models/mcp_server.dart';
-import 'lib/business/managers/install_managers/uvx_install_manager.dart';
-import 'lib/business/managers/process_managers/uvx_process_manager.dart';
-import 'lib/business/services/install_service.dart';
-import 'lib/business/services/process_service.dart';
-import 'lib/infrastructure/runtime/runtime_manager.dart';
+import '../lib/core/models/mcp_server.dart';
+import '../lib/business/managers/install_managers/uvx_install_manager.dart';
+import '../lib/business/managers/process_managers/uvx_process_manager.dart';
+import '../lib/business/services/install_service.dart';
+import '../lib/business/services/process_service.dart';
+import '../lib/infrastructure/runtime/runtime_manager.dart';
 
 /// 测试UVX重构后的核心功能
 Future<void> main() async {

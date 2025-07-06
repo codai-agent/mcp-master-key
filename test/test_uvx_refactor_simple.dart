@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'lib/core/models/mcp_server.dart';
-import 'lib/business/managers/install_managers/uvx_install_manager.dart';
-import 'lib/business/managers/process_managers/uvx_process_manager.dart';
+import '../lib/core/models/mcp_server.dart';
+import '../lib/business/managers/install_managers/uvx_install_manager.dart';
+import '../lib/business/managers/process_managers/uvx_process_manager.dart';
 
 Future<void> main() async {
   print('🚀 Testing UVX Refactor - Direct Manager Test');

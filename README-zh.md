@@ -2,19 +2,21 @@
 
 <div align="center">
   <img src="https://github.com/user-attachments/assets/49a8b11b-0d2e-4b35-8c48-235140d9cd49" alt="MCP Hub Logo" width="200" height="200">
-  
+
   # MCP 管家
-  
+
   **终极MCP服务器管理平台**
-  
+
   *用于管理模型上下文协议(MCP)服务器的跨平台桌面应用程序*
-  
+
   ![Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white)
   ![macOS](https://img.shields.io/badge/macOS-000000?style=for-the-badge&logo=apple&logoColor=white)
   ![Linux](https://img.shields.io/badge/Linux-FCC624?style=for-the-badge&logo=linux&logoColor=black)
 </div>
 
 ---
+
+## ⚡  [**使用指南**](https://github.com/codai-agent/mcp-master-key/blob/main/guide-zh.md) 
 
 ## ⚡ 快速开始
 
@@ -61,6 +63,41 @@
 4. **运行应用程序**：
    - 构建完成的应用程序将位于 `build/` 目录中
    - 导航到对应平台的构建文件夹并运行可执行文件
+
+5. MCP客户端（codai/cline/cursor/cherry sutido等）的配置：
+
+   1. SSE：
+
+      "mcphub": {
+
+      ​      "autoApprove": [],
+
+      ​      "disabled": false,
+
+      ​      "timeout": 60,
+
+      ​      "type": "sse",
+
+      ​      "url": "http://127.0.0.1:3000/sse"
+
+      ​    }
+
+   2. Streamable：
+
+      "mcphub_streamable": {
+
+      ​      "autoApprove": [],
+
+      ​      "disabled": true,
+
+      ​      "timeout": 60,
+
+      ​      "type": "streamableHttp",
+
+      ​      "url": "http://127.0.0.1:3001/mcp"
+
+      ​    }
+
 
 ### **系统要求**
 - **操作系统**: Windows 10/11、macOS 10.14+ 或 Linux (推荐 Ubuntu 18.04+)
