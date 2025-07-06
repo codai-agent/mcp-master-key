@@ -375,7 +375,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
               Text(l10n.servers_starting_message(server.name)),
             ],
           ),
-          duration: const Duration(seconds: 30), // 延长显示时间
+          duration: const Duration(seconds: 15), // 减少到15秒
           backgroundColor: Colors.orange,
         ),
       );
@@ -398,13 +398,13 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.rocket_launch, color: Colors.white),
+              const Icon(Icons.check_circle, color: Colors.white),
               const SizedBox(width: 12),
-              Text(l10n.servers_starting_message(server.name)),
+              Text('服务器已启动: ${server.name}'),
             ],
           ),
-          backgroundColor: Colors.blue,
-          duration: const Duration(seconds: 3),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
         ),
       );
       
@@ -445,7 +445,7 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
               Text(l10n.servers_stopping_message(server.name)),
             ],
           ),
-          duration: const Duration(seconds: 30),
+          duration: const Duration(seconds: 10), // 减少到10秒
           backgroundColor: Colors.orange,
         ),
       );
@@ -468,13 +468,13 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
         SnackBar(
           content: Row(
             children: [
-              const Icon(Icons.stop_circle, color: Colors.white),
+              const Icon(Icons.check_circle, color: Colors.white),
               const SizedBox(width: 12),
-              Text(l10n.servers_stopping_message(server.name)),
+              Text('服务器已停止: ${server.name}'),
             ],
           ),
-          backgroundColor: Colors.orange,
-          duration: const Duration(seconds: 3),
+          backgroundColor: Colors.green,
+          duration: const Duration(seconds: 2),
         ),
       );
       

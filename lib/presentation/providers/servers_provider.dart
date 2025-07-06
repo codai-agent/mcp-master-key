@@ -21,8 +21,8 @@ final serversListProvider = StreamProvider<List<McpServer>>((ref) async* {
   // 首次加载
   yield await repository.getAllServers();
   
-  // 定期刷新以监听数据库变化
-  await for (final _ in Stream.periodic(const Duration(seconds: 2))) {
+  // 定期刷新以监听数据库变化 - 提高刷新频率
+  await for (final _ in Stream.periodic(const Duration(seconds: 1))) {
     yield await repository.getAllServers();
   }
 });
@@ -104,6 +104,17 @@ class ServerActions {
       
       if (success) {
         print('✅ 服务器启动请求成功: $serverId');
+        
+        // 等待一小段时间确保状态更新完成
+        await Future.delayed(const Duration(milliseconds: 2000));
+        
+        // 验证服务器状态是否已更新为running
+        final server = await _repository.getServerById(serverId);
+        if (server != null && server.status == McpServerStatus.running) {
+          print('✅ 服务器状态已确认为running: $serverId');
+        } else {
+          print('⚠️ 服务器状态未更新为running，当前状态: ${server?.status}');
+        }
       } else {
         throw Exception('启动服务器请求失败: $serverId');
       }
@@ -123,6 +134,17 @@ class ServerActions {
       
       if (success) {
         print('✅ 服务器停止请求成功: $serverId');
+        
+        // 等待一小段时间确保状态更新完成
+        await Future.delayed(const Duration(milliseconds: 1500));
+        
+        // 验证服务器状态是否已更新为stopped
+        final server = await _repository.getServerById(serverId);
+        if (server != null && server.status == McpServerStatus.stopped) {
+          print('✅ 服务器状态已确认为stopped: $serverId');
+        } else {
+          print('⚠️ 服务器状态未更新为stopped，当前状态: ${server?.status}');
+        }
       } else {
         throw Exception('停止服务器请求失败: $serverId');
       }

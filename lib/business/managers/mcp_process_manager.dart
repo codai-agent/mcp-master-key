@@ -674,7 +674,7 @@ class McpProcessManager {
         if (Platform.isWindows) {
           // Windows上使用npm exec命令
           // 首先确保包已安装
-          await _ensureNpxPackageInstalled(server);
+          await _ensureNpxPackageInstalledWithPackageName(server, packageName);
           
           // 在Windows上，我们需要确保包在当前目录也安装了
           final workingDir = await getServerWorkingDirectory(server);
@@ -687,7 +687,7 @@ class McpProcessManager {
           return args;
         } else {
           // 其他平台：恢复使用Node.js spawn方式（更好的兼容性）
-          await _ensureNpxPackageInstalled(server);
+          await _ensureNpxPackageInstalledWithPackageName(server, packageName);
           
           // 使用Node.js spawn方式，这是npm生态系统的标准做法
           // 确保在正确的工作目录下spawn，这样可以找到bin目录中的软链接
@@ -870,15 +870,8 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
     }
   }
 
-  /// 确保NPX包已安装
-  Future<void> _ensureNpxPackageInstalled(McpServer server) async {
-    // 从args中提取包名，支持CommandResolverService转换后的格式
-    final packageName = _extractPackageNameFromArgs(server);
-    if (packageName == null) {
-      print('   ⚠️ Cannot extract package name for installation check');
-      return;
-    }
-    
+  /// 确保NPX包已安装（使用已提取的包名，避免重复提取）
+  Future<void> _ensureNpxPackageInstalledWithPackageName(McpServer server, String packageName) async {
     print('   📦 Ensuring package is installed: $packageName');
     
     try {
@@ -941,6 +934,18 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
       print('   ⚠️ Error installing package: $e');
       rethrow;
     }
+  }
+
+  /// 确保NPX包已安装（兼容旧接口）
+  Future<void> _ensureNpxPackageInstalled(McpServer server) async {
+    // 从args中提取包名，支持CommandResolverService转换后的格式
+    final packageName = _extractPackageNameFromArgs(server);
+    if (packageName == null) {
+      print('   ⚠️ Cannot extract package name for installation check');
+      return;
+    }
+    
+    await _ensureNpxPackageInstalledWithPackageName(server, packageName);
   }
   
   /// 检查NPX包是否已安装（跨平台兼容）
