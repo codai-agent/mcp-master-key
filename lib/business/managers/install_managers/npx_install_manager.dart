@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:convert';
 import 'package:path/path.dart' as path;
 import '../../../core/models/mcp_server.dart';
 import '../../../infrastructure/runtime/runtime_manager.dart';
@@ -179,13 +180,8 @@ class NpxInstallManager implements InstallManagerInterface {
   @override
   Future<String?> getExecutablePath(McpServer server) async {
     try {
-      if (Platform.isWindows) {
-        // Windows上使用node直接执行
-        return await _runtimeManager.getNodeExecutable();
-      } else {
-        // 其他平台使用Node.js
-        return await _runtimeManager.getNodeExecutable();
-      }
+      // 根据文档：所有平台都使用Node.js执行
+      return await _runtimeManager.getNodeExecutable();
     } catch (e) {
       print('❌ Error getting executable path: $e');
       return null;
@@ -199,38 +195,92 @@ class NpxInstallManager implements InstallManagerInterface {
       if (packageName == null) return server.args;
 
       if (Platform.isWindows) {
-        // Windows上使用直接文件执行
-        final installPath = await getInstallPath(server);
-        if (installPath != null) {
-          final entryFile = path.join(installPath, 'build', 'index.js');
-          return [entryFile];
+        // Windows策略：直接使用 Node.js 执行包的入口文件
+        // 根据文档：{workingDir}/node_modules/{packageName}/build/index.js
+        final workingDir = await _getWorkingDirectory(server);
+        if (workingDir != null) {
+          // 尝试找到包的入口文件
+          final entryFile = path.join(workingDir, 'node_modules', packageName, 'build', 'index.js');
+          if (await File(entryFile).exists()) {
+            print('   🪟 Windows direct execution: $entryFile');
+            // 安全地获取剩余参数
+            final remainingArgs = server.args.length > 1 ? server.args.skip(1).toList() : <String>[];
+            return [entryFile, ...remainingArgs];
+          }
+          
+          // 如果没有build/index.js，尝试package.json中的main字段
+          final packageJsonFile = File(path.join(workingDir, 'node_modules', packageName, 'package.json'));
+          if (await packageJsonFile.exists()) {
+            try {
+              final packageJsonContent = await packageJsonFile.readAsString();
+              final packageJson = jsonDecode(packageJsonContent) as Map<String, dynamic>;
+              final mainFile = packageJson['main'] as String?;
+              if (mainFile != null) {
+                final mainPath = path.join(workingDir, 'node_modules', packageName, mainFile);
+                if (await File(mainPath).exists()) {
+                  print('   🪟 Windows main file execution: $mainPath');
+                  final remainingArgs = server.args.length > 1 ? server.args.skip(1).toList() : <String>[];
+                  return [mainPath, ...remainingArgs];
+                }
+              }
+            } catch (e) {
+              print('   ⚠️ Error reading package.json: $e');
+            }
+          }
         }
+        
+        // 如果找不到本地文件，回退到原始参数
+        print('   🪟 Windows fallback to original args');
+        return server.args;
       } else {
-        // 其他平台使用Node.js spawn方式
-        final nodeExe = await _runtimeManager.getNodeExecutable();
-        final workingDir = path.dirname(path.dirname(nodeExe));
-        final binDir = path.join(workingDir, 'bin');
-        
-        // 从包名中提取可执行文件名
-        String executableName = packageName;
-        if (executableName.contains('/')) {
-          executableName = executableName.split('/').last;
+        // macOS/Linux策略：使用 Node.js spawn 方式，增强 PATH 设置
+        // 根据文档：动态生成JavaScript代码
+        final workingDir = await _getWorkingDirectory(server);
+        if (workingDir != null) {
+          final binDir = path.join(workingDir, 'bin');
+          
+          // 从包名中提取可执行文件名（处理scoped包）
+          String executableName = packageName;
+          if (executableName.contains('/')) {
+            executableName = executableName.split('/').last;
+          }
+          
+          // 构建JavaScript代码，按照文档格式
+          final jsCode = '''
+process.chdir('${workingDir.replaceAll('\\', '\\\\')}');
+process.env.PATH = '${binDir.replaceAll('\\', '\\\\')}:' + (process.env.PATH || '');
+require('child_process').spawn('$executableName', process.argv.slice(1), {stdio: 'inherit'});
+'''.trim();
+          
+          print('   🍎 macOS/Linux spawn execution with enhanced PATH');
+          print('   📋 JavaScript code: $jsCode');
+          
+          // 安全地获取剩余参数
+          final remainingArgs = server.args.length > 1 ? server.args.skip(1).toList() : <String>[];
+          return ['-e', jsCode, ...remainingArgs];
         }
         
-        // 构建JavaScript代码
-        final jsCode = '''
-process.chdir("${workingDir.replaceAll('\\', '\\\\')}");
-process.env.PATH = "${binDir.replaceAll('\\', '\\\\')}:" + (process.env.PATH || "");
-require("child_process").spawn("$executableName", process.argv.slice(1), {stdio: "inherit"});
-'''.trim();
-        
-        return ['-e', jsCode];
+        // 回退到原始参数
+        print('   ⚠️ Failed to get working directory, using original args');
+        return server.args;
       }
-      
-      return server.args;
     } catch (e) {
       print('❌ Error building startup args: $e');
       return server.args;
+    }
+  }
+
+  /// 获取工作目录（内部方法）
+  /// 现在使用npm exec方式，不再需要复杂的工作目录处理
+  /// 保留此方法以防其他地方需要，但简化实现
+  Future<String?> _getWorkingDirectory(McpServer server) async {
+    try {
+      final nodeExe = await _runtimeManager.getNodeExecutable();
+      final nodeBasePath = path.dirname(path.dirname(nodeExe)); // 上两级目录
+      return nodeBasePath;
+    } catch (e) {
+      print('   ⚠️ Warning: Failed to get Node.js runtime directory: $e');
+      return null;
     }
   }
 
@@ -279,19 +329,33 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
 
   /// 从服务器配置中提取包名
   String? _extractPackageName(McpServer server) {
+    print('   🔍 Extracting package name from server args: ${server.args}');
+    print('   📦 Install source: ${server.installSource}');
+    
     // 从args中提取包名（跳过-y等参数）
     for (int i = 0; i < server.args.length; i++) {
       final arg = server.args[i];
       if (arg == '-y' || arg == '--yes') {
         if (i + 1 < server.args.length) {
-          return server.args[i + 1];
+          final packageName = server.args[i + 1];
+          print('   ✅ Found package name after -y flag: $packageName');
+          return packageName;
         }
       } else if (!arg.startsWith('-')) {
         // 第一个不以-开头的参数通常是包名
+        print('   ✅ Found package name as first non-flag arg: $arg');
         return arg;
       }
     }
-    return server.installSource;
+    
+    // 如果从args中找不到，使用installSource
+    if (server.installSource != null && server.installSource!.isNotEmpty) {
+      print('   ✅ Using install source as package name: ${server.installSource}');
+      return server.installSource;
+    }
+    
+    print('   ❌ Could not extract package name from server configuration');
+    return null;
   }
 
   /// 安装NPX包

@@ -664,6 +664,13 @@ class McpProcessManager {
     
     switch (server.installType) {
       case McpInstallType.npx:
+        // 从args中提取包名，支持CommandResolverService转换后的格式
+        String? packageName = _extractPackageNameFromArgs(server);
+        if (packageName == null) {
+          print('   ⚠️ Cannot extract package name from args: ${server.args}');
+          return server.args;
+        }
+        
         if (Platform.isWindows) {
           // Windows上使用npm exec命令
           // 首先确保包已安装
@@ -671,10 +678,10 @@ class McpProcessManager {
           
           // 在Windows上，我们需要确保包在当前目录也安装了
           final workingDir = await getServerWorkingDirectory(server);
-          await _ensureLocalPackageInstalled(server.installSource!, workingDir);
+          await _ensureLocalPackageInstalled(packageName, workingDir);
           
           // 修改为使用node直接运行包的入口文件
-          final packageDir = path.join(workingDir, 'node_modules', server.installSource!);
+          final packageDir = path.join(workingDir, 'node_modules', packageName);
           final args = [path.join(packageDir, 'build', 'index.js')];
           print('   📦 Using direct Node.js execution with args: ${args.join(' ')}');
           return args;
@@ -689,7 +696,7 @@ class McpProcessManager {
           
           // 从包名中提取可执行文件名
           // 对于@wopal/mcp-server-hotnews，可执行文件名通常是mcp-server-hotnews
-          String executableName = server.installSource!;
+          String executableName = packageName;
           if (executableName.contains('/')) {
             // 对于scoped包（如@wopal/mcp-server-hotnews），通常可执行文件名是包名的后半部分
             executableName = executableName.split('/').last;
@@ -704,7 +711,7 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
           
           final args = ['-e', jsCode];
           print('   📦 Using Node.js spawn method with enhanced PATH:');
-          print('   📋 Executable name: $executableName (from ${server.installSource})');
+          print('   📋 Executable name: $executableName (from $packageName)');
           print('   📋 JavaScript code: ${jsCode.replaceAll('\n', '; ')}');
           return args;
         }
@@ -759,6 +766,49 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
         print('   ➡️ Using original args for ${server.installType.name}');
         return server.args;
     }
+  }
+
+  /// 从服务器参数中提取包名
+  String? _extractPackageNameFromArgs(McpServer server) {
+    print('   🔍 Extracting package name from args: ${server.args}');
+    
+    // 优先使用installSource
+    if (server.installSource != null && server.installSource!.isNotEmpty) {
+      print('   ✅ Found package name in installSource: ${server.installSource}');
+      return server.installSource;
+    }
+    
+    // 从args中提取包名
+    // 支持两种格式：
+    // 1. 原始NPX格式：[-y, @wopal/mcp-server-hotnews]
+    // 2. CommandResolverService转换后的格式：[exec, -y, @wopal/mcp-server-hotnews]
+    
+    for (int i = 0; i < server.args.length; i++) {
+      final arg = server.args[i];
+      
+      // 跳过exec参数（CommandResolverService添加的）
+      if (arg == 'exec') {
+        continue;
+      }
+      
+      // 检查-y参数后面的包名
+      if (arg == '-y' || arg == '--yes') {
+        if (i + 1 < server.args.length) {
+          final packageName = server.args[i + 1];
+          print('   ✅ Found package name after -y flag: $packageName');
+          return packageName;
+        }
+      }
+      
+      // 第一个不以-开头的参数通常是包名
+      if (!arg.startsWith('-') && arg != 'exec') {
+        print('   ✅ Found package name as non-flag arg: $arg');
+        return arg;
+      }
+    }
+    
+    print('   ❌ Could not extract package name from args');
+    return null;
   }
 
   /// 确保包在本地目录也安装了（Windows特定）
@@ -822,9 +872,13 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
 
   /// 确保NPX包已安装
   Future<void> _ensureNpxPackageInstalled(McpServer server) async {
-    if (server.installSource == null) return;
+    // 从args中提取包名，支持CommandResolverService转换后的格式
+    final packageName = _extractPackageNameFromArgs(server);
+    if (packageName == null) {
+      print('   ⚠️ Cannot extract package name for installation check');
+      return;
+    }
     
-    final packageName = server.installSource!;
     print('   📦 Ensuring package is installed: $packageName');
     
     try {
@@ -1000,9 +1054,17 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
         // 安装包
         print('   📦 Running npm install...');
         final env = await getServerEnvironment(server);
+        
+        // 从args中提取包名，支持CommandResolverService转换后的格式
+        final packageName = _extractPackageNameFromArgs(server);
+        if (packageName == null) {
+          print('   ❌ Cannot extract package name for installation');
+          return false;
+        }
+        
         final result = await Process.run(
           npmPath,
-          ['install', server.installSource!],
+          ['install', packageName],
           workingDirectory: serverDir,
           environment: env,
         );
