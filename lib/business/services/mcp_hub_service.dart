@@ -92,6 +92,7 @@ class McpHubService {
   bool _isInitializationComplete = false; // 标记初始化是否完成
   final Mutex _monitorLock = Mutex(); // 监控锁
   final Map<String, DateTime> _lastProcessedTime = {}; // 记录服务器最后处理时间
+  final Set<String> _userInitiatedOperations = <String>{}; // 记录用户手动启动的服务器
 
   /// 启动MCP Hub服务器
   Future<void> startHub({int port = 3000}) async {
@@ -430,6 +431,8 @@ class McpHubService {
     _statusMonitorTimer?.cancel();
     _statusMonitorTimer = null;
     _lastRunningServerIds.clear();
+    _lastProcessedTime.clear();
+    _userInitiatedOperations.clear();
     print('🛑 Database status monitoring stopped');
   }
 
@@ -449,6 +452,9 @@ class McpHubService {
             .toList();
         
         print('🔍 Monitor: Found ${allServers.length} total servers, ${startingServers.length} starting servers');
+        if (_userInitiatedOperations.isNotEmpty) {
+          print('🔍 Monitor: User-initiated operations in progress: ${_userInitiatedOperations.join(', ')}');
+        }
         
         if (startingServers.isNotEmpty) {
           hasActions = true;
@@ -459,8 +465,16 @@ class McpHubService {
               if (existingServer.isConnected) {
                 print('✅ Hub: Server ${server.name} already connected, updating status to running');
                 await _updateServerStatus(server.id, models.McpServerStatus.running);
+                // 移除用户操作标记
+                _userInitiatedOperations.remove(server.id);
                 continue;
               }
+            }
+            
+            // 检查是否是用户手动启动的操作，如果是则跳过监控处理
+            if (_userInitiatedOperations.contains(server.id)) {
+              print('⏳ Hub: Skipping ${server.name} - user-initiated operation in progress');
+              continue;
             }
             
             // 检查是否最近刚处理过这个服务器
@@ -516,6 +530,12 @@ class McpHubService {
         if (stoppingServers.isNotEmpty) {
           hasActions = true;
           for (final server in stoppingServers) {
+            // 检查是否是用户手动停止的操作，如果是则跳过监控处理
+            if (_userInitiatedOperations.contains(server.id)) {
+              print('⏳ Hub: Skipping ${server.name} - user-initiated stop operation in progress');
+              continue;
+            }
+            
             print('🛑 Hub: Stopping server ${server.name} (${server.id})');
             await _hubStopServer(server);
           }
@@ -1711,13 +1731,31 @@ class McpHubService {
   /// 直接启动服务器（用于用户手动启动）
   Future<void> startServerDirectly(models.McpServer server) async {
     print('🚀 Direct start request: ${server.name} (${server.id})');
-    await _hubStartServer(server);
+    
+    // 标记这是用户手动启动的操作
+    _userInitiatedOperations.add(server.id);
+    
+    try {
+      await _hubStartServer(server);
+    } finally {
+      // 操作完成后移除标记
+      _userInitiatedOperations.remove(server.id);
+    }
   }
 
   /// 直接停止服务器（用于用户手动停止）
   Future<void> stopServerDirectly(models.McpServer server) async {
     print('🛑 Direct stop request: ${server.name} (${server.id})');
-    await _hubStopServer(server);
+    
+    // 标记这是用户手动停止的操作
+    _userInitiatedOperations.add(server.id);
+    
+    try {
+      await _hubStopServer(server);
+    } finally {
+      // 操作完成后移除标记
+      _userInitiatedOperations.remove(server.id);
+    }
   }
 
   /// 处理工具列表请求
