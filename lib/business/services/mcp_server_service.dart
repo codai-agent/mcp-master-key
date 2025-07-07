@@ -48,37 +48,72 @@ class McpServerService {
     print('   📋 Original command: $command');
     print('   📋 Install type: ${installType.name}');
     
-    // 🔧 解析命令和环境变量，转换为内置runtime路径
-    final resolvedConfig = await _commandResolver.resolveServerConfig(
-      command: command,
-      args: args,
-      env: env,
-      installType: installType,
-    );
-    
-    print('   ✅ Command resolved: ${resolvedConfig.command}');
-    
-    final server = models.McpServer(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      name: name,
-      description: description,
-      installType: installType,
-      connectionType: connectionType,  // 使用解析的连接类型
-      command: resolvedConfig.command,  // 使用解析后的完整路径
-      args: resolvedConfig.args,        // 使用解析后的参数
-      env: resolvedConfig.env,          // 使用解析后的环境变量
-      workingDirectory: workingDirectory,
-      installSource: installSource,
-      autoStart: autoStart,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
-
     await _statusLock.protect(() async {
+      // 🔍 检查是否已存在相同的服务器
+      final existingServers = await _repository.getAllServers();
+      
+      // 检查相同名称的服务器
+      final duplicateByName = existingServers.where((s) => s.name == name).toList();
+      if (duplicateByName.isNotEmpty) {
+        print('❌ 服务器名称重复: $name (ID: ${duplicateByName.first.id})');
+        throw Exception('已存在同名的服务器: $name');
+      }
+      
+      // 检查相同安装源的服务器（如果提供了installSource）
+      if (installSource != null && installSource.isNotEmpty) {
+        final duplicateBySource = existingServers.where((s) => 
+          s.installSource == installSource && 
+          s.installType == installType
+        ).toList();
+        if (duplicateBySource.isNotEmpty) {
+          print('❌ 服务器安装源重复: $installSource (已存在服务器: ${duplicateBySource.first.name})');
+          throw Exception('已存在相同安装源的服务器: ${duplicateBySource.first.name} ($installSource)');
+        }
+      }
+      
+      // 检查相同命令和参数的服务器（更精确的重复检查）
+      final duplicateByCommand = existingServers.where((s) => 
+        s.command == command && 
+        s.args.length == args.length &&
+        s.args.every((arg) => args.contains(arg)) &&
+        args.every((arg) => s.args.contains(arg))
+      ).toList();
+      if (duplicateByCommand.isNotEmpty) {
+        print('❌ 服务器命令重复: $command ${args.join(' ')} (已存在服务器: ${duplicateByCommand.first.name})');
+        throw Exception('已存在相同命令配置的服务器: ${duplicateByCommand.first.name}');
+      }
+      
+      // 🔧 解析命令和环境变量，转换为内置runtime路径
+      final resolvedConfig = await _commandResolver.resolveServerConfig(
+        command: command,
+        args: args,
+        env: env,
+        installType: installType,
+      );
+      
+      print('   ✅ Command resolved: ${resolvedConfig.command}');
+      print('   ✅ Duplicate check passed');
+      
+      final server = models.McpServer(
+        id: DateTime.now().millisecondsSinceEpoch.toString(),
+        name: name,
+        description: description,
+        installType: installType,
+        connectionType: connectionType,  // 使用解析的连接类型
+        command: resolvedConfig.command,  // 使用解析后的完整路径
+        args: resolvedConfig.args,        // 使用解析后的参数
+        env: resolvedConfig.env,          // 使用解析后的环境变量
+        workingDirectory: workingDirectory,
+        installSource: installSource,
+        autoStart: autoStart,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+
       await _repository.insertServer(server);
+      print('✅ Server added with resolved paths: ${server.name}');
+      print('   💾 Stored command: ${server.command}');
     });
-    print('✅ Server added with resolved paths: ${server.name}');
-    print('   💾 Stored command: ${server.command}');
   }
 
   /// 启动服务器（用户手动操作） - 直接调用Hub启动方法

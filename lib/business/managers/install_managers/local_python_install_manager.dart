@@ -250,4 +250,10 @@ class LocalPythonInstallManager implements InstallManagerInterface {
            path.startsWith('~') || path.startsWith('C:') ||
            path.length > 1 && path[1] == ':'; // Windows驱动器路径
   }
+
+  @override
+  Future<InstallResult> installCancellable(McpServer server, {Function(Process p1)? onProcessStarted}) {
+    // TODO: implement installCancellable
+    throw UnimplementedError();
+  }
 } 

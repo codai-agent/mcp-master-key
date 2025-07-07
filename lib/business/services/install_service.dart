@@ -58,6 +58,34 @@ class InstallService {
     }
   }
 
+  /// 可取消安装服务器
+  Future<InstallResult> installServerCancellable(
+    McpServer server, {
+    Function(Process)? onProcessStarted,
+  }) async {
+    print('📦 Installing server (cancellable): ${server.name} (type: ${server.installType.name})');
+    
+    final manager = _installManagers[server.installType];
+    if (manager == null) {
+      return InstallResult(
+        success: false,
+        installType: server.installType,
+        errorMessage: 'Unsupported install type: ${server.installType.name}',
+      );
+    }
+
+    try {
+      return await manager.installCancellable(server, onProcessStarted: onProcessStarted);
+    } catch (e) {
+      print('❌ Cancellable installation failed for ${server.name}: $e');
+      return InstallResult(
+        success: false,
+        installType: server.installType,
+        errorMessage: 'Installation failed: $e',
+      );
+    }
+  }
+
   /// 验证服务器是否已安装
   Future<bool> isServerInstalled(McpServer server) async {
     final manager = _installManagers[server.installType];

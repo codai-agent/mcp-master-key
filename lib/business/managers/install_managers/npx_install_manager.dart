@@ -403,6 +403,137 @@ require('child_process').spawn('$executableName', process.argv.slice(1), {stdio:
       );
     }
   }
+
+  @override
+  Future<InstallResult> installCancellable(
+    McpServer server, {
+    Function(Process)? onProcessStarted,
+  }) async {
+    try {
+      final packageName = _extractPackageName(server);
+      if (packageName == null) {
+        return InstallResult(
+          success: false,
+          installType: installType,
+          errorMessage: 'Cannot determine package name from server configuration',
+        );
+      }
+
+      print('📦 Installing NPX package (cancellable): $packageName');
+
+      // 检查包是否已安装
+      final alreadyInstalled = await isInstalled(server);
+      if (alreadyInstalled) {
+        print('   ✅ Package already installed: $packageName');
+        return InstallResult(
+          success: true,
+          installType: installType,
+          output: 'Package already installed',
+          installPath: await getInstallPath(server),
+          metadata: {
+            'packageName': packageName,
+            'installMethod': 'npm install -g (already installed)',
+          },
+        );
+      }
+
+      // 执行可取消安装
+      final result = await _installNpxPackageCancellable(packageName, server, onProcessStarted);
+      
+      return InstallResult(
+        success: result.success,
+        installType: installType,
+        output: result.output,
+        errorMessage: result.errorMessage,
+        installPath: await getInstallPath(server),
+        metadata: {
+          'packageName': packageName,
+          'installMethod': 'npm install -g (cancellable)',
+        },
+      );
+    } catch (e) {
+      return InstallResult(
+        success: false,
+        installType: installType,
+        errorMessage: 'NPX cancellable installation failed: $e',
+      );
+    }
+  }
+
+  /// 可取消的NPX包安装
+  Future<_NpxInstallResult> _installNpxPackageCancellable(
+    String packageName, 
+    McpServer server,
+    Function(Process)? onProcessStarted,
+  ) async {
+    try {
+      final npmPath = await _runtimeManager.getNpmExecutable();
+      final environment = await getEnvironmentVariables(server);
+
+      print('   🔧 NPM executable: $npmPath');
+      print('   📦 Package: $packageName');
+
+      List<String> args;
+      if (Platform.isWindows) {
+        args = ['install', '-g', '--no-package-lock', packageName];
+      } else {
+        args = ['install', '-g', packageName];
+      }
+      
+      print('   📋 Command: $npmPath ${args.join(' ')}');
+
+      // 使用Process.start来获得进程控制权
+      final process = await Process.start(
+        npmPath,
+        args,
+        environment: environment,
+      );
+
+      // 通过回调传递进程实例，允许外部控制
+      if (onProcessStarted != null) {
+        onProcessStarted(process);
+      }
+
+      // 收集输出
+      final stdoutBuffer = StringBuffer();
+      final stderrBuffer = StringBuffer();
+
+      // 监听输出流
+      process.stdout.transform(const SystemEncoding().decoder).listen((data) {
+        stdoutBuffer.write(data);
+        print('   📝 stdout: ${data.trim()}');
+      });
+
+      process.stderr.transform(const SystemEncoding().decoder).listen((data) {
+        stderrBuffer.write(data);
+        print('   ❌ stderr: ${data.trim()}');
+      });
+
+      // 等待进程完成，5分钟超时
+      final exitCode = await process.exitCode.timeout(
+        const Duration(minutes: 5),
+        onTimeout: () {
+          print('   ⏰ NPX installation timed out, killing process...');
+          InstallManagerInterface.killProcessCrossPlatform(process);
+          return -1;
+        },
+      );
+
+      print('   📊 Exit code: $exitCode');
+
+      return _NpxInstallResult(
+        success: exitCode == 0,
+        output: stdoutBuffer.toString(),
+        errorMessage: exitCode != 0 ? stderrBuffer.toString() : null,
+      );
+    } catch (e) {
+      print('   ❌ Cancellable installation failed: $e');
+      return _NpxInstallResult(
+        success: false,
+        errorMessage: 'Cancellable installation failed: $e',
+      );
+    }
+  }
 }
 
 /// NPX安装结果

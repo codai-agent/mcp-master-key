@@ -234,4 +234,11 @@ class LocalExecutableInstallManager implements InstallManagerInterface {
     // Unix系统：任何本地路径都可能是可执行文件
     return true;
   }
+
+  @override
+  Future<InstallResult> installCancellable(McpServer server, {Function(Process p1)?  onProcessStarted}) {
+    // // TODO: implement installCancellable
+    // throw UnimplementedError();
+    return install(server);
+  }
 } 

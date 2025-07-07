@@ -199,4 +199,10 @@ class SmitheryInstallManager implements InstallManagerInterface {
     
     return server.installSource;
   }
+
+  @override
+  Future<InstallResult> installCancellable(McpServer server, {Function(Process p1)? onProcessStarted}) {
+    // TODO: implement installCancellable
+    throw UnimplementedError();
+  }
 } 

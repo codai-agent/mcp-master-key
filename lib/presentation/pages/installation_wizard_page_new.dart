@@ -43,16 +43,21 @@ class _InstallationWizardPageNewState extends State<InstallationWizardPageNew> {
   }
 
   void _onControllerChanged() {
-    setState(() {});
-    
-    // 自动切换页面
-    if (_controller.state.currentStep.index != _pageController.page?.round()) {
-      _pageController.animateToPage(
-        _controller.state.currentStep.index,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
+    // 使用 addPostFrameCallback 来延迟setState调用，避免在构建过程中调用setState
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        setState(() {});
+        
+        // 自动切换页面
+        if (_controller.state.currentStep.index != _pageController.page?.round()) {
+          _pageController.animateToPage(
+            _controller.state.currentStep.index,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        }
+      }
+    });
     
     // 移除自动步骤切换，让用户手动控制
   }

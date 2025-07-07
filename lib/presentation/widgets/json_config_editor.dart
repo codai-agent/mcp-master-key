@@ -23,6 +23,7 @@ class JsonConfigEditor extends StatefulWidget {
 
 class _JsonConfigEditorState extends State<JsonConfigEditor> {
   late TextEditingController _serverConfigController;
+  late ScrollController _scrollController;
   final FocusNode _focusNode = FocusNode();
   
   // 固定的 JSON 结构
@@ -36,6 +37,7 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
   void initState() {
     super.initState();
     _serverConfigController = TextEditingController();
+    _scrollController = ScrollController();
     _initializeFromFullConfig();
     _serverConfigController.addListener(_onServerConfigChanged);
   }
@@ -52,6 +54,7 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
   @override
   void dispose() {
     _serverConfigController.dispose();
+    _scrollController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
@@ -71,15 +74,24 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
         final lines = serverConfigJson.split('\n');
         if (lines.length > 2) {
           final innerContent = lines.sublist(1, lines.length - 1).join('\n');
+          // 临时移除监听器，避免在更新过程中触发onChange回调
+          _serverConfigController.removeListener(_onServerConfigChanged);
           _serverConfigController.text = innerContent;
+          _serverConfigController.addListener(_onServerConfigChanged);
         }
       } else {
         // 如果没有服务器配置，使用占位符
+        // 临时移除监听器，避免在更新过程中触发onChange回调
+        _serverConfigController.removeListener(_onServerConfigChanged);
         _serverConfigController.text = '';
+        _serverConfigController.addListener(_onServerConfigChanged);
       }
     } catch (e) {
       // 如果解析失败，使用占位符
+      // 临时移除监听器，避免在更新过程中触发onChange回调
+      _serverConfigController.removeListener(_onServerConfigChanged);
       _serverConfigController.text = '';
+      _serverConfigController.addListener(_onServerConfigChanged);
     }
   }
 
@@ -138,33 +150,37 @@ class _JsonConfigEditorState extends State<JsonConfigEditor> {
           SizedBox(
             height: 8 * 14 * 1.5 + 24, // 12行 * 字体大小 * 行高 + padding (增加高度)
             child: Scrollbar(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24.0),
+              controller: _scrollController,
+              child: SingleChildScrollView(
+                controller: _scrollController,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: TextField(
-                  controller: _serverConfigController,
-                  focusNode: _focusNode,
-                  maxLines: null,
-                  expands: true,
-                  textAlignVertical: TextAlignVertical.top,
-                  style: const TextStyle(
-                    fontFamily: 'monospace',
-                    fontSize: 14,
-                    height: 1.5,
-                  ),
-                  decoration: InputDecoration(
-                    hintText: widget.placeholderText ?? _placeholderText, // 使用传入的占位符或默认占位符
-                    hintStyle: const TextStyle(
+                    controller: _serverConfigController,
+                    focusNode: _focusNode,
+                    maxLines: null,
+                    minLines: 8,
+                    textAlignVertical: TextAlignVertical.top,
+                    style: const TextStyle(
                       fontFamily: 'monospace',
                       fontSize: 14,
-                      color: Colors.grey,
                       height: 1.5,
                     ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.all(12),
+                    decoration: InputDecoration(
+                      hintText: widget.placeholderText ?? _placeholderText, // 使用传入的占位符或默认占位符
+                      hintStyle: const TextStyle(
+                        fontFamily: 'monospace',
+                        fontSize: 14,
+                        color: Colors.grey,
+                        height: 1.5,
+                      ),
+                      border: InputBorder.none,
+                      contentPadding: const EdgeInsets.all(12),
+                    ),
+                    onTap: () {
+                      _focusNode.requestFocus();
+                    },
                   ),
-                  onTap: () {
-                    _focusNode.requestFocus();
-                  },
                 ),
               ),
             ),

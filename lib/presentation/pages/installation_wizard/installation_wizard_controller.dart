@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import '../../../business/services/install_service.dart';
 import '../../../business/services/mcp_server_service.dart';
+import '../../../business/managers/install_managers/install_manager_interface.dart';
 
 import '../../../core/models/mcp_server.dart';
 
@@ -542,44 +543,113 @@ class InstallationWizardController extends ChangeNotifier {
       );
       
       // 执行安装
-      final result = await installService.installServer(tempServer);
+      final result = await installService.installServerCancellable(
+        tempServer,
+        onProcessStarted: (process) {
+          // 保存进程引用，用于取消
+          _currentInstallProcess = process;
+          _updateState(_state.copyWith(
+            currentInstallProcessPid: process.pid,
+          ));
+          _addLog('🔧 安装进程已启动 (PID: ${process.pid})');
+        },
+      );
       
       if (result.success) {
-        _addLog('✅ 包安装成功！');
+        final isAlreadyInstalled = result.output?.contains('already installed') ?? false;
+        
+        if (isAlreadyInstalled) {
+          _addLog('✅ 包已安装！');
+          _addLog('🔍 检查是否已存在相同的服务器配置...');
+        } else {
+          _addLog('✅ 包安装成功！');
+        }
+        
         _addLog('📦 正在添加服务器到MCP Hub...');
         
         // 添加到服务器列表
-        await serverService.addServer(
-          name: _state.serverName.isNotEmpty ? _state.serverName : serverName,
-          description: _state.serverDescription,
-          command: serverConfig['command'],
-          args: args,
-          env: Map<String, String>.from(serverConfig['env'] ?? {}),
-          installType: installType,
-          autoStart: false,
-        );
-        
-        _addLog('✅ 服务器添加成功！');
-        _addLog('🎯 安装完成，可以在服务器列表中启动该服务器');
-        
-        // 查找刚添加的服务器并更新状态
         try {
-          final allServers = await serverService.getAllServers();
-          final addedServer = allServers.firstWhere(
-            (s) => s.name == (_state.serverName.isNotEmpty ? _state.serverName : serverName),
-            orElse: () => throw Exception('无法找到刚添加的服务器'),
+          await serverService.addServer(
+            name: _state.serverName.isNotEmpty ? _state.serverName : serverName,
+            description: _state.serverDescription,
+            command: serverConfig['command'],
+            args: args,
+            env: Map<String, String>.from(serverConfig['env'] ?? {}),
+            installType: installType,
+            autoStart: false,
           );
           
-          await serverService.updateServerStatus(addedServer.id, McpServerStatus.installed);
-          _addLog('✅ 服务器状态已更新为已安装');
+          _addLog('✅ 服务器添加成功！');
+          _addLog('🎯 安装完成，可以在服务器列表中启动该服务器');
           
-          // 等待一下确保状态更新完成
-          await Future.delayed(const Duration(milliseconds: 1000));
-          _addLog('✅ 状态同步完成，可以在服务器列表中启动该服务器');
+          // 查找刚添加的服务器并更新状态
+          try {
+            final allServers = await serverService.getAllServers();
+            final addedServer = allServers.firstWhere(
+              (s) => s.name == (_state.serverName.isNotEmpty ? _state.serverName : serverName),
+              orElse: () => throw Exception('无法找到刚添加的服务器'),
+            );
+            
+            await serverService.updateServerStatus(addedServer.id, McpServerStatus.installed);
+            _addLog('✅ 服务器状态已更新为已安装');
+            
+            // 等待一下确保状态更新完成
+            await Future.delayed(const Duration(milliseconds: 1000));
+            _addLog('✅ 状态同步完成，可以在服务器列表中启动该服务器');
+            
+          } catch (e) {
+            _addLog('⚠️ 警告：无法更新服务器状态: $e');
+            _addLog('✅ 但服务器已成功添加，可以手动启动');
+          }
           
         } catch (e) {
-          _addLog('⚠️ 警告：无法更新服务器状态: $e');
-          _addLog('✅ 但服务器已成功添加，可以手动启动');
+          // 检查是否是重复服务器的错误
+          if (e.toString().contains('已存在')) {
+            final errorMessage = e.toString();
+            _addLog('⚠️ $errorMessage');
+            
+            if (isAlreadyInstalled) {
+              _addLog('✅ 服务器包已安装，现有服务器配置完全匹配');
+              _addLog('💡 提示：可以直接在服务器列表中使用现有服务器');
+            } else {
+              _addLog('✅ 包安装成功，但服务器配置已存在');
+              _addLog('💡 提示：可能之前已添加过相同的服务器');
+            }
+            
+            // 查找现有服务器并确保其状态正确
+            try {
+              final allServers = await serverService.getAllServers();
+              
+              // 尝试多种方式查找现有服务器
+              final existingServer = allServers.firstWhere(
+                (s) => s.name.toLowerCase().contains(packageName.toLowerCase()) || 
+                       (s.installSource != null && s.installSource!.contains(packageName)) ||
+                       s.command == serverConfig['command'],
+                orElse: () => throw Exception('无法找到现有服务器'),
+              );
+              
+              _addLog('🔍 找到现有服务器: ${existingServer.name} (状态: ${existingServer.status.name})');
+              
+              if (existingServer.status == McpServerStatus.notInstalled) {
+                await serverService.updateServerStatus(existingServer.id, McpServerStatus.installed);
+                _addLog('✅ 已更新现有服务器状态为已安装');
+              } else {
+                _addLog('✅ 现有服务器状态正常');
+              }
+              
+            } catch (findError) {
+              _addLog('⚠️ 无法自动定位现有服务器，请手动检查服务器列表');
+              _addLog('💡 查找失败原因: $findError');
+            }
+          } else {
+            _addLog('❌ 添加服务器失败: $e');
+            _updateState(_state.copyWith(
+              isInstalling: false,
+              installationSuccess: false,
+              currentInstallProcessPid: null,
+            ));
+            return;
+          }
         }
         
         _updateState(_state.copyWith(
@@ -651,28 +721,27 @@ class InstallationWizardController extends ChangeNotifier {
   /// 取消安装
   Future<void> cancelInstallation() async {
     if (_currentInstallProcess != null) {
-      _killProcessById(_currentInstallProcess!.pid);
+      _addLog('🔪 正在取消安装进程...');
+      InstallManagerInterface.killProcessCrossPlatform(_currentInstallProcess!);
+      _currentInstallProcess = null;
     } else if (_state.currentInstallProcessPid != null) {
-      _killProcessById(_state.currentInstallProcessPid!);
+      _addLog('🔪 正在通过PID取消安装进程...');
+      InstallManagerInterface.killProcessByPid(_state.currentInstallProcessPid!);
     }
+    
+    _addLog('🚫 安装已取消');
+    _updateState(_state.copyWith(
+      isInstalling: false,
+      installationSuccess: false,
+      currentInstallProcessPid: null,
+    ));
   }
 
-  /// 通过PID杀死进程
+  /// 通过PID杀死进程 (保留作为后备方法)
   void _killProcessById(int pid) {
     try {
       print('🔪 正在取消安装进程 $pid...');
-      
-      if (Platform.isWindows) {
-        Process.run('taskkill', ['/F', '/PID', '$pid']);
-      } else {
-        Process.run('kill', ['-TERM', '$pid']).then((_) {
-          Future.delayed(const Duration(seconds: 3), () {
-            Process.run('kill', ['-KILL', '$pid']).catchError((e) {
-              return ProcessResult(0, 1, '', e.toString());
-            });
-          });
-        });
-      }
+      InstallManagerInterface.killProcessByPid(pid);
       
       _addLog('🚫 安装已取消');
       _updateState(_state.copyWith(
