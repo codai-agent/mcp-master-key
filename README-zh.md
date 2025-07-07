@@ -36,8 +36,8 @@
    ```
 
 2. **下载平台运行时**：
-   - 前往 [Releases页面](https://github.com/codai-agent/mcp-master-key/releases)
-   - 下载平台对应的运行时文件：
+   - 前往 [Releases页面](https://github.com/codai-agent/mcp-master-key/releases/tag/v0.0.1)
+   - 下载平台对应的运行时文件(runtimes-xxxx.zip)：
      - `nodejs.zip` - Node.js运行时环境
      - `python.zip` - Python运行时环境
    - 将它们放置到 `assets/runtimes/` 目录中：
