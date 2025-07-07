@@ -3,13 +3,32 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../installation_wizard_controller.dart';
 
 /// 执行步骤组件
-class ExecutionStep extends StatelessWidget {
+class ExecutionStep extends StatefulWidget {
   final InstallationWizardController controller;
 
   const ExecutionStep({
     super.key,
     required this.controller,
   });
+
+  @override
+  State<ExecutionStep> createState() => _ExecutionStepState();
+}
+
+class _ExecutionStepState extends State<ExecutionStep> {
+  late final ScrollController _logScrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _logScrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _logScrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -25,13 +44,13 @@ class ExecutionStep extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            controller.state.installationSuccess 
+            widget.controller.state.installationSuccess 
               ? l10n.execution_step_subtitle_completed
-              : (controller.state.isInstalling ? l10n.execution_step_subtitle_installing : l10n.execution_step_subtitle_ready),
+              : (widget.controller.state.isInstalling ? l10n.execution_step_subtitle_installing : l10n.execution_step_subtitle_ready),
             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: controller.state.installationSuccess 
+              color: widget.controller.state.installationSuccess 
                 ? Colors.green[600]
-                : (controller.state.isInstalling ? Colors.blue[600] : Colors.grey[600]),
+                : (widget.controller.state.isInstalling ? Colors.blue[600] : Colors.grey[600]),
             ),
           ),
           const SizedBox(height: 24),
@@ -65,26 +84,26 @@ class ExecutionStep extends StatelessWidget {
                 const SizedBox(height: 12),
                 _buildSummaryItem(
                   l10n.execution_step_server_name, 
-                  controller.state.serverName.isNotEmpty 
-                    ? controller.state.serverName 
+                  widget.controller.state.serverName.isNotEmpty 
+                    ? widget.controller.state.serverName 
                     : l10n.execution_step_unnamed
                 ),
-                if (controller.state.serverDescription.isNotEmpty) ...[
+                if (widget.controller.state.serverDescription.isNotEmpty) ...[
                   const SizedBox(height: 8),
-                  _buildSummaryItem(l10n.execution_step_description, controller.state.serverDescription),
+                  _buildSummaryItem(l10n.execution_step_description, widget.controller.state.serverDescription),
                 ],
-                if (controller.state.detectedInstallType != null) ...[
+                if (widget.controller.state.detectedInstallType != null) ...[
                   const SizedBox(height: 8),
                   _buildSummaryItem(
                     l10n.execution_step_install_type, 
-                    _getInstallTypeDisplayName(controller.state.detectedInstallType!, l10n)
+                    _getInstallTypeDisplayName(widget.controller.state.detectedInstallType!, l10n)
                   ),
                 ],
-                if (controller.state.needsAdditionalInstall) ...[
+                if (widget.controller.state.needsAdditionalInstall) ...[
                   const SizedBox(height: 8),
                   _buildSummaryItem(
                     l10n.execution_step_install_source, 
-                    controller.state.selectedInstallType == 'github' 
+                    widget.controller.state.selectedInstallType == 'github' 
                       ? l10n.execution_step_github_repo
                       : l10n.execution_step_local_path
                   ),
@@ -97,80 +116,93 @@ class ExecutionStep extends StatelessWidget {
           // 安装日志
           Expanded(
             child: Container(
-              padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: Colors.black87,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: Colors.grey[300]!),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
+              child: Scrollbar(
+                controller: _logScrollController,
+                thumbVisibility: true,
+                trackVisibility: true,
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Icon(
-                        Icons.terminal,
-                        color: Colors.green,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        l10n.execution_step_install_logs,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Colors.green,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const Spacer(),
-                      if (controller.state.isInstalling)
-                        const SizedBox(
-                          width: 16,
-                          height: 16,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
-                          ),
-                        ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      Row(
                         children: [
-                          if (controller.state.installationLogs.isEmpty)
-                            Text(
-                              l10n.execution_step_waiting_install,
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: Colors.grey[400],
-                                fontFamily: 'monospace',
-                              ),
-                            )
-                          else
-                            ...controller.state.installationLogs.map(
-                              (log) => Padding(
-                                padding: const EdgeInsets.only(bottom: 4),
-                                child: Text(
-                                  log,
-                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                    color: _getLogColor(log),
-                                    fontFamily: 'monospace',
-                                  ),
-                                ),
+                          const Icon(
+                            Icons.terminal,
+                            color: Colors.green,
+                            size: 20,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            l10n.execution_step_install_logs,
+                            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                              color: Colors.green,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Spacer(),
+                          if (widget.controller.state.isInstalling)
+                            const SizedBox(
+                              width: 16,
+                              height: 16,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.green),
                               ),
                             ),
                         ],
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      Expanded(
+                        child: ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(context).copyWith(
+                            scrollbars: false,
+                          ),
+                          child: SingleChildScrollView(
+                            controller: _logScrollController,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                if (widget.controller.state.installationLogs.isEmpty)
+                                  Text(
+                                    l10n.execution_step_waiting_install,
+                                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                      color: Colors.grey[400],
+                                      fontFamily: 'monospace',
+                                    ),
+                                  )
+                                else
+                                  ...widget.controller.state.installationLogs.map(
+                                    (log) => Padding(
+                                      padding: const EdgeInsets.only(bottom: 4),
+                                      child: Text(
+                                        log,
+                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                          color: _getLogColor(log),
+                                          fontFamily: 'monospace',
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
           
           // 底部操作按钮
-          if (controller.state.isInstalling) ...[
+          if (widget.controller.state.isInstalling) ...[
             const SizedBox(height: 16),
             Row(
               children: [
@@ -187,7 +219,7 @@ class ExecutionStep extends StatelessWidget {
                 ),
               ],
             ),
-          ] else if (controller.state.installationSuccess) ...[
+          ] else if (widget.controller.state.installationSuccess) ...[
             const SizedBox(height: 16),
             Container(
               padding: const EdgeInsets.all(16),
@@ -296,9 +328,9 @@ class ExecutionStep extends StatelessWidget {
   }
 
   void _showCancelDialog(BuildContext context) async {
-    final shouldCancel = await controller.showCancelInstallDialog(context);
+    final shouldCancel = await widget.controller.showCancelInstallDialog(context);
     if (shouldCancel == true) {
-      controller.cancelInstallation();
+      widget.controller.cancelInstallation();
     }
   }
 } 
