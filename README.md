@@ -36,8 +36,8 @@
    ```
 
 2. **Download platform runtimes**:
-   - Go to the [Releases page](https://github.com/codai-agent/mcp-master-key/releases)
-   - Download the platform-specific runtime files:
+   - Go to the [Releases page](https://github.com/codai-agent/mcp-master-key/releases/tag/v0.0.1)
+   - Download the platform-specific runtime files(runtimes-xxxx.zip):
      - `nodejs.zip` - Node.js runtime environment
      - `python.zip` - Python runtime environment
    - Place them in the `assets/runtimes/` directory:
