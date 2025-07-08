@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:mutex/mutex.dart';
 import 'package:mcphub/core/models/mcp_server.dart' as models;
 import 'package:mcphub/business/services/install_service.dart';
-import 'package:mcphub/business/services/process_service.dart';
+// import 'package:mcphub/business/services/process_service.dart';
 import 'package:mcphub/infrastructure/repositories/mcp_server_repository.dart';
 import 'command_resolver_service.dart';
 import 'mcp_hub_service.dart';
@@ -12,7 +12,7 @@ class McpServerService {
   static McpServerService? _instance;
   final McpServerRepository _repository = McpServerRepository.instance;
   final InstallService _installService = InstallService.instance;
-  final ProcessService _processService = ProcessService.instance;
+  // final ProcessService _processService = ProcessService.instance;
   final CommandResolverService _commandResolver = CommandResolverService.instance;
   final Mutex _statusLock = Mutex(); // 状态读写锁
 
@@ -444,20 +444,20 @@ class McpServerService {
       }
       
       // 启动进程
-      final processResult = await _processService.startServer(server);
-      if (!processResult.success) {
-        throw Exception('Failed to start server: ${server.name} - ${processResult.errorMessage}');
-      }
-      print('   ✅ Server process started successfully (PID: ${processResult.processId})');
+      // final processResult = await _processService.startServer(server);
+      // if (!processResult.success) {
+      //   throw Exception('Failed to start server: ${server.name} - ${processResult.errorMessage}');
+      // }
+      // print('   ✅ Server process started successfully (PID: ${processResult.processId})');
       
     } else if (status == models.McpServerStatus.stopped) {
       print('🛑 User request: STOP server');
       
       // 停止进程
-      final processResult = await _processService.stopServer(server);
-      if (!processResult.success) {
-        print('⚠️ Warning: Failed to stop server gracefully: ${server.name} - ${processResult.errorMessage}');
-      }
+      // final processResult = await _processService.stopServer(server);
+      // if (!processResult.success) {
+      //   print('⚠️ Warning: Failed to stop server gracefully: ${server.name} - ${processResult.errorMessage}');
+      // }
       print('   ✅ Server process stopped');
       
     } else if (status == models.McpServerStatus.installed) {

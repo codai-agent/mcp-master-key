@@ -590,7 +590,7 @@ class McpHubService {
         );
         return StdioClientTransport(serverParams);
         
-      case models.McpConnectionType.sse:
+      case models.McpConnectionType.sse://huqb
         print('🌐 Creating SSE transport for ${server.name}');
         // 对于SSE模式，我们需要服务器的URL
         // 这里假设服务器在端口上运行，或者从配置中获取URL
