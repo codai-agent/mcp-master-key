@@ -37,7 +37,7 @@ Click "Install Server" → Enter MCP server configuration in "MCP Config" area. 
 <img width="1200" alt="2" src="https://github.com/user-attachments/assets/47a4fbd1-379b-4a13-abbc-c450e608845e" />
 *PS:*
 
-If you are using the uvx command to install locally or from Git in your configuration, the root name of this configuration represents the package name, while the name in ARG represents the name of the executing package. The two can be the same, but some packages have different names, such as Serena MCP, which has the package name Serena but the executing program is called Serena mcp server. Therefore, when configuring, be sure to pay attention to: 
+If you are using the uvx command to install locally or from Git or from Piyp source in your configuration, the root name of this configuration represents the package name, while the name in ARG represents the name of the executing package. The two can be the same, but some packages have different names, such as Serena MCP, which has the package name Serena but the executing program is called Serena mcp server. Therefore, when configuring, be sure to pay attention to: 
 ```
 "serena": {
       "command": "uvx",
@@ -53,6 +53,7 @@ or
       "type": "stdio"
     }
 ```
+When prompted with installation failure, it is necessary to carefully check whether the installation package name is correct!!!!
 
 2-2. Click "Analyze Config" → Proceed through steps until "Execute Installation" page → Click "Start Installation" and wait for completion.
 
