@@ -29,14 +29,35 @@
 （**截止到v0.0.2版本，暂时只支持npx/uvx的安装命令**）
 
 2-1、MCP server配置文件快捷安装：点击“安装服务器”-“MCP配置”区域输入MCP server配置，比如输入查询世界主要城市的时间的MCP配置：
-
+```
 "time": {
       "command": "uvx",
       "args": ["mcp-server-time","--local-timezone","America/New_York"],
       "type": "stdio"
     }
+```
 
 <img width="1200" alt="2" src="https://github.com/user-attachments/assets/47a4fbd1-379b-4a13-abbc-c450e608845e" />
+*特别提醒：*
+
+如果你配置中使用的是uvx命令从本地或者git或者是pypi的官方源 进行安装，这个配置的root name代表的是包名，而args中的名称代表的是执行包的名称，这两者是可以一样的，但是有些包的这两个不一样，比如serena这个MCP，它的包名是serena，但是执行程序叫serena-mcp-server，因此配置的时候一定要注意一下：
+```
+"serena": {
+      "command": "uvx",
+      "args": ["--from","/Users/huqibin/Downloads/serena-main","serena-mcp-server"],
+      "type": "stdio"
+    }
+
+or
+
+"serena": {
+      "command": "uvx",
+      "args": ["--from","git+https://github.com/oraios/serena","serena-mcp-server"],
+      "type": "stdio"
+    }
+```
+
+当提示安装失败的时候，需要仔细检查安装包名是否正确！！！！
 
 2-2、点击“分析配置”-一路下一步直到“执行安装”页-点击“开始安装”，等等安装完成。
 
