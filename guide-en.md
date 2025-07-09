@@ -27,7 +27,7 @@ Top: Menu bar
 Click "Install Server" → Enter MCP server configuration in "MCP Config" area. For example, to install a server that queries world city times:
 
 ```json
-"time": {
+"mcp-server-time": {
   "command": "uvx",
   "args": ["mcp-server-time","--local-timezone","America/New_York"],
   "type": "stdio"
@@ -35,7 +35,24 @@ Click "Install Server" → Enter MCP server configuration in "MCP Config" area. 
 ```
 
 <img width="1200" alt="2" src="https://github.com/user-attachments/assets/47a4fbd1-379b-4a13-abbc-c450e608845e" />
+*PS:*
 
+If you are using the uvx command to install locally or from Git in your configuration, the root name of this configuration represents the package name, while the name in ARG represents the name of the executing package. The two can be the same, but some packages have different names, such as Serena MCP, which has the package name Serena but the executing program is called Serena mcp server. Therefore, when configuring, be sure to pay attention to: 
+```
+"serena": {
+      "command": "uvx",
+      "args": ["--from","/Users/huqibin/Downloads/serena-main","serena-mcp-server"],
+      "type": "stdio"
+    }
+
+or
+
+"serena": {
+      "command": "uvx",
+      "args": ["--from","git+https://github.com/oraios/serena","serena-mcp-server"],
+      "type": "stdio"
+    }
+```
 
 2-2. Click "Analyze Config" → Proceed through steps until "Execute Installation" page → Click "Start Installation" and wait for completion.
 
