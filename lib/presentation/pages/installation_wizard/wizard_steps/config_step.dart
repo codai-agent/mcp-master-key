@@ -31,10 +31,7 @@ class _ConfigStepState extends State<ConfigStep> {
     _descriptionController.text = widget.controller.state.serverDescription;
     _configController.text = widget.controller.state.configText;
     
-    // 监听控制器变化
-    _nameController.addListener(() {
-      widget.controller.updateServerName(_nameController.text);
-    });
+    // 服务器名称现在由配置解析自动设置
     
     _descriptionController.addListener(() {
       widget.controller.updateServerDescription(_descriptionController.text);
@@ -85,13 +82,42 @@ class _ConfigStepState extends State<ConfigStep> {
                   _buildSectionHeader(l10n.config_step_basic_info),
                   const SizedBox(height: 12),
                   
-                  TextField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: l10n.config_step_server_name,
-                      hintText: l10n.config_step_server_name_hint,
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.label),
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.grey[50],
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(color: Colors.grey[300]!),
+                    ),
+                    child: Row(
+                      children: [
+                        const Icon(Icons.label, color: Colors.grey),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                l10n.config_step_server_name,
+                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: Colors.grey[600],
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                              Text(
+                                widget.controller.state.serverName.isEmpty
+                                    ? l10n.config_step_server_name_hint
+                                    : widget.controller.state.serverName,
+                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                  color: widget.controller.state.serverName.isEmpty
+                                      ? Colors.grey[400]
+                                      : Colors.black87,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 16),

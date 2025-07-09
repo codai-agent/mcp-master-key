@@ -234,12 +234,78 @@ class UvxInstallManager implements InstallManagerInterface {
     }
   }
 
-  /// 从服务器配置中提取包名
+  /// 从服务器配置中提取包名 uvx的安装包名为 json的root key
   String? _extractPackageName(McpServer server) {
-    if (server.args.isNotEmpty) {
-      return server.args.first;
+    return server.name;
+  }
+
+  /// 从服务器配置中提取uvx的运行时名
+  String? _extractRuntimePkgName(McpServer server) {
+    String packageName = '';
+    List<String> args = server.args;
+    if (args.first.startsWith('--')) {
+      // 如果第一个参数是--开头
+      if (args.length >= 3) {
+        // 如果后面至少有两个参数
+        final secondParam = args[2];
+        // 检查第二个参数是否也是--开头
+        if (secondParam.startsWith('--')) {
+          // 如果第二个参数也是--开头，继续往后找非--开头的参数
+          packageName = args.skip(2).firstWhere(
+                (arg) => !arg.startsWith('--'),
+            orElse: () => args[1], // 如果找不到，使用第一个--后的参数
+          );
+        } else {
+          packageName = secondParam;
+        }
+      } else if (args.length >= 2) {
+        // 如果只有一个后续参数
+        packageName = args[1];
+      } else {
+        packageName = '';
+      }
+    } else {
+      // 如果第一个参数不是--开头，直接使用它
+      packageName = args.first;
     }
-    return server.installSource;
+    return packageName;
+  }
+
+  /// 去除参数中的执行包名
+  List<String> _removeRuntimePkgFromArgs(List<String> args) {
+    if (args.isEmpty) {
+      return [];
+    }
+    List<String> copyList = [];
+    copyList.addAll(args);
+    String packageName = '';
+    if (args.first.startsWith('--')) {
+      // 如果第一个参数是--开头
+      if (args.length >= 3) {
+        // 如果后面至少有两个参数
+        final secondParam = args[2];
+        // 检查第二个参数是否也是--开头
+        if (secondParam.startsWith('--')) {
+          // 如果第二个参数也是--开头，继续往后找非--开头的参数
+          packageName = args.skip(2).firstWhere(
+                (arg) => !arg.startsWith('--'),
+            orElse: () => args[1], // 如果找不到，使用第一个--后的参数
+          );
+        } else {
+          packageName = secondParam;
+        }
+      } else if (args.length >= 2) {
+        // 如果只有一个后续参数
+        packageName = args[1];
+      } else {
+        packageName = '';
+      }
+    } else {
+      // 如果第一个参数不是--开头，直接使用它
+      packageName = args.first;
+    }
+    copyList.remove(packageName);
+    return copyList;
   }
 
   /// 安装UVX包
@@ -252,6 +318,16 @@ class UvxInstallManager implements InstallManagerInterface {
       print('   📦 Package: $packageName');
 
       final args = ['tool', 'install', packageName];
+      // 检查是否包含--from参数并获取安装源
+      if (server.args.contains('--from')) {
+        final fromIndex = server.args.indexOf('--from');
+        // 确保--from后面还有参数
+        if (fromIndex < server.args.length - 1) {
+          args.add('--from');
+          args.add(server.args[fromIndex + 1]);
+        }
+      }
+      
       print('   📋 Command: $uvPath ${args.join(' ')}');
 
       final result = await Process.run(
@@ -392,7 +468,24 @@ class UvxInstallManager implements InstallManagerInterface {
       final uvPath = await _runtimeManager.getUvExecutable();
       final environment = await getEnvironmentVariables(server);
 
-      final args = ['tool', 'install', packageName];
+      // final args = ['tool', 'install', packageName];
+      // 检查是否包含--from参数并获取安装源
+      // if (server.args.contains('--from') || server.args.contains('--directory')) {
+      //   String param = '--from';
+      //   int fromIndex = server.args.indexOf(param);
+      //   if (fromIndex < 0) {
+      //     param = '--directory';
+      //     fromIndex = server.args.indexOf(param);
+      //   }
+      //   // 确保--from后面还有参数
+      //   if (fromIndex < server.args.length - 1) {
+      //     args.add(param);
+      //     args.add(server.args[fromIndex + 1]);
+      //   }
+      // }
+
+      final args = ['tool', 'install',packageName];
+      args.addAll(_removeRuntimePkgFromArgs(server.args));
       
       print('   🔧 UV executable: $uvPath');
       print('   📦 Package: $packageName');

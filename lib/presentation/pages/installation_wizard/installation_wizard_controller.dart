@@ -481,6 +481,10 @@ class InstallationWizardController extends ChangeNotifier {
       }
       
       final serverName = mcpServers.keys.first;
+      // 更新服务器名称
+      updateServerName(serverName);
+      _addLog('📝 服务器名称: $serverName');
+
       final originalServerConfigData = mcpServers[serverName];
       if (originalServerConfigData == null || originalServerConfigData is! Map<String, dynamic>) {
         throw Exception('配置无效：服务器配置格式错误');
@@ -510,24 +514,23 @@ class InstallationWizardController extends ChangeNotifier {
       
       // 确定安装类型
       final installType = _state.detectedInstallType!;
-      _addLog('🔧 安装类型: ${installType.name}');
-      
-      // 获取包名
-      final args = (serverConfig['args'] as List?)?.cast<String>() ?? [];
-      String packageName = '';
-      
-      if (args.isNotEmpty) {
-        if (installType == McpInstallType.npx && args.contains('-y')) {
-          final yIndex = args.indexOf('-y');
-          if (yIndex + 1 < args.length) {
-            packageName = args[yIndex + 1];
-          }
-        } else {
-          packageName = args.first;
+              _addLog('🔧 安装类型: ${installType.name}');
+        
+        // 获取包名和服务器名称
+        final args = (serverConfig['args'] as List?)?.cast<String>() ?? [];
+        
+        // 尝试从配置中获取服务器名称
+        final configName = serverConfig['name'] as String?;
+        if (configName != null && configName.isNotEmpty) {
+          // 更新服务器名称
+          updateServerName(configName);
+          _addLog('📝 服务器名称: $configName');
         }
-      }
-      
-      _addLog('📦 包名: $packageName');
+        
+        // 使用服务器名称作为包名
+        String packageName = serverName;
+        
+        _addLog('📦 包名: $packageName');
       _addLog('🔄 开始实际安装过程...');
       
       // 创建临时服务器对象用于安装

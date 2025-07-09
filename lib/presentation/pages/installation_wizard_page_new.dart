@@ -362,7 +362,7 @@ class _InstallationWizardPageNewState extends State<InstallationWizardPageNew> {
       case WizardStep.analyze:
         return l10n.common_next;
       case WizardStep.options:
-        return l10n.common_start_install;
+        return l10n.common_next;
       case WizardStep.execute:
         return _controller.state.installationSuccess 
           ? l10n.install_wizard_finish 
