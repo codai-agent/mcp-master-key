@@ -265,19 +265,33 @@ class StreamableMcpHub {
       if (childServer.isConnected) {
         for (final tool in childServer.tools) {
           final schema = tool.inputSchema?.properties ?? {};
-          print('🛠️ 注册子服务器工具: ${tool.name}');
+          
+          // 🔧 使用 servername::toolname 格式注册工具
+          final serverName = _normalizeServerName(childServer.name);
+          final wrappedToolName = '${serverName}::${tool.name}';
+          
+          print('🛠️ 注册子服务器工具: $wrappedToolName');
+          print('   ├─ 服务器: ${childServer.name}');
+          print('   ├─ 原始工具名: ${tool.name}');
           print('   ├─ 描述: ${tool.description}');
           print('   └─ 参数schema: $schema');
+          
           server.tool(
-            tool.name,
-            description: tool.description ?? 'No description',
+            wrappedToolName,
+            description: '${tool.description ?? 'No description'} (来自: ${childServer.name})',
             inputSchemaProperties: schema,
             callback: ({args, extra}) async {
-              print('➡️ 调用聚合工具: ${tool.name}，参数: $args，目标服务器: ${childServer.id}');
-              return await _forwardToolCall(tool.name, args ?? {}, childServer.id);
+              print('➡️ 调用包装工具: $wrappedToolName，参数: $args');
+              return await _forwardWrappedToolCall(wrappedToolName, args ?? {});
             },
           );
-          toolsCollector.add(tool.toJson()); // 收集工具信息
+          
+          // 收集工具信息，使用包装后的名称
+          final toolJson = tool.toJson();
+          toolJson['name'] = wrappedToolName; // 使用包装后的名称
+          // toolJson['_original_name'] = tool.name; // 保存原始名称//huqb
+          toolJson['_server_name'] = childServer.name; // 保存服务器名称
+          toolsCollector.add(toolJson);
         }
       }
     }
@@ -400,6 +414,78 @@ class StreamableMcpHub {
     );
   }
 
+  /// 标准化服务器名称，用于工具名称前缀
+  String _normalizeServerName(String serverName) {
+    return serverName
+        .toLowerCase()
+        .replaceAll(' ', '_')
+        .replaceAll('-', '_')
+        .replaceAll(RegExp(r'[^a-z0-9_]'), ''); // 只保留字母、数字和下划线
+  }
+
+  /// 转发包装后的工具调用
+  Future<CallToolResult> _forwardWrappedToolCall(
+    String wrappedToolName,
+    Map<String, dynamic> args,
+  ) async {
+    try {
+      // 解析包装的工具名称
+      final parts = wrappedToolName.split('::');
+      if (parts.length != 2) {
+        return CallToolResult.fromContent(
+          content: [TextContent(text: 'Error: Invalid wrapped tool name format: $wrappedToolName')],
+        );
+      }
+      
+      final normalizedServerName = parts[0];
+      final originalToolName = parts[1];
+      
+      print('🔍 解析包装工具名称:');
+      print('   ├─ 标准化服务器名: $normalizedServerName');
+      print('   └─ 原始工具名: $originalToolName');
+      
+      // 查找对应的子服务器
+      final hubService = McpHubService.instance;
+      dynamic targetServer;
+      
+      for (final childServer in hubService.childServers) {
+        if (childServer.isConnected && _normalizeServerName(childServer.name) == normalizedServerName) {
+          targetServer = childServer;
+          break;
+        }
+      }
+      
+      if (targetServer == null) {
+        return CallToolResult.fromContent(
+          content: [TextContent(text: 'Error: Server not found for normalized name: $normalizedServerName')],
+        );
+      }
+      
+      print('🎯 找到目标服务器: ${targetServer.name}');
+      
+      // 验证工具是否存在
+      final toolExists = targetServer.tools.any((tool) => tool.name == originalToolName);
+      if (!toolExists) {
+        return CallToolResult.fromContent(
+          content: [TextContent(text: 'Error: Tool $originalToolName not found on server ${targetServer.name}')],
+        );
+      }
+      
+      // 调用子服务器的工具
+      return await _executeToolOnChildServer(
+        targetServer.id,
+        originalToolName,
+        args,
+      );
+      
+    } catch (e) {
+      print('❌ 包装工具调用失败: $e');
+      return CallToolResult.fromContent(
+        content: [TextContent(text: 'Error executing wrapped tool: $e')],
+      );
+    }
+  }
+
   /// 处理请求队列
   void _processRequestQueue(SharedServerInfo serverInfo) async {
     if (serverInfo.isProcessing || serverInfo.requestQueue.isEmpty) {
@@ -440,28 +526,22 @@ class StreamableMcpHub {
     String toolName,
     Map<String, dynamic> args,
   ) async {
-    // 简化实现，直接返回模拟结果
-    // 实际实现中需要调用真正的子服务器
-    final hubService = McpHubService.instance;
-    final childServer = hubService.childServers.firstWhere(
-      (server) => server.id == serverId,
-      orElse: () => throw Exception('Child server $serverId not found'),
-    );
-
-    if (!childServer.isConnected) {
-      throw Exception('Child server $serverId is not connected');
+    try {
+      print('🔄 StreamableHub: Executing tool $toolName on server $serverId with args: $args');
+      
+      // 通过McpHubService调用真正的子服务器工具
+      final hubService = McpHubService.instance;
+      final result = await hubService.callChildServerTool(serverId, toolName, args);
+      
+      print('✅ StreamableHub: Tool $toolName completed successfully');
+      return result;
+    } catch (e) {
+      print('❌ StreamableHub: Tool $toolName failed: $e');
+      return CallToolResult.fromContent(
+        content: [TextContent(text: 'Tool execution failed: $e')],
+        isError: true,
+      );
     }
-
-    // TODO: 实际调用子服务器的工具
-    // 这里需要根据具体的MCP客户端API来实现
-    
-    return CallToolResult.fromContent(
-      content: [
-        TextContent(
-          text: 'Tool $toolName executed on ${childServer.name} with args: ${jsonEncode(args)}'
-        ),
-      ],
-    );
   }
 
   // ===== HTTP处理方法 (参考示例代码) =====

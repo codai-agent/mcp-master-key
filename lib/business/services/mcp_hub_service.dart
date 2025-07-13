@@ -1361,17 +1361,21 @@ class McpHubService {
   /// 注册单个服务器的工具
   void _registerServerTools(ChildServerInfo serverInfo) {
     for (final tool in serverInfo.tools) {
+      // 🔧 使用 servername::toolname 格式注册工具
+      final serverName = _normalizeServerName(serverInfo.name);
+      final wrappedToolName = '${serverName}::${tool.name}';
+      
       // 为每个子服务器工具创建代理
       _mcpServer!.tool(
-        tool.name,
-        description: '${tool.description} (via ${serverInfo.name})',
+        wrappedToolName,
+        description: '${tool.description} (来自: ${serverInfo.name})',
         inputSchemaProperties: tool.inputSchema.properties,
         callback: ({args, extra}) async {
           return await _callChildServerTool(serverInfo.id, tool.name, args ?? {});
         },
       );
       
-      print('🔧 Registered tool: ${tool.name} from ${serverInfo.name}');
+      print('🔧 Registered wrapped tool: $wrappedToolName from ${serverInfo.name}');
     }
   }
 
@@ -1385,14 +1389,40 @@ class McpHubService {
     try {
       print('🔄 Calling tool $toolName on server $serverId with args: $args');
       
-      // 调用子服务器的工具
+      // 调用子服务器的工具，设置60秒超时
       final callParams = CallToolRequestParams(
         name: toolName,
         arguments: args,
       );
-      final result = await serverInfo.client!.callTool(callParams);
+      
+      final result = await serverInfo.client!.callTool(callParams).timeout(
+        const Duration(seconds: 60),
+        onTimeout: () {
+          print('⏰ Tool $toolName timed out after 60 seconds');
+          return CallToolResult(
+            content: [TextContent(text: 'Tool execution timed out after 60 seconds')],
+            isError: true,
+          );
+        },
+      );
       
       print('✅ Tool $toolName completed successfully');
+      print('📋 Result content: ${result.content.length} items');
+      
+      // 打印结果的前几个字符用于调试
+      if (result.content.isNotEmpty) {
+        for (int i = 0; i < result.content.length; i++) {
+          final content = result.content[i];
+          if (content is TextContent) {
+            final text = content.text;
+            final preview = text.length > 200 ? '${text.substring(0, 200)}...' : text;
+            print('📄 Content $i: $preview');
+          } else {
+            print('📄 Content $i: ${content.runtimeType}');
+          }
+        }
+      }
+      
       return result;
     } catch (e) {
       print('❌ Tool $toolName failed: $e');
@@ -1441,6 +1471,15 @@ class McpHubService {
     }
     
     print('✅ MCP server recreated with current tools');
+  }
+
+  /// 标准化服务器名称，用于工具名称前缀
+  String _normalizeServerName(String serverName) {
+    return serverName
+        .toLowerCase()
+        .replaceAll(' ', '_')
+        .replaceAll('-', '_')
+        .replaceAll(RegExp(r'[^a-z0-9_]'), ''); // 只保留字母、数字和下划线
   }
 
   /// 注册资源
@@ -1566,6 +1605,15 @@ class McpHubService {
     }
   }
 
+  /// 调用子服务器工具（公共方法）
+  Future<CallToolResult> callChildServerTool(
+    String serverId,
+    String toolName,
+    Map<String, dynamic> toolArgs,
+  ) async {
+    return await _callChildTool(serverId, toolName, toolArgs);
+  }
+
   /// 调用子服务器工具
   Future<CallToolResult> _callChildTool(
     String serverId,
@@ -1580,14 +1628,42 @@ class McpHubService {
     try {
       print('🔧 Calling tool $toolName on server $serverId with args: $toolArgs');
       
-      // 使用mcp_dart的API调用子服务器工具
+      // 使用mcp_dart的API调用子服务器工具，设置60秒超时
       final callParams = CallToolRequestParams(
         name: toolName,
         arguments: toolArgs,
       );
-      final result = await server.client!.callTool(callParams);
+      
+      final result = await server.client!.callTool(callParams).timeout(
+        const Duration(seconds: 60),
+        onTimeout: () {
+          print('⏰ Tool $toolName timed out after 60 seconds');
+          return CallToolResult(
+            content: [TextContent(text: 'Tool execution timed out after 60 seconds')],
+            isError: true,
+          );
+        },
+      );
       
       print('✅ Tool $toolName executed successfully on server $serverId');
+      print('📋 Result content: ${result.content.length} items');
+      
+      // 打印结果的前几个字符用于调试
+      if (result.content.isNotEmpty) {
+        for (int i = 0; i < result.content.length; i++) {
+          final content = result.content[i];
+          if (content is TextContent) {
+            final text = content.text;
+            final preview = text.length > 200 ? '${text.substring(0, 200)}...' : text;
+            print('📄 Content $i: $preview');
+          } else {
+            print('📄 Content $i: ${content.runtimeType}');
+          }
+        }
+      } else {
+        print('⚠️ Tool returned empty content');
+      }
+      
       return result;
     } catch (e) {
       print('❌ Error calling tool $toolName on server $serverId: $e');
@@ -2521,14 +2597,19 @@ class McpHubService {
     for (final server in _childServers.values) {
       if (server.isConnected && server.tools.isNotEmpty) {
         for (final tool in server.tools) {
+          // 🔧 使用 servername::toolname 格式
+          final serverName = _normalizeServerName(server.name);
+          final wrappedToolName = '${serverName}::${tool.name}';
+          
           allTools.add({
-            'name': tool.name,
-            'description': tool.description,
+            'name': wrappedToolName,
+            'description': '${tool.description} (来自: ${server.name})',
             'inputSchema': tool.inputSchema.toJson(),
             '_meta': {
               'source': 'child_server',
               'server_id': server.id,
               'server_name': server.name,
+              'original_tool_name': tool.name,
             },
           });
         }
@@ -2578,7 +2659,34 @@ class McpHubService {
       return await _callHubTool(toolName, arguments);
     }
     
-    // 2. 在子服务器中查找工具
+    // 2. 检查是否是包装后的工具名称
+    if (toolName.contains('::')) {
+      final parts = toolName.split('::');
+      if (parts.length == 2) {
+        final normalizedServerName = parts[0];
+        final originalToolName = parts[1];
+        
+        print('🔍 解析包装工具名称: $toolName');
+        print('   ├─ 标准化服务器名: $normalizedServerName');
+        print('   └─ 原始工具名: $originalToolName');
+        
+        // 查找对应的子服务器
+        for (final server in _childServers.values) {
+          if (server.isConnected && _normalizeServerName(server.name) == normalizedServerName) {
+            // 验证工具是否存在
+            final toolExists = server.tools.any((tool) => tool.name == originalToolName);
+            if (toolExists) {
+              print('🎯 找到目标服务器: ${server.name}，调用工具: $originalToolName');
+              return await _callChildTool(server.id, originalToolName, arguments);
+            }
+          }
+        }
+        
+        throw Exception('Wrapped tool not found: $toolName (server: $normalizedServerName, tool: $originalToolName)');
+      }
+    }
+    
+    // 3. 尝试直接查找工具（兼容性）
     for (final server in _childServers.values) {
       if (server.isConnected) {
         for (final tool in server.tools) {
@@ -2589,7 +2697,7 @@ class McpHubService {
       }
     }
     
-    // 3. 工具未找到
+    // 4. 工具未找到
     throw Exception('Tool not found: $toolName');
   }
 
