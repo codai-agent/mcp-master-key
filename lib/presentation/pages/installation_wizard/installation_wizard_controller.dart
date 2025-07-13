@@ -141,7 +141,7 @@ class InstallationWizardController extends ChangeNotifier {
         cleanedConfig = firstServer;
       }
 
-      // 分析安装类型
+      // 分析安装类型 可能不能只从command入手，如果是配置远程服务器，就不会有command命令 //huqb
       final cleanedCommand = cleanedConfig['command'] as String;
       McpInstallType? detectedType;
       bool needsAdditionalInstall = false;
@@ -152,9 +152,16 @@ class InstallationWizardController extends ChangeNotifier {
         needsAdditionalInstall = false;
         analysisResult = '检测到UVX安装类型，可以自动安装';
       } else if (cleanedCommand == 'npx') {
-        detectedType = McpInstallType.npx;
-        needsAdditionalInstall = false;
-        analysisResult = '检测到NPX安装类型，可以自动安装';
+        //进一步看是否是@smithery/cli
+        if (isSmitheryCli(cleanedConfig)) {
+          detectedType = McpInstallType.smithery;
+          needsAdditionalInstall = false;
+          analysisResult = '检测到smithery/cli安装类型，可以自动安装';
+        } else {
+          detectedType = McpInstallType.npx;
+          needsAdditionalInstall = false;
+          analysisResult = '检测到NPX安装类型，可以自动安装';
+        }
       } else if (cleanedCommand == 'python' || cleanedCommand == 'python3') {
         detectedType = McpInstallType.localPython;
         needsAdditionalInstall = true;
@@ -185,6 +192,19 @@ class InstallationWizardController extends ChangeNotifier {
     }
   }
 
+  /// 是否为@smithery/cli包
+  bool isSmitheryCli(Map<String, dynamic> serverConfig) {
+    List<String> args = (serverConfig['args'] as List<dynamic>?)?.cast<String>() ?? [];
+    if(args.isNotEmpty) {
+      for (int i = 0; i < args.length; i++) {
+        if (args[i].startsWith('@smithery/cli')) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
   /// 清理和规范化服务器配置，处理特殊格式的兼容性
   Map<String, dynamic> _cleanupServerConfig(Map<String, dynamic> serverConfig) {
     final cleanedConfig = Map<String, dynamic>.from(serverConfig);
@@ -204,80 +224,80 @@ class InstallationWizardController extends ChangeNotifier {
       }
     }
     
-    // 处理@smithery/cli的特殊NPX格式
-    if (command == 'npx' && args.isNotEmpty) {
-      int smitheryIndex = -1;
-      for (int i = 0; i < args.length; i++) {
-        if (args[i].startsWith('@smithery/cli')) {
-          smitheryIndex = i;
-          break;
-        }
-      }
-      
-      if (smitheryIndex != -1) {
-        print('🔧 检测到@smithery/cli格式，需要清理参数');
-        
-        final List<String> cleanedArgs = [];
-        bool skipNext = false;
-        bool foundSmithery = false;
-        
-        for (int i = 0; i < args.length; i++) {
-          if (skipNext) {
-            skipNext = false;
-            continue;
-          }
-          
-          final arg = args[i];
-          
-          if (arg.startsWith('@smithery/cli')) {
-            foundSmithery = true;
-            continue;
-          }
-          
-          if (foundSmithery && (arg == 'run' || arg == 'inspect')) {
-            foundSmithery = false;
-            continue;
-          }
-          
-          if (arg == '--key') {
-            skipNext = true;
-            continue;
-          }
-          
-          cleanedArgs.add(arg);
-          foundSmithery = false;
-        }
-        
-        args = cleanedArgs;
-      }
-    }
-    
-    // 处理UVX命令
-    if (command == 'uvx' && args.isNotEmpty) {
-      final List<String> cleanedArgs = [];
-      bool skipNext = false;
-      
-      for (int i = 0; i < args.length; i++) {
-        if (skipNext) {
-          skipNext = false;
-          continue;
-        }
-        
-        final arg = args[i];
-        
-        if (arg == '--key') {
-          skipNext = true;
-          continue;
-        }
-        
-        cleanedArgs.add(arg);
-      }
-      
-      if (cleanedArgs.length != args.length) {
-        print('🔧 UVX清理--key参数');
-        args = cleanedArgs;
-      }
-    }
+    // // 处理@smithery/cli的特殊NPX格式
+    // if (command == 'npx' && args.isNotEmpty) {
+    //   int smitheryIndex = -1;
+    //   for (int i = 0; i < args.length; i++) {
+    //     if (args[i].startsWith('@smithery/cli')) {
+    //       smitheryIndex = i;
+    //       break;
+    //     }
+    //   }
+    //
+    //   if (smitheryIndex != -1) {
+    //     print('🔧 检测到@smithery/cli格式，需要清理参数');
+    //
+    //     final List<String> cleanedArgs = [];
+    //     bool skipNext = false;
+    //     bool foundSmithery = false;
+    //
+    //     for (int i = 0; i < args.length; i++) {
+    //       if (skipNext) {
+    //         skipNext = false;
+    //         continue;
+    //       }
+    //
+    //       final arg = args[i];
+    //
+    //       if (arg.startsWith('@smithery/cli')) {
+    //         foundSmithery = true;
+    //         continue;
+    //       }
+    //
+    //       if (foundSmithery && (arg == 'run' || arg == 'inspect')) {
+    //         foundSmithery = false;
+    //         continue;
+    //       }
+    //
+    //       if (arg == '--key') {
+    //         skipNext = true;
+    //         continue;
+    //       }
+    //
+    //       cleanedArgs.add(arg);
+    //       foundSmithery = false;
+    //     }
+    //
+    //     args = cleanedArgs;
+    //   }
+    // }
+    //
+    // // 处理UVX命令
+    // if (command == 'uvx' && args.isNotEmpty) {
+    //   final List<String> cleanedArgs = [];
+    //   bool skipNext = false;
+    //
+    //   for (int i = 0; i < args.length; i++) {
+    //     if (skipNext) {
+    //       skipNext = false;
+    //       continue;
+    //     }
+    //
+    //     final arg = args[i];
+    //
+    //     if (arg == '--key') {
+    //       skipNext = true;
+    //       continue;
+    //     }
+    //
+    //     cleanedArgs.add(arg);
+    //   }
+    //
+    //   if (cleanedArgs.length != args.length) {
+    //     print('🔧 UVX清理--key参数');
+    //     args = cleanedArgs;
+    //   }
+    // }
     
     cleanedConfig['command'] = command;
     cleanedConfig['args'] = args;

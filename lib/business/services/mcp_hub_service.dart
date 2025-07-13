@@ -542,7 +542,17 @@ class McpHubService {
           }
         }
         
-        // 4. 检查已断开的服务器（只断开明确停止的服务器）
+        // 4. 检查已断开的服务器（只断开明确停止的服务器）"servers": {
+        //       "command": "npx",
+        //       "args": [
+        //         "-y",
+        //         "@smithery/cli@latest",
+        //         "run",
+        //         "@jlia0/servers",
+        //         "--key",
+        //         "65ac15b1-287a-4235-b968-cdc6e7b01548"
+        //       ]
+        //     }
         final connectedServerIds = _childServers.keys.toSet();
         final explicitlyStoppedIds = allServers
             .where((server) => server.status == models.McpServerStatus.stopped ||

@@ -23,7 +23,7 @@ class CommandResolverService {
   /// - command: 用户输入的命令（如 'npx', 'uvx', 'python', 'node'）
   /// - installType: 安装类型
   /// 
-  /// 返回转换后的完整可执行文件路径
+  /// 返回转换后的完整可执行文件路径//huqb
   Future<String> resolveCommand({
     required String command, 
     required McpInstallType installType,

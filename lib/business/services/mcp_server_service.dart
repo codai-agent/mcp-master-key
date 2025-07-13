@@ -145,18 +145,19 @@ class McpServerService {
         
         // 首先更新状态为starting
         await _simpleUpdateStatus(serverId, models.McpServerStatus.starting);
-        
-        // 导入Hub服务并直接调用启动方法
-        try {
-          final hubService = McpHubService.instance;
-          await hubService.startServerDirectly(server);
-          print('✅ Direct start completed for ${server.name}');
-        } catch (hubError) {
-          print('❌ Hub service error: $hubError, falling back to status update');
-          // Hub启动失败时，立即更新状态为error
-          await _simpleUpdateStatus(serverId, models.McpServerStatus.error);
-          return false;
-        }
+
+        //huqb 重复启动了服务器，数据库监控的地方也会去启动
+        // // 导入Hub服务并直接调用启动方法
+        // try {
+        //   final hubService = McpHubService.instance;
+        //   await hubService.startServerDirectly(server);
+        //   print('✅ Direct start completed for ${server.name}');
+        // } catch (hubError) {
+        //   print('❌ Hub service error: $hubError, falling back to status update');
+        //   // Hub启动失败时，立即更新状态为error
+        //   await _simpleUpdateStatus(serverId, models.McpServerStatus.error);
+        //   return false;
+        // }
         
         return true;
         

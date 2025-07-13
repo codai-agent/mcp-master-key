@@ -652,6 +652,10 @@ class McpProcessManager {
         print('   🔧 Using local executable path: ${server.command}');
         return server.command;
 
+      case McpInstallType.smithery:
+        final npmPath = _runtimeManager.getNpmExecutable();
+        return npmPath;
+
       default:
         print('   ➡️ Using original command: ${server.command}');
         return server.command;
@@ -762,10 +766,48 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
         print('   ➡️ Using original args for non-uvx command');
         return server.args;
 
+      case McpInstallType.smithery:
+      // 从args中提取包名，支持CommandResolverService转换后的格式
+        String? smitheryPackageName = _extractPackageNameFromArgs(server);
+        if (smitheryPackageName == null) {
+          print('   ⚠️ Cannot extract package name from args: ${server.args}');
+          return server.args;
+        }
+        String? packageName = _extractPackageNameForSmithery(server, smitheryPackageName);
+        if (packageName == null) {
+          print('   ⚠️ Cannot extract target package name from args: ${server.args}');
+          return server.args;
+        }
+        final args = [
+          'exec',
+          smitheryPackageName,
+          '--', // 分隔符：npm exec的参数和要执行程序的参数
+          'run',
+          packageName,
+        ];
+        return args;
+
       default:
         print('   ➡️ Using original args for ${server.installType.name}');
         return server.args;
     }
+  }
+
+  /// 从服务器参数中为smithery提取包名
+  String? _extractPackageNameForSmithery(McpServer server,String smithery) {
+    print('   🔍 Extracting package name from args: ${server.args}');
+    for (int i = 0; i < server.args.length; i++) {
+      final arg = server.args[i];
+      if(arg == smithery) {
+        if (i + 2 < server.args.length) {
+          final packageName = server.args[i + 2];
+          print('   ✅ Found package name after smithery flag: $packageName');
+          return packageName;
+        }
+      }
+    }
+    print('   ❌ Could not extract package name from args');
+    return null;
   }
 
   /// 从服务器参数中提取包名
