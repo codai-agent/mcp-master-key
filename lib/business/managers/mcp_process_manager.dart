@@ -167,6 +167,7 @@ class McpProcessManager {
         workingDirectory: workingDir,
         environment: environment,
         mode: ProcessStartMode.normal,
+        runInShell: Platform.isWindows, // Windows上需要shell来执行.cmd文件
       );
 
       _runningProcesses[server.id] = process;
@@ -653,7 +654,8 @@ class McpProcessManager {
         return server.command;
 
       case McpInstallType.smithery:
-        final npmPath = _runtimeManager.getNpmExecutable();
+        final npmPath = await _runtimeManager.getNpmExecutable();
+        print('   📦 Using NPM executable for Smithery: $npmPath');
         return npmPath;
 
       default:
