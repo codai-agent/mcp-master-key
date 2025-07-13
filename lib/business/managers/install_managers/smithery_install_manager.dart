@@ -149,14 +149,18 @@ class SmitheryInstallManager implements InstallManagerInterface {
 
       // Smithery包通常安装在npm全局目录下
       final nodeExe = await _runtimeManager.getNodeExecutable();
-      final nodeBasePath = path.dirname(path.dirname(nodeExe));
       
       if (Platform.isWindows) {
-        return path.join(nodeBasePath, 'node_modules', packageInfo.smitheryPackage);
+        // Windows: node.exe同级目录下的node_modules
+        final nodeDir = path.dirname(nodeExe);
+        return path.join(nodeDir, 'node_modules', packageInfo.smitheryPackage);
       } else {
+        // Unix-like: lib/node_modules下
+        final nodeBasePath = path.dirname(path.dirname(nodeExe));
         return path.join(nodeBasePath, 'lib', 'node_modules', packageInfo.smitheryPackage);
       }
     } catch (e) {
+      print('❌ Error getting install path: $e');
       return null;
     }
   }
@@ -205,35 +209,58 @@ class SmitheryInstallManager implements InstallManagerInterface {
   Future<Map<String, String>> getEnvironmentVariables(McpServer server) async {
     try {
       final nodeExe = await _runtimeManager.getNodeExecutable();
-      final nodeDir = path.dirname(path.dirname(nodeExe));
+      final nodeDir = path.dirname(nodeExe);
       final npmMirrorUrl = await _configService.getNpmMirrorUrl();
 
       String nodeModulesPath;
       String npmCacheDir;
+      String npmPrefix;
       
       if (Platform.isWindows) {
+        // Windows: 使用node.exe同级目录
         nodeModulesPath = path.join(nodeDir, 'node_modules');
         npmCacheDir = path.join(nodeDir, 'npm-cache');
+        npmPrefix = nodeDir;
       } else {
-        nodeModulesPath = path.join(nodeDir, 'lib', 'node_modules');
-        npmCacheDir = path.join(nodeDir, '.npm');
+        // Unix-like: 使用传统的lib结构
+        final nodeBasePath = path.dirname(nodeDir);
+        nodeModulesPath = path.join(nodeBasePath, 'lib', 'node_modules');
+        npmCacheDir = path.join(nodeBasePath, '.npm');
+        npmPrefix = nodeBasePath;
       }
+
+      // 构建PATH环境变量，确保包含node和npm目录
+      final currentPath = Platform.environment['PATH'] ?? '';
+      final pathSeparator = Platform.isWindows ? ';' : ':';
+      final newPath = '$nodeDir$pathSeparator$currentPath';
 
       final envVars = {
         'NODE_PATH': nodeModulesPath,
-        'NPM_CONFIG_PREFIX': nodeDir,
+        'NPM_CONFIG_PREFIX': npmPrefix,
         'NPM_CONFIG_CACHE': npmCacheDir,
         'NPM_CONFIG_REGISTRY': npmMirrorUrl,
+        'PATH': newPath,
         ...server.env,
       };
 
       if (Platform.isWindows) {
+        // Windows特定的环境变量
         envVars['USERPROFILE'] = Platform.environment['USERPROFILE'] ?? 
                                  Platform.environment['HOME'] ?? 
                                  'C:\\Users\\mcphub';
+        // 设置控制台编码为UTF-8，避免中文乱码
+        envVars['CHCP'] = '65001';
+        // 禁用npm的进度条，避免在CI环境中的问题
+        envVars['NPM_CONFIG_PROGRESS'] = 'false';
+        envVars['NPM_CONFIG_LOGLEVEL'] = 'warn';
       } else {
         envVars['HOME'] = Platform.environment['HOME'] ?? '/tmp';
       }
+
+      print('   🔧 Environment variables for Smithery:');
+      print('   - NODE_PATH: $nodeModulesPath');
+      print('   - NPM_CONFIG_PREFIX: $npmPrefix');
+      print('   - PATH: ${newPath.substring(0, 100)}...');
 
       return envVars;
     } catch (e) {
@@ -487,16 +514,25 @@ class SmitheryInstallManager implements InstallManagerInterface {
     smitheryPackage = '@smithery/cli';//huqb
     try {
       final nodeExe = await _runtimeManager.getNodeExecutable();
-      final nodeBasePath = path.dirname(path.dirname(nodeExe));
+      print('   🔍 Node executable: $nodeExe');
       
+      // 对于Windows，npm全局包通常安装在node.exe同级目录下
       String nodeModulesPath;
       if (Platform.isWindows) {
-        nodeModulesPath = path.join(nodeBasePath, 'node_modules', smitheryPackage);
+        // Windows: C:\path\to\node\node_modules\@smithery\cli
+        final nodeDir = path.dirname(nodeExe);
+        nodeModulesPath = path.join(nodeDir, 'node_modules', smitheryPackage);
       } else {
+        // Unix-like: /path/to/node/lib/node_modules/@smithery/cli
+        final nodeBasePath = path.dirname(path.dirname(nodeExe));
         nodeModulesPath = path.join(nodeBasePath, 'lib', 'node_modules', smitheryPackage);
       }
       
-      return await Directory(nodeModulesPath).exists();
+      print('   🔍 Checking Smithery CLI path: $nodeModulesPath');
+      final exists = await Directory(nodeModulesPath).exists();
+      print('   📋 Smithery CLI installed: $exists');
+      
+      return exists;
     } catch (e) {
       print('❌ Error checking @smithery/cli installation: $e');
       return false;
@@ -512,9 +548,34 @@ class SmitheryInstallManager implements InstallManagerInterface {
       print('   🔧 NPM executable: $npmPath');
       print('   📦 Installing: $smitheryPackage');
 
+      // Windows特定：确保目录存在并设置权限
+      if (Platform.isWindows) {
+        try {
+          final nodeDir = path.dirname(await _runtimeManager.getNodeExecutable());
+          final nodeModulesDir = path.join(nodeDir, 'node_modules');
+          
+          // 创建node_modules目录（如果不存在）
+          final nodeModulesDirectory = Directory(nodeModulesDir);
+          if (!await nodeModulesDirectory.exists()) {
+            print('   📁 Creating node_modules directory: $nodeModulesDir');
+            await nodeModulesDirectory.create(recursive: true);
+          }
+        } catch (dirError) {
+          print('   ⚠️ Warning: Could not prepare directories: $dirError');
+        }
+      }
+
       List<String> args;
       if (Platform.isWindows) {
-        args = ['install', '-g', '--no-package-lock', smitheryPackage];
+        // Windows: 添加更多参数来避免权限问题
+        args = [
+          'install', '-g', 
+          '--no-package-lock',
+          '--no-audit',
+          '--no-fund',
+          '--prefer-offline',
+          smitheryPackage
+        ];
       } else {
         args = ['install', '-g', smitheryPackage];
       }
@@ -528,6 +589,13 @@ class SmitheryInstallManager implements InstallManagerInterface {
       ).timeout(const Duration(minutes: 5));
 
       print('   📊 Exit code: ${result.exitCode}');
+      
+      if (result.stdout.isNotEmpty) {
+        print('   📝 stdout: ${result.stdout}');
+      }
+      if (result.stderr.isNotEmpty) {
+        print('   ❌ stderr: ${result.stderr}');
+      }
 
       return _SmitheryInstallResult(
         success: result.exitCode == 0,
@@ -556,9 +624,32 @@ class SmitheryInstallManager implements InstallManagerInterface {
       print('   🔧 NPM executable: $npmPath');
       print('   📦 Installing: $smitheryPackage');
 
+      // Windows特定：确保目录存在
+      if (Platform.isWindows) {
+        try {
+          final nodeDir = path.dirname(await _runtimeManager.getNodeExecutable());
+          final nodeModulesDir = path.join(nodeDir, 'node_modules');
+          
+          final nodeModulesDirectory = Directory(nodeModulesDir);
+          if (!await nodeModulesDirectory.exists()) {
+            print('   📁 Creating node_modules directory: $nodeModulesDir');
+            await nodeModulesDirectory.create(recursive: true);
+          }
+        } catch (dirError) {
+          print('   ⚠️ Warning: Could not prepare directories: $dirError');
+        }
+      }
+
       List<String> args;
       if (Platform.isWindows) {
-        args = ['install', '-g', '--no-package-lock', smitheryPackage];
+        args = [
+          'install', '-g', 
+          '--no-package-lock',
+          '--no-audit',
+          '--no-fund',
+          '--prefer-offline',
+          smitheryPackage
+        ];
       } else {
         args = ['install', '-g', smitheryPackage];
       }
