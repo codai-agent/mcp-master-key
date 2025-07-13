@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
+import 'dart:async';
 import 'package:path/path.dart' as path;
 import '../../../core/models/mcp_server.dart';
 import '../../../infrastructure/runtime/runtime_manager.dart';
@@ -256,6 +257,15 @@ class SmitheryInstallManager implements InstallManagerInterface {
       } else {
         envVars['HOME'] = Platform.environment['HOME'] ?? '/tmp';
       }
+
+      // 禁用Smithery的交互式提示
+      envVars['SMITHERY_NO_TELEMETRY'] = 'true';
+      envVars['SMITHERY_AUTO_ACCEPT'] = 'true';
+      envVars['CI'] = 'true'; // 很多工具在CI环境下会自动禁用交互式提示
+      envVars['NO_UPDATE_NOTIFIER'] = 'true'; // 禁用更新通知
+      envVars['DISABLE_TELEMETRY'] = 'true'; // 通用的禁用遥测环境变量
+      envVars['SMITHERY_DISABLE_TELEMETRY'] = 'true'; // 尝试更多可能的环境变量
+      envVars['SMITHERY_NON_INTERACTIVE'] = 'true'; // 非交互模式
 
       print('   🔧 Environment variables for Smithery:');
       print('   - NODE_PATH: $nodeModulesPath');
@@ -672,7 +682,7 @@ class SmitheryInstallManager implements InstallManagerInterface {
       final stdoutBuffer = StringBuffer();
       final stderrBuffer = StringBuffer();
 
-      // 监听输出流
+      // 监听输出流（@smithery/cli安装通常不需要交互）
       process.stdout.transform(const SystemEncoding().decoder).listen((data) {
         stdoutBuffer.write(data);
         print('   📝 stdout: ${data.trim()}');
@@ -763,6 +773,7 @@ class SmitheryInstallManager implements InstallManagerInterface {
     McpServer server,
     Function(Process)? onProcessStarted,
   ) async {
+    Timer? autoAnswerTimer; // 声明在方法级别
     try {
       // 使用npm exec而不是npx，与mcp_hub_service.dart保持一致
       final npmPath = await _runtimeManager.getNpmExecutable();
@@ -799,6 +810,46 @@ class SmitheryInstallManager implements InstallManagerInterface {
         onProcessStarted(process);
       }
 
+      // 智能自动回答交互式提示
+      bool hasSeenTelemetryPrompt = false;
+      final outputBuffer = StringBuffer();
+      
+      autoAnswerTimer = Timer.periodic(const Duration(milliseconds: 500), (timer) {
+        try {
+          final currentOutput = outputBuffer.toString().toLowerCase();
+          
+          // 检测各种可能的交互式提示
+          if (!hasSeenTelemetryPrompt && (
+              currentOutput.contains('telemetry') ||
+              currentOutput.contains('usage data') ||
+              currentOutput.contains('anonymized') ||
+              currentOutput.contains('would you like to help') ||
+              currentOutput.contains('improve smithery') ||
+              currentOutput.contains('y/n') ||
+              currentOutput.contains('(y/n)') ||
+              currentOutput.contains('[y/n]')
+          )) {
+            print('   🤖 Detected telemetry prompt, sending "n" to decline...');
+            process.stdin.writeln('n'); // 拒绝遥测数据收集
+            hasSeenTelemetryPrompt = true;
+          }
+          
+          // 如果检测到其他确认提示，发送 'y'
+          if (currentOutput.contains('continue') && currentOutput.contains('?')) {
+            print('   🤖 Detected confirmation prompt, sending "y"...');
+            process.stdin.writeln('y');
+          }
+        } catch (e) {
+          // 如果进程已经结束，忽略错误并停止定时器
+          timer.cancel();
+        }
+        
+        // 30秒后停止自动回答（给足够时间处理慢速网络）
+        if (timer.tick >= 60) { // 500ms * 60 = 30秒
+          timer.cancel();
+        }
+      });
+
       // 收集输出
       final stdoutBuffer = StringBuffer();
       final stderrBuffer = StringBuffer();
@@ -806,11 +857,13 @@ class SmitheryInstallManager implements InstallManagerInterface {
       // 监听输出流
       process.stdout.transform(const SystemEncoding().decoder).listen((data) {
         stdoutBuffer.write(data);
+        outputBuffer.write(data); // 添加到输出缓冲区用于交互式提示检测
         print('   📝 stdout: ${data.trim()}');
       });
 
       process.stderr.transform(const SystemEncoding().decoder).listen((data) {
         stderrBuffer.write(data);
+        outputBuffer.write(data); // stderr 也可能包含交互式提示
         print('   ❌ stderr: ${data.trim()}');
       });
 
@@ -819,11 +872,15 @@ class SmitheryInstallManager implements InstallManagerInterface {
         const Duration(minutes: 10),
         onTimeout: () {
           print('   ⏰ Target package installation timed out, killing process...');
+          autoAnswerTimer?.cancel(); // 清理定时器
           InstallManagerInterface.killProcessCrossPlatform(process);
           return -1;
         },
       );
 
+      // 进程完成后清理定时器
+      autoAnswerTimer.cancel();
+      
       print('   📊 Exit code: $exitCode');
 
       return _SmitheryInstallResult(
@@ -833,6 +890,12 @@ class SmitheryInstallManager implements InstallManagerInterface {
       );
     } catch (e) {
       print('   ❌ Target package cancellable installation failed: $e');
+      // 确保在异常情况下也清理定时器
+      try {
+        autoAnswerTimer?.cancel();
+      } catch (_) {
+        // 忽略清理错误
+      }
       return _SmitheryInstallResult(
         success: false,
         errorMessage: 'Target package cancellable installation failed: $e',
