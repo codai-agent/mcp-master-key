@@ -200,6 +200,55 @@ class SmitheryInstallManager implements InstallManagerInterface {
       args.addAll(otherArgs);
       
       return args;
+      //AI给出的优化代码：
+//       print('   📦 Smithery package: ${packageInfo.smitheryPackage}');
+//       print('   🎯 Target package: ${packageInfo.targetPackage}');
+
+//       if (Platform.isWindows) {
+//         // Windows上使用Node.js spawn方式，参考NPX的实现
+//         print('   🪟 Using Node.js spawn method for Smithery on Windows');
+        
+//         // 获取工作目录（这里可能需要一个默认值或从配置获取）
+//         final runtimeManager = RuntimeManager.instance;
+//         final nodeExe = await runtimeManager.getNodeExecutable();
+//         final nodeBasePath = path.dirname(path.dirname(nodeExe));
+//         final workingDir = server.workingDirectory ?? nodeBasePath;
+        
+//         // 构建JavaScript代码来执行smithery
+//         final jsCode = '''
+// process.chdir("${workingDir.replaceAll('\\', '\\\\')}");
+// const { spawn } = require("child_process");
+// const npmExec = spawn("npm", ["exec", "${packageInfo.smitheryPackage}", "--", "run", "${packageInfo.targetPackage}"], {
+//   stdio: "inherit",
+//   shell: true
+// });
+// npmExec.on('exit', (code) => process.exit(code));
+// '''.trim();
+        
+//         final args = ['-e', jsCode];
+//         print('   📦 Using Node.js spawn method for Smithery:');
+//         print('   📋 JavaScript code: ${jsCode.replaceAll('\n', '; ')}');
+//         return args;
+//       } else {
+//         // 其他平台使用直接的npm exec命令
+//         print('   🐧 Using direct npm exec for Smithery on non-Windows');
+//         final args = <String>[];
+        
+//         // 添加npm exec调用
+//         args.addAll([
+//           'exec',
+//           packageInfo.smitheryPackage,
+//           '--', // 分隔符：npm exec的参数和要执行程序的参数
+//           'run',
+//           packageInfo.targetPackage,
+//         ]);
+        
+//         // 添加其他参数（排除已处理的部分）
+//         final otherArgs = _extractOtherArgs(server.args);
+//         args.addAll(otherArgs);
+        
+//         return args;
+//       }
     } catch (e) {
       print('❌ Error building startup args: $e');
       return server.args;

@@ -160,10 +160,6 @@ class LocalPythonInstallManager implements InstallManagerInterface {
       if (localPath == null) return server.args;
 
       // TODO: 构建本地Python包的启动参数
-      // 可能的情况：
-      // 1. 直接执行Python文件：python script.py
-      // 2. 执行Python模块：python -m module_name
-      // 3. 执行包中的入口点
       
       if (await File(localPath).exists()) {
         // 如果是文件，直接执行

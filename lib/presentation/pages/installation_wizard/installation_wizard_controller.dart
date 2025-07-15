@@ -162,10 +162,10 @@ class InstallationWizardController extends ChangeNotifier {
           needsAdditionalInstall = false;
           analysisResult = '检测到NPX安装类型，可以自动安装';
         }
-      } else if (cleanedCommand == 'python' || cleanedCommand == 'python3') {
+      } else if (cleanedCommand == 'python' || cleanedCommand == 'python3'  || cleanedCommand == 'uv') {
         detectedType = McpInstallType.localPython;
         needsAdditionalInstall = true;
-        analysisResult = '检测到Python命令，需要手动配置安装';
+        analysisResult = '检测到Python命令，需要检测安装环境';
       } else if (cleanedCommand == 'node') {
         detectedType = McpInstallType.npx;
         needsAdditionalInstall = true;

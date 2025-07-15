@@ -19,6 +19,7 @@ class PackageManagerService {
        _configService = configService ?? ConfigService.instance;
 
   /// 安装包（支持取消）
+  @Deprecated("已经优化过，不在使用，目前使用的是install_service.dart")
   Future<InstallResult> installPackageCancellable({
     required String packageName,
     required InstallStrategy strategy,

@@ -769,25 +769,54 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
         return server.args;
 
       case McpInstallType.smithery:
-      // 从args中提取包名，支持CommandResolverService转换后的格式
+        // 从args中提取smithery包名和目标包名，支持CommandResolverService转换后的格式
         String? smitheryPackageName = _extractPackageNameFromArgs(server);
         if (smitheryPackageName == null) {
-          print('   ⚠️ Cannot extract package name from args: ${server.args}');
+          print('   ⚠️ Cannot extract smithery package name from args: ${server.args}');
           return server.args;
         }
-        String? packageName = _extractPackageNameForSmithery(server, smitheryPackageName);
-        if (packageName == null) {
+        String? targetPackageName = _extractPackageNameForSmithery(server, smitheryPackageName);
+        if (targetPackageName == null) {
           print('   ⚠️ Cannot extract target package name from args: ${server.args}');
           return server.args;
         }
-        final args = [
-          'exec',
-          smitheryPackageName,
-          '--', // 分隔符：npm exec的参数和要执行程序的参数
-          'run',
-          packageName,
-        ];
-        return args;
+
+        print('   📦 Smithery package: $smitheryPackageName');
+        print('   🎯 Target package: $targetPackageName');
+
+        if (Platform.isWindows) {
+          // Windows上使用Node.js spawn方式，参考NPX的实现
+          print('   🪟 Using Node.js spawn method for Smithery on Windows');
+          
+          final workingDir = await getServerWorkingDirectory(server);
+          
+          // 构建JavaScript代码来执行smithery
+          final jsCode = '''
+process.chdir("${workingDir.replaceAll('\\', '\\\\')}");
+const { spawn } = require("child_process");
+const npmExec = spawn("npm", ["exec", "$smitheryPackageName", "--", "run", "$targetPackageName"], {
+  stdio: "inherit",
+  shell: true
+});
+npmExec.on('exit', (code) => process.exit(code));
+'''.trim();
+          
+          final args = ['-e', jsCode];
+          print('   📦 Using Node.js spawn method for Smithery:');
+          print('   📋 JavaScript code: ${jsCode.replaceAll('\n', '; ')}');
+          return args;
+        } else {
+          // 其他平台使用直接的npm exec命令
+          print('   🐧 Using direct npm exec for Smithery on non-Windows');
+          final args = [
+            'exec',
+            smitheryPackageName,
+            '--', // 分隔符：npm exec的参数和要执行程序的参数
+            'run',
+            targetPackageName,
+          ];
+          return args;
+        }
 
       default:
         print('   ➡️ Using original args for ${server.installType.name}');
