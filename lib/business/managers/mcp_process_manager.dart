@@ -11,6 +11,7 @@ import '../../core/protocols/mcp_client.dart';
 import '../../core/protocols/mcp_protocol.dart';
 import '../../infrastructure/runtime/runtime_manager.dart';
 import '../services/config_service.dart';
+import 'install_managers/local_python_install_manager.dart';
 
 /// MCP进程管理器
 class McpProcessManager {
@@ -644,8 +645,10 @@ class McpProcessManager {
         return server.command;
 
       case McpInstallType.localPython:
-        print('   🐍 Using local Python path: ${server.command}');
-        return server.command;
+        // 对于localPython，使用内置的Python解释器
+        final pythonPath = await _runtimeManager.getPythonExecutable();
+        print('   🐍 Using Python executable for localPython: $pythonPath');
+        return pythonPath;
       case McpInstallType.localJar:
         print('   ☕ Using local JAR path: ${server.command}');
         return server.command;
@@ -816,6 +819,19 @@ npmExec.on('exit', (code) => process.exit(code));
             targetPackageName,
           ];
           return args;
+        }
+
+      case McpInstallType.localPython:
+        // 调用LocalPythonInstallManager获取正确的启动参数
+        try {
+          final installManager = LocalPythonInstallManager();
+          final args = await installManager.getStartupArgs(server);
+          print('   🐍 Using LocalPython startup args: ${args.join(' ')}');
+          return args;
+        } catch (e) {
+          print('   ❌ Error getting LocalPython startup args: $e');
+          print('   ➡️ Falling back to original args');
+          return server.args;
         }
 
       default:

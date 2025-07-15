@@ -200,7 +200,7 @@ class SmitheryInstallManager implements InstallManagerInterface {
       args.addAll(otherArgs);
       
       return args;
-      //AI给出的优化代码：
+      //AI给出的优化代码，目前安装代码在各个平台都正常运行，故先不替换
 //       print('   📦 Smithery package: ${packageInfo.smitheryPackage}');
 //       print('   🎯 Target package: ${packageInfo.targetPackage}');
 
