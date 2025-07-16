@@ -657,9 +657,17 @@ class McpProcessManager {
         return server.command;
 
       case McpInstallType.smithery:
-        final npmPath = await _runtimeManager.getNpmExecutable();
-        print('   📦 Using NPM executable for Smithery: $npmPath');
-        return npmPath;
+        if (Platform.isWindows) {
+          // Windows上使用Node.js来执行JavaScript代码
+          final nodePath = await _runtimeManager.getNodeExecutable();
+          print('   🪟 Using Node.js executable for Smithery on Windows: $nodePath');
+          return nodePath;
+        } else {
+          // 其他平台使用npm
+          final npmPath = await _runtimeManager.getNpmExecutable();
+          print('   📦 Using NPM executable for Smithery: $npmPath');
+          return npmPath;
+        }
 
       default:
         print('   ➡️ Using original command: ${server.command}');
@@ -792,12 +800,14 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
           print('   🪟 Using Node.js spawn method for Smithery on Windows');
           
           final workingDir = await getServerWorkingDirectory(server);
+          final npmPath = await _runtimeManager.getNpmExecutable();
+          final npmPathEscaped = npmPath.replaceAll('\\', '\\\\');
           
-          // 构建JavaScript代码来执行smithery
+          // 构建JavaScript代码来执行smithery，使用完整的npm.cmd路径
           final jsCode = '''
 process.chdir("${workingDir.replaceAll('\\', '\\\\')}");
 const { spawn } = require("child_process");
-const npmExec = spawn("npm", ["exec", "$smitheryPackageName", "--", "run", "$targetPackageName"], {
+const npmExec = spawn("$npmPathEscaped", ["exec", "$smitheryPackageName", "--", "run", "$targetPackageName"], {
   stdio: "inherit",
   shell: true
 });
