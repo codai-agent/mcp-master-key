@@ -468,24 +468,24 @@ class UvxInstallManager implements InstallManagerInterface {
       final uvPath = await _runtimeManager.getUvExecutable();
       final environment = await getEnvironmentVariables(server);
 
-      // final args = ['tool', 'install', packageName];
+      final args = ['tool', 'install', packageName];
       // 检查是否包含--from参数并获取安装源
-      // if (server.args.contains('--from') || server.args.contains('--directory')) {
-      //   String param = '--from';
-      //   int fromIndex = server.args.indexOf(param);
-      //   if (fromIndex < 0) {
-      //     param = '--directory';
-      //     fromIndex = server.args.indexOf(param);
-      //   }
-      //   // 确保--from后面还有参数
-      //   if (fromIndex < server.args.length - 1) {
-      //     args.add(param);
-      //     args.add(server.args[fromIndex + 1]);
-      //   }
-      // }
+      if (server.args.contains('--from') || server.args.contains('--directory')) {
+        String param = '--from';
+        int fromIndex = server.args.indexOf(param);
+        if (fromIndex < 0) {
+          param = '--directory';
+          fromIndex = server.args.indexOf(param);
+        }
+        // 确保--from后面还有参数
+        if (fromIndex < server.args.length - 1) {
+          args.add(param);
+          args.add(server.args[fromIndex + 1]);
+        }
+      }
 
-      final args = ['tool', 'install',packageName];
-      args.addAll(_removeRuntimePkgFromArgs(server.args));
+      // final args = ['tool', 'install',packageName];
+      // args.addAll(_removeRuntimePkgFromArgs(server.args));
       
       print('   🔧 UV executable: $uvPath');
       print('   📦 Package: $packageName');
