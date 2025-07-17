@@ -131,6 +131,10 @@ class UvxInstallManager implements InstallManagerInterface {
 
   @override
   Future<bool> validateServerConfig(McpServer server) async {
+    //兼容uv run xxx
+    if (server.installType == McpInstallType.localPython) {
+      return true;
+    }
     // 检查是否为UVX类型
     if (server.installType != McpInstallType.uvx) {
       return false;

@@ -1,15 +1,16 @@
 import 'dart:io';
-import 'dart:convert';
 import 'package:path/path.dart' as path;
 import '../../../core/models/mcp_server.dart';
 import '../../../infrastructure/runtime/runtime_manager.dart';
 import '../../services/config_service.dart';
 import '../../services/install_service.dart';
 import 'install_manager_interface.dart';
+import 'uvx_install_manager.dart'; // 新增导入
 
 /// Python使用场景
 enum PythonScenarioType {
-  uvRun,        // uv run /a/b/xxx.py
+  uvRunLocal,        // uv run /a/b/xxx.py
+  uvRunModule,    //uv run xxxx
   pythonScript, // python /a/b/xxx.py
   pythonModule, // python -m xxx
 }
@@ -36,6 +37,7 @@ class PythonScenario {
 class LocalPythonInstallManager implements InstallManagerInterface {
   final RuntimeManager _runtimeManager = RuntimeManager.instance;
   final ConfigService _configService = ConfigService.instance;
+  final UvxInstallManager _uvxInstallManager = UvxInstallManager(); // 新增
 
   @override
   McpInstallType get installType => McpInstallType.localPython;
@@ -65,8 +67,10 @@ class LocalPythonInstallManager implements InstallManagerInterface {
       print('   🔍 Identified Python scenario: ${pythonScenario.type}');
       
       switch (pythonScenario.type) {
-        case PythonScenarioType.uvRun:
+        case PythonScenarioType.uvRunLocal:
           return await _installUvRunScenario(server, pythonScenario);
+        case PythonScenarioType.uvRunModule:
+          return await _uvxInstallManager.install(server);
         case PythonScenarioType.pythonScript:
           return await _installPythonScriptScenario(server, pythonScenario);
         case PythonScenarioType.pythonModule:
@@ -87,7 +91,7 @@ class LocalPythonInstallManager implements InstallManagerInterface {
       final pythonScenario = _identifyPythonScenario(server);
       
       switch (pythonScenario.type) {
-        case PythonScenarioType.uvRun:
+        case PythonScenarioType.uvRunLocal:
         case PythonScenarioType.pythonScript:
           // 检查Python脚本文件是否存在
           if (pythonScenario.scriptPath != null) {
@@ -103,6 +107,8 @@ class LocalPythonInstallManager implements InstallManagerInterface {
             return await _isModuleInstalled(pythonScenario.moduleName!);
           }
           return false;
+        case PythonScenarioType.uvRunModule:
+          return await _uvxInstallManager.isInstalled(server);
       }
     } catch (e) {
       print('❌ Error checking local Python installation: $e');
@@ -117,12 +123,15 @@ class LocalPythonInstallManager implements InstallManagerInterface {
       print('   🗑️ Uninstalling Python scenario: ${pythonScenario.type}');
       
       switch (pythonScenario.type) {
-        case PythonScenarioType.uvRun:
+        case PythonScenarioType.uvRunLocal:
           return await _uninstallUvRunScenario(server, pythonScenario);
         case PythonScenarioType.pythonScript:
           return await _uninstallPythonScriptScenario(server, pythonScenario);
         case PythonScenarioType.pythonModule:
           return await _uninstallPythonModuleScenario(server, pythonScenario);
+        case PythonScenarioType.uvRunModule:
+          //TODO //huqb
+          return await _uvxInstallManager.uninstall(server);//_uninstallPythonModuleScenario(server, pythonScenario);
       }
     } catch (e) {
       print('❌ Error uninstalling local Python package: $e');
@@ -141,7 +150,7 @@ class LocalPythonInstallManager implements InstallManagerInterface {
     
     // 验证不同场景的配置
     switch (pythonScenario.type) {
-      case PythonScenarioType.uvRun:
+      case PythonScenarioType.uvRunLocal:
         // 检查uv是否可用，脚本路径是否有效
         try {
           await _runtimeManager.getUvExecutable();
@@ -167,6 +176,9 @@ class LocalPythonInstallManager implements InstallManagerInterface {
         } catch (e) {
           return false;
         }
+      case PythonScenarioType.uvRunModule:
+        return true;
+          //return await _uvxInstallManager.uninstall(server);
     }
   }
 
@@ -175,7 +187,7 @@ class LocalPythonInstallManager implements InstallManagerInterface {
     final pythonScenario = _identifyPythonScenario(server);
     
     switch (pythonScenario.type) {
-      case PythonScenarioType.uvRun:
+      case PythonScenarioType.uvRunLocal:
       case PythonScenarioType.pythonScript:
         if (pythonScenario.scriptPath != null) {
           return path.dirname(pythonScenario.scriptPath!);
@@ -191,6 +203,8 @@ class LocalPythonInstallManager implements InstallManagerInterface {
         } catch (e) {
           return null;
         }
+      case PythonScenarioType.uvRunModule:
+        return await _uvxInstallManager.getInstallPath(server);
     }
   }
 
@@ -200,14 +214,26 @@ class LocalPythonInstallManager implements InstallManagerInterface {
       final pythonScenario = _identifyPythonScenario(server);
       
       switch (pythonScenario.type) {
-        case PythonScenarioType.uvRun:
+        case PythonScenarioType.uvRunLocal:
           // uv run 场景使用Python解释器执行
           return await _runtimeManager.getPythonExecutable();
           
         case PythonScenarioType.pythonScript:
-        case PythonScenarioType.pythonModule:
-          // python 场景使用Python解释器
           return await _runtimeManager.getPythonExecutable();
+        case PythonScenarioType.pythonModule:
+          // python -m xxx 这种情况优先查找可执行文件，找不到则使用python
+          if (pythonScenario.moduleName != null) {
+            final executablePath = await _findPythonModuleExecutable(pythonScenario.moduleName!);
+            if (executablePath != null) {
+              print('   🚀 Found Python module executable: $executablePath');
+              return executablePath;
+            }
+          }
+          print('   🐍 Fallback to Python executable for module execution');
+          return await _runtimeManager.getPythonExecutable();
+
+        case PythonScenarioType.uvRunModule:
+          return await _uvxInstallManager.getExecutablePath(server);
       }
     } catch (e) {
       print('❌ Error getting Python executable path: $e');
@@ -221,7 +247,7 @@ class LocalPythonInstallManager implements InstallManagerInterface {
       final pythonScenario = _identifyPythonScenario(server);
       
       switch (pythonScenario.type) {
-        case PythonScenarioType.uvRun:
+        case PythonScenarioType.uvRunLocal:
           // uv run /a/b/xxx.py -> python /a/b/xxx.py
           if (pythonScenario.scriptPath != null) {
             final args = [pythonScenario.scriptPath!];
@@ -237,8 +263,20 @@ class LocalPythonInstallManager implements InstallManagerInterface {
           return server.args;
           
         case PythonScenarioType.pythonModule:
-          // python -m xxx -> python -m xxx (直接返回)
+          // python -m xxx -> 如果有可执行文件则去掉-m和包名，否则保持原样
+          if (pythonScenario.moduleName != null) {
+            final executablePath = await _findPythonModuleExecutable(pythonScenario.moduleName!);
+            if (executablePath != null) {
+              // 找到可执行文件，去掉-m和包名，保留其他参数
+              final otherArgs = _extractOtherArgs(server.args, ['-m', pythonScenario.moduleName!]);
+              print('   🚀 Using Python module executable args: ${otherArgs.join(' ')}');
+              return otherArgs;
+            }
+          }
+          // 没找到可执行文件，保持原样使用python -m xxx
           return server.args;
+        case PythonScenarioType.uvRunModule:
+          return await _uvxInstallManager.getStartupArgs(server);
       }
     } catch (e) {
       print('❌ Error building startup args: $e');
@@ -265,10 +303,15 @@ class LocalPythonInstallManager implements InstallManagerInterface {
       }
 
       // 为uv相关操作添加UV环境变量
-      if (pythonScenario.type == PythonScenarioType.uvRun) {
+      if (pythonScenario.type == PythonScenarioType.uvRunLocal) {
         await _addUvEnvironmentVariables(envVars);
       }
-      
+
+      if (pythonScenario.type == PythonScenarioType.uvRunModule) {
+        final uvxEnvVars = await _uvxInstallManager.getEnvironmentVariables(server);
+        envVars.addAll(uvxEnvVars);
+      }
+
       return envVars;
     } catch (e) {
       print('❌ Error building environment variables: $e');
@@ -290,22 +333,28 @@ class LocalPythonInstallManager implements InstallManagerInterface {
     print('   - Command: ${server.command}');
     print('   - Args: ${server.args}');
     
-    // 场景一: uv run /a/b/xxx.py
+    // 场景一二: uv run /a/b/xxx.py or uv run xxxx
     if (server.command == 'uv' && server.args.isNotEmpty && server.args[0] == 'run') {
       if (server.args.length >= 2) {
         final scriptPath = server.args[1];
         if (scriptPath.endsWith('.py')) {
           print('   ✅ Identified as UV run scenario: $scriptPath');
           return PythonScenario(
-            type: PythonScenarioType.uvRun,
+            type: PythonScenarioType.uvRunLocal,
+            scriptPath: scriptPath,
+          );
+        } else {
+          print('   ✅ Identified as UV run scenario: $scriptPath');
+          return PythonScenario(
+            type: PythonScenarioType.uvRunModule,
             scriptPath: scriptPath,
           );
         }
       }
     }
     
-    // 场景二: python /a/b/xxx.py
-    if ((server.command == 'python' || server.command == 'python3') && server.args.isNotEmpty) {
+    // 场景三: python /a/b/xxx.py
+    if ((server.command.endsWith('python') || server.command.endsWith('python3')) && server.args.isNotEmpty) {
       final firstArg = server.args[0];
       if (firstArg.endsWith('.py') && (firstArg.contains('/') || firstArg.contains('\\'))) {
         print('   ✅ Identified as Python script scenario: $firstArg');
@@ -316,8 +365,8 @@ class LocalPythonInstallManager implements InstallManagerInterface {
       }
     }
     
-    // 场景三: python -m xxx
-    if ((server.command == 'python' || server.command == 'python3') && 
+    // 场景四: python -m xxx
+    if ((server.command.endsWith('python') || server.command.endsWith('python3')) &&
         server.args.length >= 2 && server.args[0] == '-m') {
       final moduleName = server.args[1];
       print('   ✅ Identified as Python module scenario: $moduleName');
@@ -366,6 +415,10 @@ class LocalPythonInstallManager implements InstallManagerInterface {
       final requirementsFile = File(path.join(scriptDir, 'requirements.txt'));
       // 检查是否有 pyproject.toml
       final pyprojectFile = File(path.join(scriptDir, 'pyproject.toml'));
+      final setupFile = File(path.join(scriptDir,'setup.py'));
+
+      // 获取镜像源配置
+        final pythonMirrorUrl = await _configService.getPythonMirrorUrl();
 
       if (await requirementsFile.exists()) {
         print('   📋 Found requirements.txt, installing dependencies with uv pip install');
@@ -375,7 +428,7 @@ class LocalPythonInstallManager implements InstallManagerInterface {
         
         final result = await Process.run(
           uvPath,
-          ['pip', 'install', '-r', 'requirements.txt'],
+          ['pip', 'install','--index-url', pythonMirrorUrl, '-r', 'requirements.txt'],
           workingDirectory: scriptDir,
           environment: envVars,
         );
@@ -390,15 +443,15 @@ class LocalPythonInstallManager implements InstallManagerInterface {
         }
         
         print('   ✅ Successfully installed requirements.txt');
-      } else if (await pyprojectFile.exists()) {
-        print('   📋 Found pyproject.toml, installing with uv pip install -e .');
+      } else if (await pyprojectFile.exists() || await setupFile.exists()) {
+        print('   📋 Found pyproject.toml/setup.py, installing with uv pip install -e .');
         
         final envVars = <String, String>{};
         await _addUvEnvironmentVariables(envVars);
         
         final result = await Process.run(
           uvPath,
-          ['pip', 'install', '-e', '.'],
+          ['pip', 'install', '--index-url', pythonMirrorUrl, '-e', '.'],
           workingDirectory: scriptDir,
           environment: envVars,
         );
@@ -465,14 +518,20 @@ class LocalPythonInstallManager implements InstallManagerInterface {
       final requirementsFile = File(path.join(scriptDir, 'requirements.txt'));
       // 检查是否有 pyproject.toml
       final pyprojectFile = File(path.join(scriptDir, 'pyproject.toml'));
+      final setupFile = File(path.join(scriptDir,'setup.py'));
 
       if (await requirementsFile.exists()) {
         print('   📋 Found requirements.txt, installing dependencies with pip');
         
+        // 获取镜像源配置和环境变量
+        final pythonMirrorUrl = await _configService.getPythonMirrorUrl();
+        final envVars = await getEnvironmentVariables(server);
+        
         final result = await Process.run(
           pythonPath,
-          ['-m', 'pip', 'install', '-r', 'requirements.txt'],
+          ['-m', 'pip', 'install', '-i', pythonMirrorUrl, '-r', 'requirements.txt'],
           workingDirectory: scriptDir,
+          environment: envVars,
         );
         
         if (result.exitCode != 0) {
@@ -485,13 +544,18 @@ class LocalPythonInstallManager implements InstallManagerInterface {
         }
         
         print('   ✅ Successfully installed requirements.txt');
-      } else if (await pyprojectFile.exists()) {
-        print('   📋 Found pyproject.toml, installing with pip install -e .');
+      } else if (await pyprojectFile.exists() || await setupFile.exists()) {
+        print('   📋 Found pyproject.toml/setup.py, installing with pip install -e .');
+        
+        // 获取镜像源配置和环境变量
+        final pythonMirrorUrl = await _configService.getPythonMirrorUrl();
+        final envVars = await getEnvironmentVariables(server);
         
         final result = await Process.run(
           pythonPath,
-          ['-m', 'pip', 'install', '-e', '.'],
+          ['-m', 'pip', 'install', '-i', pythonMirrorUrl, '-e', '.'],
           workingDirectory: scriptDir,
+          environment: envVars,
         );
         
         if (result.exitCode != 0) {
@@ -536,15 +600,34 @@ class LocalPythonInstallManager implements InstallManagerInterface {
     }
 
     final moduleName = scenario.moduleName!;
+    final executablePath = await _findPythonModuleExecutable(moduleName);
+    if (executablePath != null) {
+      //已经安装过了：
+      return InstallResult(
+        success: true,
+        installType: installType,
+        output: 'Package already installed',
+        installPath: executablePath,
+        metadata: {
+          'packageName': moduleName,
+          'installMethod': 'python -m (already installed)',
+        },
+      );
+    }
     
     try {
       final pythonPath = await _runtimeManager.getPythonExecutable();
       
       print('   📦 Installing Python module: $moduleName');
       
+      // 获取镜像源配置和环境变量
+      final pythonMirrorUrl = await _configService.getPythonMirrorUrl();
+      final envVars = await getEnvironmentVariables(server);
+      
       final result = await Process.run(
         pythonPath,
-        ['-m', 'pip', 'install', moduleName],
+        ['-m', 'pip', 'install', '-i', pythonMirrorUrl, moduleName],
+        environment: envVars,
       );
       
       if (result.exitCode != 0) {
@@ -701,5 +784,86 @@ class LocalPythonInstallManager implements InstallManagerInterface {
     }
     
     return result;
+  }
+
+  /// 查找Python模块的可执行文件
+  /// 支持跨平台：Windows (.exe), macOS/Linux (无扩展名)
+  Future<String?> _findPythonModuleExecutable(String moduleName) async {
+    try {
+      // 获取Python安装路径
+      final pythonPath = await _runtimeManager.getPythonExecutable();
+      final pythonDir = path.dirname(pythonPath);
+      
+      // 候选的可执行文件名
+      final candidates = <String>[];
+      
+      // 常见的命名模式
+      final baseNames = [
+        moduleName,
+        moduleName.replaceAll('_', '-'), // mcp_server_git -> mcp-server-git
+        moduleName.replaceAll('-', '_'), // mcp-server-git -> mcp_server_git
+      ];
+      
+      for (final baseName in baseNames) {
+        if (Platform.isWindows) {
+          // Windows: .exe 扩展名
+          candidates.addAll([
+            '$baseName.exe',
+            '$baseName.cmd',
+            '$baseName.bat',
+          ]);
+        } else {
+          // macOS/Linux: 无扩展名
+          candidates.add(baseName);
+        }
+      }
+      
+      // 可能的搜索路径
+      final searchPaths = <String>[
+        // Python bin目录（主要路径）
+        path.join(pythonDir),
+        // Scripts目录（Windows）
+        if (Platform.isWindows) path.join(pythonDir, 'Scripts'),
+        // 相对路径的bin目录
+        path.join(pythonDir, '..', 'bin'),
+        // 用户级别的bin目录
+        if (!Platform.isWindows) path.join(Platform.environment['HOME'] ?? '', '.local', 'bin'),
+      ];
+      
+      print('   🔍 Searching for Python module executable: $moduleName');
+      print('   📁 Search paths: ${searchPaths.join(', ')}');
+      print('   📝 Candidates: ${candidates.join(', ')}');
+      
+      // 遍历所有路径和候选文件名
+      for (final searchPath in searchPaths) {
+        for (final candidate in candidates) {
+          final executablePath = path.join(searchPath, candidate);
+          
+          if (await File(executablePath).exists()) {
+            // 验证文件是否可执行（在Unix系统上）
+            if (!Platform.isWindows) {
+              try {
+                final stat = await File(executablePath).stat();
+                // 检查是否有执行权限（简单检查）
+                if (stat.mode & 0x49 == 0) { // 没有执行权限
+                  continue;
+                }
+              } catch (e) {
+                continue;
+              }
+            }
+            
+            print('   ✅ Found executable: $executablePath');
+            return executablePath;
+          }
+        }
+      }
+      
+      print('   ❌ No executable found for module: $moduleName');
+      return null;
+    } catch (e) {
+      print('   ❌ Error searching for Python module executable: $e');
+      return null;
+    }
   }
 } 

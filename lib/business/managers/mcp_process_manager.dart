@@ -645,9 +645,20 @@ class McpProcessManager {
         return server.command;
 
       case McpInstallType.localPython:
-        // 对于localPython，使用内置的Python解释器
+        // 调用LocalPythonInstallManager获取正确的可执行路径
+        try {
+          final installManager = LocalPythonInstallManager();
+          final executablePath = await installManager.getExecutablePath(server);
+          if (executablePath != null) {
+            print('   🐍 Using LocalPython executable: $executablePath');
+            return executablePath;
+          }
+        } catch (e) {
+          print('   ❌ Error getting LocalPython executable: $e');
+        }
+        // 回退到内置的Python解释器
         final pythonPath = await _runtimeManager.getPythonExecutable();
-        print('   🐍 Using Python executable for localPython: $pythonPath');
+        print('   🐍 Fallback to Python executable for localPython: $pythonPath');
         return pythonPath;
       case McpInstallType.localJar:
         print('   ☕ Using local JAR path: ${server.command}');

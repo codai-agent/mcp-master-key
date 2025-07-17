@@ -164,7 +164,7 @@ class InstallationWizardController extends ChangeNotifier {
         }
       } else if (cleanedCommand == 'python' || cleanedCommand == 'python3'  || cleanedCommand == 'uv') {
         detectedType = McpInstallType.localPython;
-        needsAdditionalInstall = true;
+        needsAdditionalInstall = false;
         analysisResult = '检测到Python命令，需要检测安装环境';
       } else if (cleanedCommand == 'node') {
         detectedType = McpInstallType.npx;
@@ -224,81 +224,6 @@ class InstallationWizardController extends ChangeNotifier {
       }
     }
     
-    // // 处理@smithery/cli的特殊NPX格式
-    // if (command == 'npx' && args.isNotEmpty) {
-    //   int smitheryIndex = -1;
-    //   for (int i = 0; i < args.length; i++) {
-    //     if (args[i].startsWith('@smithery/cli')) {
-    //       smitheryIndex = i;
-    //       break;
-    //     }
-    //   }
-    //
-    //   if (smitheryIndex != -1) {
-    //     print('🔧 检测到@smithery/cli格式，需要清理参数');
-    //
-    //     final List<String> cleanedArgs = [];
-    //     bool skipNext = false;
-    //     bool foundSmithery = false;
-    //
-    //     for (int i = 0; i < args.length; i++) {
-    //       if (skipNext) {
-    //         skipNext = false;
-    //         continue;
-    //       }
-    //
-    //       final arg = args[i];
-    //
-    //       if (arg.startsWith('@smithery/cli')) {
-    //         foundSmithery = true;
-    //         continue;
-    //       }
-    //
-    //       if (foundSmithery && (arg == 'run' || arg == 'inspect')) {
-    //         foundSmithery = false;
-    //         continue;
-    //       }
-    //
-    //       if (arg == '--key') {
-    //         skipNext = true;
-    //         continue;
-    //       }
-    //
-    //       cleanedArgs.add(arg);
-    //       foundSmithery = false;
-    //     }
-    //
-    //     args = cleanedArgs;
-    //   }
-    // }
-    //
-    // // 处理UVX命令
-    // if (command == 'uvx' && args.isNotEmpty) {
-    //   final List<String> cleanedArgs = [];
-    //   bool skipNext = false;
-    //
-    //   for (int i = 0; i < args.length; i++) {
-    //     if (skipNext) {
-    //       skipNext = false;
-    //       continue;
-    //     }
-    //
-    //     final arg = args[i];
-    //
-    //     if (arg == '--key') {
-    //       skipNext = true;
-    //       continue;
-    //     }
-    //
-    //     cleanedArgs.add(arg);
-    //   }
-    //
-    //   if (cleanedArgs.length != args.length) {
-    //     print('🔧 UVX清理--key参数');
-    //     args = cleanedArgs;
-    //   }
-    // }
-    
     cleanedConfig['command'] = command;
     cleanedConfig['args'] = args;
     
@@ -342,6 +267,61 @@ class InstallationWizardController extends ChangeNotifier {
       };
       
       return const JsonEncoder.withIndent('  ').convert(config);
+    }
+    
+    // 支持 localPython 的四种场景
+    if (cmd == 'uv' && args.isNotEmpty && args[0] == 'run') {
+      // 场景一/二: uv run /a/b/xxx.py 和 uv run xxxx
+      if (args.length >= 2) {
+        final scriptPath = args[1];
+        final scriptName = _extractScriptName(scriptPath);
+        
+        final config = {
+          'mcpServers': {
+            scriptName: {
+              'command': cmd,
+              'args': args,
+            }
+          }
+        };
+        
+        return const JsonEncoder.withIndent('  ').convert(config);
+      }
+    }
+    
+    if ((cmd == 'python' || cmd == 'python3') && args.isNotEmpty) {
+      if (args[0] == '-m' && args.length >= 2) {
+        // 场景三: python -m xxx包名
+        final moduleName = args[1];
+        // final serverName = moduleName.replaceAll('_', '-');//Python 包名通常使用下划线 _，比如 mcp_server_git,暂时记录
+        final serverName = moduleName;
+        
+        final config = {
+          'mcpServers': {
+            serverName: {
+              'command': cmd,
+              'args': args,
+            }
+          }
+        };
+        
+        return const JsonEncoder.withIndent('  ').convert(config);
+      } else if (args[0].endsWith('.py') && (args[0].contains('/') || args[0].contains('\\'))) {
+        // 场景四： python /a/b/xxx.py
+        final scriptPath = args[0];
+        final scriptName = _extractScriptName(scriptPath);
+        
+        final config = {
+          'mcpServers': {
+            scriptName: {
+              'command': cmd,
+              'args': args,
+            }
+          }
+        };
+        
+        return const JsonEncoder.withIndent('  ').convert(config);
+      }
     }
     
     return null;
@@ -421,6 +401,29 @@ class InstallationWizardController extends ChangeNotifier {
     }
     
     return packageName;
+  }
+
+  /// 从脚本路径提取脚本名称
+  String _extractScriptName(String scriptPath) {
+    if (scriptPath.isEmpty) return 'python-script';
+    
+    // 提取文件名（去掉路径）
+    String fileName = scriptPath;
+    if (scriptPath.contains('/')) {
+      fileName = scriptPath.split('/').last;
+    } else if (scriptPath.contains('\\')) {
+      fileName = scriptPath.split('\\').last;
+    }
+    
+    // 去掉.py扩展名
+    if (fileName.endsWith('.py')) {
+      fileName = fileName.substring(0, fileName.length - 3);
+    }
+    
+    // 替换特殊字符为下划线，确保是有效的服务器名称
+    fileName = fileName.replaceAll(RegExp(r'[^a-zA-Z0-9_-]'), '_');
+    
+    return fileName.isEmpty ? 'python-script' : fileName;
   }
 
   // 更新方法
