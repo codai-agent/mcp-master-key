@@ -148,16 +148,13 @@ class SmitheryInstallManager implements InstallManagerInterface {
       final packageInfo = _extractPackageInfo(server);
       if (packageInfo == null) return null;
 
-      // Smithery包通常安装在npm全局目录下
+      // 参考NPX实现：确定安装路径
       final nodeExe = await _runtimeManager.getNodeExecutable();
+      final nodeBasePath = path.dirname(path.dirname(nodeExe));
       
       if (Platform.isWindows) {
-        // Windows: node.exe同级目录下的node_modules
-        final nodeDir = path.dirname(nodeExe);
-        return path.join(nodeDir, 'node_modules', packageInfo.smitheryPackage);
+        return path.join(nodeBasePath, 'node_modules', packageInfo.smitheryPackage);
       } else {
-        // Unix-like: lib/node_modules下
-        final nodeBasePath = path.dirname(path.dirname(nodeExe));
         return path.join(nodeBasePath, 'lib', 'node_modules', packageInfo.smitheryPackage);
       }
     } catch (e) {
@@ -169,7 +166,7 @@ class SmitheryInstallManager implements InstallManagerInterface {
   @override
   Future<String?> getExecutablePath(McpServer server) async {
     try {
-      // Smithery使用npx执行，所以返回node可执行文件
+      // 参考 NPX 实现：所有平台都使用Node.js执行
       return await _runtimeManager.getNodeExecutable();
     } catch (e) {
       print('❌ Error getting executable path: $e');
@@ -183,23 +180,81 @@ class SmitheryInstallManager implements InstallManagerInterface {
       final packageInfo = _extractPackageInfo(server);
       if (packageInfo == null) return server.args;
 
-      // 构建smithery运行参数，使用npm exec而不是npx
-      final args = <String>[];
-      
-      // 添加npm exec调用
-      args.addAll([
-        'exec',
-        packageInfo.smitheryPackage,
-        '--', // 分隔符：npm exec的参数和要执行程序的参数
-        'run',
-        packageInfo.targetPackage,
-      ]);
-      
-      // 添加其他参数（排除已处理的部分）
-      final otherArgs = _extractOtherArgs(server.args);
-      args.addAll(otherArgs);
-      
-      return args;
+      print('   📦 Smithery package: ${packageInfo.smitheryPackage}');
+      print('   🎯 Target package: ${packageInfo.targetPackage}');
+
+      if (Platform.isWindows) {
+        // Windows策略：参考NPX实现，直接使用 Node.js 执行包的入口文件
+        print('   🪟 Windows direct execution strategy');
+        
+        final nodeExe = await _runtimeManager.getNodeExecutable();
+        final nodeDir = path.dirname(nodeExe);
+        
+        // 尝试找到@smithery/cli的入口文件
+        final smitheryCliPath = path.join(nodeDir, 'node_modules', '@smithery', 'cli');
+        
+        // 检查build/index.js
+        final entryFile = path.join(smitheryCliPath, 'build', 'index.js');
+        if (await File(entryFile).exists()) {
+          print('   🪟 Windows direct execution: $entryFile');
+          final args = [entryFile, 'run', packageInfo.targetPackage];
+          
+          // 添加其他参数
+          final otherArgs = _extractOtherArgs(server.args);
+          args.addAll(otherArgs);
+          
+          return args;
+        }
+        
+        // 如果没有build/index.js，尝试package.json中的main字段
+        final packageJsonFile = File(path.join(smitheryCliPath, 'package.json'));
+        if (await packageJsonFile.exists()) {
+          try {
+            final packageJsonContent = await packageJsonFile.readAsString();
+            final packageJson = jsonDecode(packageJsonContent) as Map<String, dynamic>;
+            final mainFile = packageJson['main'] as String?;
+            if (mainFile != null) {
+              final mainPath = path.join(smitheryCliPath, mainFile);
+              if (await File(mainPath).exists()) {
+                print('   🪟 Windows main file execution: $mainPath');
+                final args = [mainPath, 'run', packageInfo.targetPackage];
+                
+                // 添加其他参数
+                final otherArgs = _extractOtherArgs(server.args);
+                args.addAll(otherArgs);
+                
+                return args;
+              }
+            }
+          } catch (e) {
+            print('   ⚠️ Error reading package.json: $e');
+          }
+        }
+        
+        // 回退到原始参数
+        print('   🪟 Windows fallback to original args');
+        return server.args;
+      } else {
+        // macOS/Linux策略：参考NPX实现，使用 Node.js spawn 方式
+        print('   🍎 macOS/Linux spawn execution with enhanced PATH');
+        
+        final nodeExe = await _runtimeManager.getNodeExecutable();
+        final nodeBasePath = path.dirname(path.dirname(nodeExe));
+        final binDir = path.join(nodeBasePath, 'bin');
+        
+        // 构建JavaScript代码，参考NPX的实现
+        final jsCode = '''
+process.chdir('${nodeBasePath.replaceAll('\\', '\\\\')}');
+process.env.PATH = '${binDir.replaceAll('\\', '\\\\')}:' + (process.env.PATH || '');
+require('child_process').spawn('cli', ['run', '${packageInfo.targetPackage}'].concat(process.argv.slice(1)), {stdio: 'inherit'});
+'''.trim();
+        
+        print('   📋 JavaScript code: $jsCode');
+        
+        // 添加其他参数
+        final otherArgs = _extractOtherArgs(server.args);
+        return ['-e', jsCode, ...otherArgs];
+      }
       //AI给出的优化代码，目前安装代码在各个平台都正常运行，故先不替换
 //       print('   📦 Smithery package: ${packageInfo.smitheryPackage}');
 //       print('   🎯 Target package: ${packageInfo.targetPackage}');
@@ -259,50 +314,35 @@ class SmitheryInstallManager implements InstallManagerInterface {
   Future<Map<String, String>> getEnvironmentVariables(McpServer server) async {
     try {
       final nodeExe = await _runtimeManager.getNodeExecutable();
-      final nodeDir = path.dirname(nodeExe);
+      final nodeDir = path.dirname(path.dirname(nodeExe));
       final npmMirrorUrl = await _configService.getNpmMirrorUrl();
 
       String nodeModulesPath;
       String npmCacheDir;
-      String npmPrefix;
       
       if (Platform.isWindows) {
-        // Windows: 使用node.exe同级目录
         nodeModulesPath = path.join(nodeDir, 'node_modules');
         npmCacheDir = path.join(nodeDir, 'npm-cache');
-        npmPrefix = nodeDir;
       } else {
-        // Unix-like: 使用传统的lib结构
-        final nodeBasePath = path.dirname(nodeDir);
-        nodeModulesPath = path.join(nodeBasePath, 'lib', 'node_modules');
-        npmCacheDir = path.join(nodeBasePath, '.npm');
-        npmPrefix = nodeBasePath;
+        nodeModulesPath = path.join(nodeDir, 'lib', 'node_modules');
+        npmCacheDir = path.join(nodeDir, '.npm');
       }
 
-      // 构建PATH环境变量，确保包含node和npm目录
-      final currentPath = Platform.environment['PATH'] ?? '';
-      final pathSeparator = Platform.isWindows ? ';' : ':';
-      final newPath = '$nodeDir$pathSeparator$currentPath';
-
+      // 参考NPX实现的环境变量设置
       final envVars = {
         'NODE_PATH': nodeModulesPath,
-        'NPM_CONFIG_PREFIX': npmPrefix,
+        'NPM_CONFIG_PREFIX': nodeDir,
         'NPM_CONFIG_CACHE': npmCacheDir,
+        'NPM_CONFIG_GLOBALCONFIG': path.join(nodeDir, 'etc', 'npmrc'),
+        'NPM_CONFIG_USERCONFIG': path.join(nodeDir, '.npmrc'),
         'NPM_CONFIG_REGISTRY': npmMirrorUrl,
-        'PATH': newPath,
         ...server.env,
       };
 
       if (Platform.isWindows) {
-        // Windows特定的环境变量
         envVars['USERPROFILE'] = Platform.environment['USERPROFILE'] ?? 
                                  Platform.environment['HOME'] ?? 
                                  'C:\\Users\\mcphub';
-        // 设置控制台编码为UTF-8，避免中文乱码
-        envVars['CHCP'] = '65001';
-        // 禁用npm的进度条，避免在CI环境中的问题
-        envVars['NPM_CONFIG_PROGRESS'] = 'false';
-        envVars['NPM_CONFIG_LOGLEVEL'] = 'warn';
       } else {
         envVars['HOME'] = Platform.environment['HOME'] ?? '/tmp';
       }
@@ -315,11 +355,6 @@ class SmitheryInstallManager implements InstallManagerInterface {
       envVars['DISABLE_TELEMETRY'] = 'true'; // 通用的禁用遥测环境变量
       envVars['SMITHERY_DISABLE_TELEMETRY'] = 'true'; // 尝试更多可能的环境变量
       envVars['SMITHERY_NON_INTERACTIVE'] = 'true'; // 非交互模式
-
-      print('   🔧 Environment variables for Smithery:');
-      print('   - NODE_PATH: $nodeModulesPath');
-      print('   - NPM_CONFIG_PREFIX: $npmPrefix');
-      print('   - PATH: ${newPath.substring(0, 100)}...');
 
       return envVars;
     } catch (e) {
@@ -575,15 +610,15 @@ class SmitheryInstallManager implements InstallManagerInterface {
       final nodeExe = await _runtimeManager.getNodeExecutable();
       print('   🔍 Node executable: $nodeExe');
       
-      // 对于Windows，npm全局包通常安装在node.exe同级目录下
+      // 参考NPX实现：确定Smithery CLI的安装路径
       String nodeModulesPath;
+      final nodeBasePath = path.dirname(path.dirname(nodeExe));
+      
       if (Platform.isWindows) {
-        // Windows: C:\path\to\node\node_modules\@smithery\cli
-        final nodeDir = path.dirname(nodeExe);
-        nodeModulesPath = path.join(nodeDir, 'node_modules', smitheryPackage);
+        // Windows: 参考NPX实现
+        nodeModulesPath = path.join(nodeBasePath, 'node_modules', smitheryPackage);
       } else {
         // Unix-like: /path/to/node/lib/node_modules/@smithery/cli
-        final nodeBasePath = path.dirname(path.dirname(nodeExe));
         nodeModulesPath = path.join(nodeBasePath, 'lib', 'node_modules', smitheryPackage);
       }
       
@@ -598,7 +633,7 @@ class SmitheryInstallManager implements InstallManagerInterface {
     }
   }
 
-  /// 安装@smithery/cli
+  /// 安装@smithery/cli - 参考NPX实现
   Future<_SmitheryInstallResult> _installSmitheryCli(String smitheryPackage, McpServer server) async {
     try {
       final npmPath = await _runtimeManager.getNpmExecutable();
@@ -607,35 +642,13 @@ class SmitheryInstallManager implements InstallManagerInterface {
       print('   🔧 NPM executable: $npmPath');
       print('   📦 Installing: $smitheryPackage');
 
-      // Windows特定：确保目录存在并设置权限
-      if (Platform.isWindows) {
-        try {
-          final nodeDir = path.dirname(await _runtimeManager.getNodeExecutable());
-          final nodeModulesDir = path.join(nodeDir, 'node_modules');
-          
-          // 创建node_modules目录（如果不存在）
-          final nodeModulesDirectory = Directory(nodeModulesDir);
-          if (!await nodeModulesDirectory.exists()) {
-            print('   📁 Creating node_modules directory: $nodeModulesDir');
-            await nodeModulesDirectory.create(recursive: true);
-          }
-        } catch (dirError) {
-          print('   ⚠️ Warning: Could not prepare directories: $dirError');
-        }
-      }
-
+      // 参考NPX的安装参数设置
       List<String> args;
       if (Platform.isWindows) {
-        // Windows: 添加更多参数来避免权限问题
-        args = [
-          'install', '-g', 
-          '--no-package-lock',
-          '--no-audit',
-          '--no-fund',
-          '--prefer-offline',
-          smitheryPackage
-        ];
+        // Windows: 参考NPX实现，添加--no-package-lock参数
+        args = ['install', '-g', '--no-package-lock', smitheryPackage];
       } else {
+        // Unix-like: 参考NPX实现
         args = ['install', '-g', smitheryPackage];
       }
       
@@ -670,7 +683,7 @@ class SmitheryInstallManager implements InstallManagerInterface {
     }
   }
 
-  /// 可取消的安装@smithery/cli
+  /// 可取消的安装@smithery/cli - 参考NPX实现
   Future<_SmitheryInstallResult> _installSmitheryCliCancellable(
     String smitheryPackage, 
     McpServer server,
@@ -683,33 +696,13 @@ class SmitheryInstallManager implements InstallManagerInterface {
       print('   🔧 NPM executable: $npmPath');
       print('   📦 Installing: $smitheryPackage');
 
-      // Windows特定：确保目录存在
-      if (Platform.isWindows) {
-        try {
-          final nodeDir = path.dirname(await _runtimeManager.getNodeExecutable());
-          final nodeModulesDir = path.join(nodeDir, 'node_modules');
-          
-          final nodeModulesDirectory = Directory(nodeModulesDir);
-          if (!await nodeModulesDirectory.exists()) {
-            print('   📁 Creating node_modules directory: $nodeModulesDir');
-            await nodeModulesDirectory.create(recursive: true);
-          }
-        } catch (dirError) {
-          print('   ⚠️ Warning: Could not prepare directories: $dirError');
-        }
-      }
-
+      // 参考NPX的安装参数设置
       List<String> args;
       if (Platform.isWindows) {
-        args = [
-          'install', '-g', 
-          '--no-package-lock',
-          '--no-audit',
-          '--no-fund',
-          '--prefer-offline',
-          smitheryPackage
-        ];
+        // Windows: 参考NPX实现，添加--no-package-lock参数
+        args = ['install', '-g', '--no-package-lock', smitheryPackage];
       } else {
+        // Unix-like: 参考NPX实现
         args = ['install', '-g', smitheryPackage];
       }
       
@@ -768,34 +761,88 @@ class SmitheryInstallManager implements InstallManagerInterface {
     }
   }
 
-  /// 使用smithery cli安装目标包
+  /// 使用smithery cli安装目标包 - 参考NPX风格执行
   Future<_SmitheryInstallResult> _installTargetPackage(_SmitheryPackageInfo packageInfo, McpServer server) async {
     try {
-      // 使用npm exec而不是npx，与mcp_hub_service.dart保持一致
-      final npmPath = await _runtimeManager.getNpmExecutable();
+      // 参考NPX实现：使用Node.js直接执行已安装的@smithery/cli
+      final nodeExe = await _runtimeManager.getNodeExecutable();
       final environment = await getEnvironmentVariables(server);
 
       print('   🎯 Installing target package: ${packageInfo.targetPackage}');
-      print('   🔧 NPM executable: $npmPath');
+      print('   🔧 Node executable: $nodeExe');
 
-      final args = [
-        'exec',
-        packageInfo.smitheryPackage,
-        '--', // 分隔符：npm exec的参数和要执行程序的参数
-        'install',
-        packageInfo.targetPackage,
-        '--client',
-        packageInfo.clientType,
-      ];
-
-      // 添加其他参数（排除已处理的smithery相关参数）
+      // 获取其他参数（排除已处理的smithery相关参数）
       final otherArgs = _extractOtherArgs(server.args);
-      args.addAll(otherArgs);
+
+      List<String> args;
       
-      print('   📋 Command: $npmPath ${args.join(' ')}');
+      if (Platform.isWindows) {
+        // Windows策略：参考NPX实现，直接执行@smithery/cli的入口文件
+        final nodeBasePath = path.dirname(path.dirname(nodeExe));
+        final smitheryCliPath = path.join(nodeBasePath, 'node_modules', '@smithery', 'cli');
+        
+        // 检查build/index.js
+        final entryFile = path.join(smitheryCliPath, 'build', 'index.js');
+        if (await File(entryFile).exists()) {
+          args = [
+            entryFile,
+            'install',
+            packageInfo.targetPackage,
+            '--client',
+            packageInfo.clientType,
+            ...otherArgs,
+          ];
+        } else {
+          // 尝试package.json中的main字段
+          final packageJsonFile = File(path.join(smitheryCliPath, 'package.json'));
+          if (await packageJsonFile.exists()) {
+            try {
+              final packageJsonContent = await packageJsonFile.readAsString();
+              final packageJson = jsonDecode(packageJsonContent) as Map<String, dynamic>;
+              final mainFile = packageJson['main'] as String?;
+              if (mainFile != null) {
+                final mainPath = path.join(smitheryCliPath, mainFile);
+                args = [
+                  mainPath,
+                  'install',
+                  packageInfo.targetPackage,
+                  '--client',
+                  packageInfo.clientType,
+                  ...otherArgs,
+                ];
+              } else {
+                throw Exception('Cannot find smithery cli entry point');
+              }
+            } catch (e) {
+              throw Exception('Failed to read smithery cli package.json: $e');
+            }
+          } else {
+            throw Exception('Smithery CLI not properly installed');
+          }
+        }
+      } else {
+        // macOS/Linux策略：使用JavaScript spawn方式
+        final nodeBasePath = path.dirname(path.dirname(nodeExe));
+        final binDir = path.join(nodeBasePath, 'bin');
+        
+        // 构建完整的参数列表
+        final allArgs = ['install', packageInfo.targetPackage, '--client', packageInfo.clientType, ...otherArgs];
+        final argsJson = jsonEncode(allArgs);
+        
+        final jsCode = '''
+process.chdir('${nodeBasePath.replaceAll('\\', '\\\\')}');
+process.env.PATH = '${binDir.replaceAll('\\', '\\\\')}:' + (process.env.PATH || '');
+const args = $argsJson;
+require('child_process').spawn('cli', args, {stdio: 'inherit'});
+'''.trim();
+        
+        args = ['-e', jsCode];
+      }
+      
+      print('   📋 Command: $nodeExe ${args.join(' ')}');
 
       final result = await Process.run(
-        npmPath,
+        nodeExe,
         args,
         environment: environment,
       ).timeout(const Duration(minutes: 10));
@@ -816,7 +863,7 @@ class SmitheryInstallManager implements InstallManagerInterface {
     }
   }
 
-  /// 可取消的使用smithery cli安装目标包
+  /// 可取消的使用smithery cli安装目标包 - 参考NPX风格执行
   Future<_SmitheryInstallResult> _installTargetPackageCancellable(
     _SmitheryPackageInfo packageInfo, 
     McpServer server,
@@ -824,32 +871,87 @@ class SmitheryInstallManager implements InstallManagerInterface {
   ) async {
     Timer? autoAnswerTimer; // 声明在方法级别
     try {
-      // 使用npm exec而不是npx，与mcp_hub_service.dart保持一致
-      final npmPath = await _runtimeManager.getNpmExecutable();
+      // 参考NPX实现：使用Node.js直接执行已安装的@smithery/cli
+      final nodeExe = await _runtimeManager.getNodeExecutable();
       final environment = await getEnvironmentVariables(server);
 
       print('   🎯 Installing target package (cancellable): ${packageInfo.targetPackage}');
-      print('   🔧 NPM executable: $npmPath');
+      print('   🔧 Node executable: $nodeExe');
 
-      final args = [
-        'exec',
-        packageInfo.smitheryPackage,
-        '--', // 分隔符：npm exec的参数和要执行程序的参数
-        'install',
-        packageInfo.targetPackage,
-        '--client',
-        packageInfo.clientType,
-      ];
-
-      // 添加其他参数（排除已处理的smithery相关参数）
+      // 获取其他参数（排除已处理的smithery相关参数）
       final otherArgs = _extractOtherArgs(server.args);
-      args.addAll(otherArgs);
+
+      List<String> args;
       
-      print('   📋 Command: $npmPath ${args.join(' ')}');
+      if (Platform.isWindows) {
+        // Windows策略：参考NPX实现，直接执行@smithery/cli的入口文件
+        final nodeBasePath = path.dirname(path.dirname(nodeExe));
+        final smitheryCliPath = path.join(nodeBasePath, 'node_modules', '@smithery', 'cli');
+        
+        // 检查build/index.js
+        final entryFile = path.join(smitheryCliPath, 'build', 'index.js');
+        if (await File(entryFile).exists()) {
+          args = [
+            entryFile,
+            'install',
+            packageInfo.targetPackage,
+            '--client',
+            packageInfo.clientType,
+            ...otherArgs,
+          ];
+        } else {
+          // 尝试package.json中的main字段
+          final packageJsonFile = File(path.join(smitheryCliPath, 'package.json'));
+          if (await packageJsonFile.exists()) {
+            try {
+              final packageJsonContent = await packageJsonFile.readAsString();
+              final packageJson = jsonDecode(packageJsonContent) as Map<String, dynamic>;
+              final mainFile = packageJson['main'] as String?;
+              if (mainFile != null) {
+                final mainPath = path.join(smitheryCliPath, mainFile);
+                args = [
+                  mainPath,
+                  'install',
+                  packageInfo.targetPackage,
+                  '--client',
+                  packageInfo.clientType,
+                ];
+              } else {
+                throw Exception('Cannot find smithery cli entry point');
+              }
+            } catch (e) {
+              throw Exception('Failed to read smithery cli package.json: $e');
+            }
+          } else {
+            throw Exception('Smithery CLI not properly installed');
+          }
+        }
+      } else {
+        // macOS/Linux策略：使用JavaScript spawn方式
+        final nodeBasePath = path.dirname(path.dirname(nodeExe));
+        final binDir = path.join(nodeBasePath, 'bin');
+        
+        // 构建完整的参数列表
+        final allArgs = ['install', packageInfo.targetPackage, '--client', packageInfo.clientType, ...otherArgs];
+        final argsJson = jsonEncode(allArgs);
+        
+        final jsCode = '''
+process.chdir('${nodeBasePath.replaceAll('\\', '\\\\')}');
+process.env.PATH = '${binDir.replaceAll('\\', '\\\\')}:' + (process.env.PATH || '');
+const args = $argsJson;
+require('child_process').spawn('cli', args, {stdio: 'inherit'});
+'''.trim();
+        
+        args = ['-e', jsCode];
+      }
+
+
+      
+      print('   📋 Command: $nodeExe ${args.join(' ')}');
 
       // 使用Process.start来获得进程控制权
       final process = await Process.start(
-        npmPath,
+        nodeExe,
         args,
         environment: environment,
       );
@@ -965,25 +1067,73 @@ class SmitheryInstallManager implements InstallManagerInterface {
     }
   }
 
-  /// 卸载目标包
+  /// 卸载目标包 - 参考NPX风格执行
   Future<bool> _uninstallTargetPackage(_SmitheryPackageInfo packageInfo, McpServer server) async {
     try {
-      // 使用npm exec而不是npx，与mcp_hub_service.dart保持一致
-      final npmPath = await _runtimeManager.getNpmExecutable();
+      // 参考NPX实现：使用Node.js直接执行已安装的@smithery/cli
+      final nodeExe = await _runtimeManager.getNodeExecutable();
       final environment = await getEnvironmentVariables(server);
 
-      final args = [
-        'exec',
-        packageInfo.smitheryPackage,
-        '--', // 分隔符：npm exec的参数和要执行程序的参数
-        'uninstall',
-        packageInfo.targetPackage,
-        '--client',
-        packageInfo.clientType,
-      ];
+      List<String> args;
+      
+      if (Platform.isWindows) {
+        // Windows策略：参考NPX实现，直接执行@smithery/cli的入口文件
+        final nodeBasePath = path.dirname(path.dirname(nodeExe));
+        final smitheryCliPath = path.join(nodeBasePath, 'node_modules', '@smithery', 'cli');
+        
+        // 检查build/index.js
+        final entryFile = path.join(smitheryCliPath, 'build', 'index.js');
+        if (await File(entryFile).exists()) {
+          args = [
+            entryFile,
+            'uninstall',
+            packageInfo.targetPackage,
+            '--client',
+            packageInfo.clientType,
+          ];
+        } else {
+          // 尝试package.json中的main字段
+          final packageJsonFile = File(path.join(smitheryCliPath, 'package.json'));
+          if (await packageJsonFile.exists()) {
+            try {
+              final packageJsonContent = await packageJsonFile.readAsString();
+              final packageJson = jsonDecode(packageJsonContent) as Map<String, dynamic>;
+              final mainFile = packageJson['main'] as String?;
+              if (mainFile != null) {
+                final mainPath = path.join(smitheryCliPath, mainFile);
+                args = [
+                  mainPath,
+                  'uninstall',
+                  packageInfo.targetPackage,
+                  '--client',
+                  packageInfo.clientType,
+                ];
+              } else {
+                throw Exception('Cannot find smithery cli entry point');
+              }
+            } catch (e) {
+              throw Exception('Failed to read smithery cli package.json: $e');
+            }
+          } else {
+            throw Exception('Smithery CLI not properly installed');
+          }
+        }
+      } else {
+        // macOS/Linux策略：使用JavaScript spawn方式
+        final nodeBasePath = path.dirname(path.dirname(nodeExe));
+        final binDir = path.join(nodeBasePath, 'bin');
+        
+        final jsCode = '''
+process.chdir('${nodeBasePath.replaceAll('\\', '\\\\')}');
+process.env.PATH = '${binDir.replaceAll('\\', '\\\\')}:' + (process.env.PATH || '');
+require('child_process').spawn('cli', ['uninstall', '${packageInfo.targetPackage}', '--client', '${packageInfo.clientType}'], {stdio: 'inherit'});
+'''.trim();
+        
+        args = ['-e', jsCode];
+      }
 
       final result = await Process.run(
-        npmPath,
+        nodeExe,
         args,
         environment: environment,
       );

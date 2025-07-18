@@ -814,13 +814,19 @@ require("child_process").spawn("$executableName", process.argv.slice(1), {stdio:
           final npmPath = await _runtimeManager.getNpmExecutable();
           final npmPathEscaped = npmPath.replaceAll('\\', '\\\\');
           
-          // 构建JavaScript代码来执行smithery，使用完整的npm.cmd路径
+          // 获取 Node.js 目录，确保 npm exec 在正确的环境中运行
+          final nodeExe = await _runtimeManager.getNodeExecutable();
+          final nodeDir = path.dirname(nodeExe);
+          final nodeDirEscaped = nodeDir.replaceAll('\\', '\\\\');
+          
+          // 构建JavaScript代码来执行smithery，使用正确的工作目录
           final jsCode = '''
-process.chdir("${workingDir.replaceAll('\\', '\\\\')}");
+process.chdir("$nodeDirEscaped");
 const { spawn } = require("child_process");
 const npmExec = spawn("$npmPathEscaped", ["exec", "$smitheryPackageName", "--", "run", "$targetPackageName"], {
   stdio: "inherit",
-  shell: true
+  shell: true,
+  cwd: "$nodeDirEscaped"
 });
 npmExec.on('exit', (code) => process.exit(code));
 '''.trim();
