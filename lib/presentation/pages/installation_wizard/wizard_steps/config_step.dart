@@ -60,6 +60,7 @@ class _ConfigStepState extends State<ConfigStep> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // 页面标题
           Text(
             l10n.config_step_title,
             style: Theme.of(context).textTheme.headlineSmall,
@@ -73,212 +74,243 @@ class _ConfigStepState extends State<ConfigStep> {
           ),
           const SizedBox(height: 24),
           
+          // 主要内容区域 - 左右分栏
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // 基本信息
-                  _buildSectionHeader(l10n.config_step_basic_info),
-                  const SizedBox(height: 12),
-                  
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.grey[300]!),
-                    ),
-                    child: Row(
-                      children: [
-                        const Icon(Icons.label, color: Colors.grey),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                l10n.config_step_server_name,
-                                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: Colors.grey[600],
-                                ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 左侧列 - 基本信息和快速配置
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // 基本信息
+                      _buildSectionHeader(l10n.config_step_basic_info),
+                      const SizedBox(height: 12),
+                      
+                      Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[50],
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.grey[300]!),
+                        ),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.label, color: Colors.grey),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n.config_step_server_name,
+                                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: Colors.grey[600],
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    widget.controller.state.serverName.isEmpty
+                                        ? l10n.config_step_server_name_hint
+                                        : widget.controller.state.serverName,
+                                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                                      color: widget.controller.state.serverName.isEmpty
+                                          ? Colors.grey[400]
+                                          : Colors.black87,
+                                    ),
+                                  ),
+                                ],
                               ),
-                              const SizedBox(height: 4),
-                              Text(
-                                widget.controller.state.serverName.isEmpty
-                                    ? l10n.config_step_server_name_hint
-                                    : widget.controller.state.serverName,
-                                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                                  color: widget.controller.state.serverName.isEmpty
-                                      ? Colors.grey[400]
-                                      : Colors.black87,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      
+                      TextField(
+                        controller: _descriptionController,
+                        decoration: InputDecoration(
+                          labelText: l10n.config_step_server_description,
+                          hintText: l10n.config_step_server_description_hint,
+                          border: const OutlineInputBorder(),
+                          prefixIcon: const Icon(Icons.description),
+                        ),
+                        maxLines: 2,
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // 快速命令解析
+                      _buildSectionHeader(l10n.config_step_quick_config),
+                      const SizedBox(height: 12),
+                      
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.blue[300]!),
+                          ),
+                          child: SingleChildScrollView(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(Icons.flash_on, color: Colors.blue[700]),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        l10n.config_step_command_parse,
+                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.blue[700],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  l10n.config_step_command_parse_desc,
+                                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: Colors.blue[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                
+                                TextField(
+                                  controller: _commandController,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.config_step_install_command,
+                                    hintText: l10n.config_step_install_command_hint,
+                                    border: const OutlineInputBorder(),
+                                    prefixIcon: const Icon(Icons.terminal),
+                                    suffixIcon: IconButton(
+                                      icon: const Icon(Icons.auto_fix_high),
+                                      onPressed: _parseCommand,
+                                      tooltip: l10n.config_step_parse_command_tooltip,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 12),
+                                
+                                Wrap(
+                                  spacing: 8,
+                                  runSpacing: 8,
+                                  children: [
+                                    ElevatedButton.icon(
+                                      onPressed: _parseCommand,
+                                      icon: const Icon(Icons.auto_fix_high, size: 16),
+                                      label: Text(l10n.config_step_parse_command),
+                                      style: ElevatedButton.styleFrom(
+                                        backgroundColor: Colors.blue[600],
+                                        foregroundColor: Colors.white,
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      ),
+                                    ),
+                                    TextButton(
+                                      onPressed: () {
+                                        _commandController.clear();
+                                      },
+                                      style: TextButton.styleFrom(
+                                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      ),
+                                      child: Text(l10n.config_step_clear),
+                                    ),
+                                  ],
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(width: 24),
+                
+                // 右侧列 - MCP配置和状态提示
+                Expanded(
+                  flex: 1,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // MCP配置
+                      _buildSectionHeader(l10n.config_step_mcp_config),
+                      const SizedBox(height: 12),
+                      
+                      Expanded(
+                        child: Container(
+                          decoration: BoxDecoration(
+                            border: Border.all(color: Colors.grey[300]!),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: JsonConfigEditor(
+                            initialValue: widget.controller.state.configText,
+                            onChanged: (value) {
+                              widget.controller.updateConfigText(value);
+                              widget.controller.parseConfig();
+                            },
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      
+                      // 配置状态提示
+                      if (widget.controller.state.configError.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.red[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.red[300]!),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.error, color: Colors.red),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  widget.controller.state.configError,
+                                  style: const TextStyle(color: Colors.red),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  TextField(
-                    controller: _descriptionController,
-                    decoration: InputDecoration(
-                      labelText: l10n.config_step_server_description,
-                      hintText: l10n.config_step_server_description_hint,
-                      border: const OutlineInputBorder(),
-                      prefixIcon: const Icon(Icons.description),
-                    ),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 24),
-                  
-                  // 快速命令解析
-                  _buildSectionHeader(l10n.config_step_quick_config),
-                  const SizedBox(height: 12),
-                  
-                  Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.blue[50],
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(color: Colors.blue[300]!),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(Icons.flash_on, color: Colors.blue[700]),
-                            const SizedBox(width: 8),
-                            Text(
-                              l10n.config_step_command_parse,
-                              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue[700],
+                      
+                      // 配置成功提示
+                      if (widget.controller.state.configError.isEmpty && 
+                          widget.controller.state.parsedConfig.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: Colors.green[50],
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.green[300]!),
+                          ),
+                          child: Row(
+                            children: [
+                              const Icon(Icons.check_circle, color: Colors.green),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  l10n.config_step_config_parse_success,
+                                  style: const TextStyle(color: Colors.green),
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          l10n.config_step_command_parse_desc,
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: Colors.blue[600],
+                            ],
                           ),
                         ),
-                        const SizedBox(height: 12),
-                        
-                        TextField(
-                          controller: _commandController,
-                          decoration: InputDecoration(
-                            labelText: l10n.config_step_install_command,
-                            hintText: l10n.config_step_install_command_hint,
-                            border: const OutlineInputBorder(),
-                            prefixIcon: const Icon(Icons.terminal),
-                            suffixIcon: IconButton(
-                              icon: const Icon(Icons.auto_fix_high),
-                              onPressed: _parseCommand,
-                              tooltip: l10n.config_step_parse_command_tooltip,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        
-                        Row(
-                          children: [
-                            ElevatedButton.icon(
-                              onPressed: _parseCommand,
-                              icon: const Icon(Icons.auto_fix_high, size: 16),
-                              label: Text(l10n.config_step_parse_command),
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.blue[600],
-                                foregroundColor: Colors.white,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            TextButton(
-                              onPressed: () {
-                                _commandController.clear();
-                              },
-                              child: Text(l10n.config_step_clear),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+                    ],
                   ),
-                  const SizedBox(height: 24),
-                  
-                  // MCP配置
-                  _buildSectionHeader(l10n.config_step_mcp_config),
-                  const SizedBox(height: 12),
-                  
-                  Container(
-                    height: 300,
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Colors.grey[300]!),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: JsonConfigEditor(
-                      initialValue: widget.controller.state.configText,
-                      onChanged: (value) {
-                        widget.controller.updateConfigText(value);
-                        widget.controller.parseConfig();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  
-                  // 配置错误提示
-                  if (widget.controller.state.configError.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.red[50],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.red[300]!),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.error, color: Colors.red),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              widget.controller.state.configError,
-                              style: const TextStyle(color: Colors.red),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  
-                  // 配置成功提示
-                  if (widget.controller.state.configError.isEmpty && 
-                      widget.controller.state.parsedConfig.isNotEmpty)
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: Colors.green[50],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(color: Colors.green[300]!),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.check_circle, color: Colors.green),
-                          const SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              l10n.config_step_config_parse_success,
-                              style: const TextStyle(color: Colors.green),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ],
