@@ -11,7 +11,7 @@ class AppConstants {
   static const String nodeVersion = '20.10.0';
   
   // 数据库版本
-  static const int databaseVersion = 5;
+  static const int databaseVersion = 6;
   static const String databaseName = 'mcp_hub.db';
   
   // 默认配置
@@ -51,6 +51,10 @@ class AppConstants {
   static const Duration defaultCommandTimeout = Duration(minutes: 5);
   static const Duration defaultNetworkTimeout = Duration(seconds: 30);
   static const Duration defaultStartupTimeout = Duration(seconds: 180); // 增加到3分钟，给服务器启动充足时间
+  
+  // 安装来源类型
+  static const String installSourceManual = 'manual';  // 手动安装（通过安装向导）
+  static const String installSourceMarket = 'market';  // 应用商店安装
   
   // 限制配置
   static const int maxLogFileSize = 10 * 1024 * 1024; // 10MB

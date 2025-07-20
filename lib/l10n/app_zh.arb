@@ -230,6 +230,9 @@
   "market_next_page": "下一页",
   "market_install_success": "安装成功",
   "market_install_failed": "安装失败",
+  "market_server_already_installed": "服务器已安装",
+  "market_installing_server": "正在安装服务器...",
+  "market_install_error": "安装失败",
   
   "analysis_step_title": "分析安装策略",
   "analysis_step_subtitle": "正在分析MCP服务器配置...",

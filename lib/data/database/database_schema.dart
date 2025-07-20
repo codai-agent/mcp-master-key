@@ -1,6 +1,6 @@
 /// 数据库模式定义
 class DatabaseSchema {
-  static const int currentVersion = 5;
+  static const int currentVersion = 6;
 
   /// 创建MCP服务器表
   static const String createMcpServersTable = '''
@@ -18,6 +18,7 @@ class DatabaseSchema {
       status TEXT NOT NULL DEFAULT 'stopped',
       auto_start INTEGER NOT NULL DEFAULT 0,
       install_source TEXT,
+      install_source_type TEXT,
       version TEXT,
       process_id INTEGER,
       port INTEGER,

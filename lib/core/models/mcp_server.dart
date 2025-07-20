@@ -141,6 +141,8 @@ class McpServer with _$McpServer {
     String? workingDirectory,
     /// 安装源（GitHub URL、npm包名等）
     String? installSource,
+    /// 安装来源类型（manual手动安装 或 market应用商店安装）
+    String? installSourceType,
     /// 版本信息
     String? version,
     /// 配置参数

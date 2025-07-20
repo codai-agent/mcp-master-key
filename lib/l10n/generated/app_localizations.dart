@@ -1370,6 +1370,24 @@ abstract class AppLocalizations {
   /// **'Installation failed'**
   String get market_install_failed;
 
+  /// No description provided for @market_server_already_installed.
+  ///
+  /// In en, this message translates to:
+  /// **'Server already installed'**
+  String get market_server_already_installed;
+
+  /// No description provided for @market_installing_server.
+  ///
+  /// In en, this message translates to:
+  /// **'Installing server...'**
+  String get market_installing_server;
+
+  /// No description provided for @market_install_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation failed'**
+  String get market_install_error;
+
   /// No description provided for @analysis_step_title.
   ///
   /// In en, this message translates to:

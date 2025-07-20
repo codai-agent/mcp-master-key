@@ -54,6 +54,9 @@ mixin _$McpServer {
   /// 安装源（GitHub URL、npm包名等）
   String? get installSource => throw _privateConstructorUsedError;
 
+  /// 安装来源类型（manual手动安装 或 market应用商店安装）
+  String? get installSourceType => throw _privateConstructorUsedError;
+
   /// 版本信息
   String? get version => throw _privateConstructorUsedError;
 
@@ -114,6 +117,7 @@ abstract class $McpServerCopyWith<$Res> {
     Map<String, String> env,
     String? workingDirectory,
     String? installSource,
+    String? installSourceType,
     String? version,
     Map<String, dynamic> config,
     int? processId,
@@ -154,6 +158,7 @@ class _$McpServerCopyWithImpl<$Res, $Val extends McpServer>
     Object? env = null,
     Object? workingDirectory = freezed,
     Object? installSource = freezed,
+    Object? installSourceType = freezed,
     Object? version = freezed,
     Object? config = null,
     Object? processId = freezed,
@@ -211,6 +216,10 @@ class _$McpServerCopyWithImpl<$Res, $Val extends McpServer>
             installSource: freezed == installSource
                 ? _value.installSource
                 : installSource // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            installSourceType: freezed == installSourceType
+                ? _value.installSourceType
+                : installSourceType // ignore: cast_nullable_to_non_nullable
                       as String?,
             version: freezed == version
                 ? _value.version
@@ -283,6 +292,7 @@ abstract class _$$McpServerImplCopyWith<$Res>
     Map<String, String> env,
     String? workingDirectory,
     String? installSource,
+    String? installSourceType,
     String? version,
     Map<String, dynamic> config,
     int? processId,
@@ -322,6 +332,7 @@ class __$$McpServerImplCopyWithImpl<$Res>
     Object? env = null,
     Object? workingDirectory = freezed,
     Object? installSource = freezed,
+    Object? installSourceType = freezed,
     Object? version = freezed,
     Object? config = null,
     Object? processId = freezed,
@@ -379,6 +390,10 @@ class __$$McpServerImplCopyWithImpl<$Res>
         installSource: freezed == installSource
             ? _value.installSource
             : installSource // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        installSourceType: freezed == installSourceType
+            ? _value.installSourceType
+            : installSourceType // ignore: cast_nullable_to_non_nullable
                   as String?,
         version: freezed == version
             ? _value.version
@@ -444,6 +459,7 @@ class _$McpServerImpl implements _McpServer {
     final Map<String, String> env = const {},
     this.workingDirectory,
     this.installSource,
+    this.installSourceType,
     this.version,
     final Map<String, dynamic> config = const {},
     this.processId,
@@ -524,6 +540,10 @@ class _$McpServerImpl implements _McpServer {
   @override
   final String? installSource;
 
+  /// 安装来源类型（manual手动安装 或 market应用商店安装）
+  @override
+  final String? installSourceType;
+
   /// 版本信息
   @override
   final String? version;
@@ -580,7 +600,7 @@ class _$McpServerImpl implements _McpServer {
 
   @override
   String toString() {
-    return 'McpServer(id: $id, name: $name, description: $description, status: $status, connectionType: $connectionType, installType: $installType, command: $command, args: $args, env: $env, workingDirectory: $workingDirectory, installSource: $installSource, version: $version, config: $config, processId: $processId, port: $port, createdAt: $createdAt, updatedAt: $updatedAt, lastStartedAt: $lastStartedAt, lastStoppedAt: $lastStoppedAt, autoStart: $autoStart, errorMessage: $errorMessage, logLevel: $logLevel)';
+    return 'McpServer(id: $id, name: $name, description: $description, status: $status, connectionType: $connectionType, installType: $installType, command: $command, args: $args, env: $env, workingDirectory: $workingDirectory, installSource: $installSource, installSourceType: $installSourceType, version: $version, config: $config, processId: $processId, port: $port, createdAt: $createdAt, updatedAt: $updatedAt, lastStartedAt: $lastStartedAt, lastStoppedAt: $lastStoppedAt, autoStart: $autoStart, errorMessage: $errorMessage, logLevel: $logLevel)';
   }
 
   @override
@@ -604,6 +624,8 @@ class _$McpServerImpl implements _McpServer {
                 other.workingDirectory == workingDirectory) &&
             (identical(other.installSource, installSource) ||
                 other.installSource == installSource) &&
+            (identical(other.installSourceType, installSourceType) ||
+                other.installSourceType == installSourceType) &&
             (identical(other.version, version) || other.version == version) &&
             const DeepCollectionEquality().equals(other._config, _config) &&
             (identical(other.processId, processId) ||
@@ -640,6 +662,7 @@ class _$McpServerImpl implements _McpServer {
     const DeepCollectionEquality().hash(_env),
     workingDirectory,
     installSource,
+    installSourceType,
     version,
     const DeepCollectionEquality().hash(_config),
     processId,
@@ -680,6 +703,7 @@ abstract class _McpServer implements McpServer {
     final Map<String, String> env,
     final String? workingDirectory,
     final String? installSource,
+    final String? installSourceType,
     final String? version,
     final Map<String, dynamic> config,
     final int? processId,
@@ -739,6 +763,10 @@ abstract class _McpServer implements McpServer {
   /// 安装源（GitHub URL、npm包名等）
   @override
   String? get installSource;
+
+  /// 安装来源类型（manual手动安装 或 market应用商店安装）
+  @override
+  String? get installSourceType;
 
   /// 版本信息
   @override

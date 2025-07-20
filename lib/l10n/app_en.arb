@@ -292,6 +292,9 @@
   "market_next_page": "Next",
   "market_install_success": "Installation successful",
   "market_install_failed": "Installation failed",
+  "market_server_already_installed": "Server already installed",
+  "market_installing_server": "Installing server...",
+  "market_install_error": "Installation failed",
   
   "analysis_step_title": "Analyze Installation Strategy",
   "analysis_step_subtitle": "Analyzing MCP server configuration...",

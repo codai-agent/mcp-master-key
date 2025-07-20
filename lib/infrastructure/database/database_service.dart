@@ -196,6 +196,20 @@ class DatabaseService {
       print('✅ Database upgraded to version 5');
     }
     
+    // 从版本5升级到版本6：添加安装来源类型字段
+    if (oldVersion < 6) {
+      print('📝 Adding install_source_type column for version 6...');
+      
+      try {
+        await db.execute('ALTER TABLE mcp_servers ADD COLUMN install_source_type TEXT');
+        print('✅ install_source_type column added');
+      } catch (e) {
+        print('❌ Error adding install_source_type column: $e');
+      }
+      
+      print('✅ Database upgraded to version 6');
+    }
+    
     print('✅ Database upgrade completed');
   }
 

@@ -41,6 +41,7 @@ class McpServerService {
     Map<String, String> env = const {},
     String? workingDirectory,
     String? installSource,
+    String? installSourceType,
     bool autoStart = false,
     models.McpConnectionType connectionType = models.McpConnectionType.stdio,
   }) async {
@@ -105,6 +106,7 @@ class McpServerService {
         env: resolvedConfig.env,          // 使用解析后的环境变量
         workingDirectory: workingDirectory,
         installSource: installSource,
+        installSourceType: installSourceType,
         autoStart: autoStart,
         createdAt: DateTime.now(),
         updatedAt: DateTime.now(),

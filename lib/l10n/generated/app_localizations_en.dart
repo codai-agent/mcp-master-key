@@ -712,6 +712,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get market_install_failed => 'Installation failed';
 
   @override
+  String get market_server_already_installed => 'Server already installed';
+
+  @override
+  String get market_installing_server => 'Installing server...';
+
+  @override
+  String get market_install_error => 'Installation failed';
+
+  @override
   String get analysis_step_title => 'Analyze Installation Strategy';
 
   @override

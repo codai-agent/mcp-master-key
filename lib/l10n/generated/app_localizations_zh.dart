@@ -674,6 +674,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get market_install_failed => '安装失败';
 
   @override
+  String get market_server_already_installed => '服务器已安装';
+
+  @override
+  String get market_installing_server => '正在安装服务器...';
+
+  @override
+  String get market_install_error => '安装失败';
+
+  @override
   String get analysis_step_title => '分析安装策略';
 
   @override

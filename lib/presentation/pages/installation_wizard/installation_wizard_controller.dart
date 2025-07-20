@@ -7,6 +7,7 @@ import '../../../business/services/mcp_server_service.dart';
 import '../../../business/managers/install_managers/install_manager_interface.dart';
 
 import '../../../core/models/mcp_server.dart';
+import '../../../core/constants/app_constants.dart';
 
 import 'installation_wizard_models.dart';
 
@@ -602,6 +603,7 @@ class InstallationWizardController extends ChangeNotifier {
             args: args,
             env: Map<String, String>.from(serverConfig['env'] ?? {}),
             installType: installType,
+            installSourceType: AppConstants.installSourceManual, // 手动安装
             autoStart: false,
           );
           

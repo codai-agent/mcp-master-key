@@ -3,6 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../data/models/market_server_model.dart';
 import '../../business/services/mcp_market_service.dart';
+import '../../business/services/mcp_server_service.dart';
+import '../../business/services/install_service.dart';
+import '../../business/parsers/mcp_config_parser.dart';
+import '../../core/models/mcp_server.dart';
+import '../../core/constants/app_constants.dart';
+import '../../infrastructure/repositories/mcp_server_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
 
 /// MCP市场状态提供者
@@ -197,10 +203,15 @@ class McpMarketPage extends ConsumerStatefulWidget {
 class _McpMarketPageState extends ConsumerState<McpMarketPage> {
   final TextEditingController _searchController = TextEditingController();
   final Set<String> _installedServers = <String>{}; // 已安装服务器的ID集合
+  bool _installedServersLoaded = false;
 
   @override
   void initState() {
     super.initState();
+    
+    // 加载已安装的服务器列表
+    _loadInstalledServers();
+    
     // 监听搜索框内容变化
     _searchController.addListener(() {
       setState(() {}); // 确保清空按钮的显示状态正确更新
@@ -210,6 +221,35 @@ class _McpMarketPageState extends ConsumerState<McpMarketPage> {
         ref.read(marketServerProvider.notifier).setSearchQuery('');
       }
     });
+  }
+
+  /// 加载已安装的服务器列表
+  Future<void> _loadInstalledServers() async {
+    if (_installedServersLoaded) return;
+    
+    try {
+      final serverService = McpServerService.instance;
+      final allServers = await serverService.getAllServers();
+      
+      // 筛选出从应用商店安装的服务器
+      final marketInstalledServers = allServers
+          .where((s) => s.installSourceType == AppConstants.installSourceMarket)
+          .toList();
+      
+      setState(() {
+        _installedServers.clear();
+        // 对于应用商店安装的服务器，使用服务器ID（应该是mcpId）
+        _installedServers.addAll(marketInstalledServers.map((s) => s.id));
+        _installedServersLoaded = true;
+      });
+      
+      print('📋 Loaded ${_installedServers.length} installed market servers');
+    } catch (e) {
+      print('❌ Failed to load installed servers: $e');
+      setState(() {
+        _installedServersLoaded = true;
+      });
+    }
   }
 
   @override
@@ -623,17 +663,135 @@ class _McpMarketPageState extends ConsumerState<McpMarketPage> {
   Future<void> _installServer(MarketServerModel server) async {
     final l10n = AppLocalizations.of(context)!;
     
+    // 显示加载对话框
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        content: Row(
+          children: [
+            const CircularProgressIndicator(),
+            const SizedBox(width: 16),
+            Text(l10n.market_installing_server),
+          ],
+        ),
+      ),
+    );
+    
     try {
-      // 这里应该调用安装服务来安装服务器
-      // 暂时模拟安装过程
+      // 1. 检查是否已经安装
+      final serverService = McpServerService.instance;
+      final allServers = await serverService.getAllServers();
+      final existingServer = allServers.firstWhere(
+        (s) => s.id == server.mcpId || 
+               (s.installSourceType == AppConstants.installSourceMarket && 
+                s.name == server.name),
+        orElse: () => throw Exception('not_found'),
+      );
       
-      // 增加使用计数
+      // 如果找到了现有服务器，说明已安装
+      if (mounted) Navigator.of(context).pop(); // 关闭加载对话框
+      
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('服务器已安装：${existingServer.name}'),
+            backgroundColor: Colors.orange,
+          ),
+        );
+      }
+      return;
+      
+    } catch (e) {
+      // 没有找到现有服务器，继续安装
+    }
+    
+    try {
+      // 2. 解析MCP配置（与手动安装向导完全一致）
+      final mcpConfig = server.mcpConfig;
+      if (mcpConfig == null || mcpConfig.isEmpty) {
+        throw Exception('服务器配置为空');
+      }
+      
+      // 使用MCP配置解析器解析配置
+      final parser = McpConfigParser.instance;
+      final parseResult = parser.parseConfig(mcpConfig);
+      
+      if (!parseResult.success || parseResult.servers.isEmpty) {
+        throw Exception('配置解析失败：${parseResult.error ?? "未知错误"}');
+      }
+      
+      // 获取第一个服务器配置（通常只有一个）
+      final serverConfig = parseResult.servers.first;
+      
+      print('📋 解析到的服务器配置：');
+      print('   - 名称: ${serverConfig.name}');
+      print('   - 命令: ${serverConfig.command}');
+      print('   - 参数: ${serverConfig.args.join(' ')}');
+      print('   - 安装类型: ${serverConfig.installType.name}');
+      print('   - 环境变量: ${serverConfig.env}');
+      
+      // 3. 创建临时服务器对象用于安装
+      final tempServer = McpServer(
+        id: server.mcpId,//'temp_${DateTime.now().millisecondsSinceEpoch}',
+        name: serverConfig.name,
+        command: serverConfig.command,
+        args: serverConfig.args,
+        env: serverConfig.env,
+        installType: serverConfig.installType,
+        connectionType: serverConfig.connectionType,
+        workingDirectory: serverConfig.workingDirectory,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      
+      // 4. 执行安装
+      final installService = InstallService.instance;
+      final installResult = await installService.installServer(tempServer);
+      
+      if (!installResult.success) {
+        if (mounted) Navigator.of(context).pop(); // 关闭加载对话框
+        throw Exception('安装失败：${installResult.errorMessage}');
+      }
+      
+      // 5. 添加服务器到数据库（使用解析出的配置）
+      final serverService = McpServerService.instance;
+      await serverService.addServer(
+        name: serverConfig.name,
+        description: server.description,
+        command: serverConfig.command,
+        args: serverConfig.args,
+        env: serverConfig.env,
+        workingDirectory: serverConfig.workingDirectory,
+        installType: serverConfig.installType,
+        installSource: server.githubUrl,
+        installSourceType: AppConstants.installSourceMarket, // 应用商店安装
+        autoStart: false,
+              );
+        
+        // 6. 找到刚添加的服务器
+        final allServers = await serverService.getAllServers();
+        final addedServer = allServers.firstWhere(
+          (s) => s.name == serverConfig.name &&
+                 s.installSourceType == AppConstants.installSourceMarket,
+          orElse: () => throw Exception('无法找到刚添加的服务器'),
+        );
+        
+        // 7. 重要：修改服务器ID为mcpId并更新到数据库
+        await _updateServerIdToMcpId(addedServer, server.mcpId);
+        
+        // 8. 更新服务器状态为已安装
+        await serverService.updateServerStatus(server.mcpId, McpServerStatus.installed);
+        
+        // 9. 增加使用计数
       await McpMarketService.instance.incrementUsedCount(server.mcpId);
       
-      // 标记为已安装
+      // 10. 更新本地已安装列表
       setState(() {
         _installedServers.add(server.mcpId);
       });
+      
+      if (mounted) Navigator.of(context).pop(); // 关闭加载对话框
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -643,15 +801,45 @@ class _McpMarketPageState extends ConsumerState<McpMarketPage> {
           ),
         );
       }
+      
     } catch (e) {
+      if (mounted) Navigator.of(context).pop(); // 关闭加载对话框
+      
+      print('❌ Market installation failed: $e');
+      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(l10n.market_install_failed),
+            content: Text('安装失败：$e'),
             backgroundColor: Colors.red,
           ),
         );
       }
+    }
+  }
+
+  /// 更新服务器ID为mcpId（重要：应用商店安装的服务器需要使用mcpId作为数据库ID）
+  Future<void> _updateServerIdToMcpId(McpServer server, String mcpId) async {
+    try {
+      final repository = McpServerRepository.instance;
+      
+      // 1. 先删除旧的服务器记录
+      await repository.deleteServer(server.id);
+      
+      // 2. 创建新的服务器记录，使用mcpId作为ID
+      final updatedServer = server.copyWith(
+        id: mcpId,
+        updatedAt: DateTime.now(),
+      );
+      
+      // 3. 插入新记录
+      await repository.insertServer(updatedServer);
+      
+      print('✅ Updated server ID from ${server.id} to $mcpId for market installation');
+      
+    } catch (e) {
+      print('❌ Failed to update server ID: $e');
+      throw Exception('更新服务器ID失败：$e');
     }
   }
 
