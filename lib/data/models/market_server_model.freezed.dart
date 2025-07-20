@@ -15,124 +15,592 @@ final _privateConstructorUsedError = UnsupportedError(
   'It seems like you constructed your class using `MyClass._()`. This constructor is only meant to be used by freezed and you are not supposed to need it nor use it.\nPlease check the documentation here for more information: https://github.com/rrousselGit/freezed#adding-getters-and-methods-to-our-models',
 );
 
-MCPMarketServer _$MCPMarketServerFromJson(Map<String, dynamic> json) {
-  return _MCPMarketServer.fromJson(json);
+MarketServerModel _$MarketServerModelFromJson(Map<String, dynamic> json) {
+  return _MarketServerModel.fromJson(json);
 }
 
 /// @nodoc
-mixin _$MCPMarketServer {
-  String get id => throw _privateConstructorUsedError;
+mixin _$MarketServerModel {
+  @JsonKey(name: 'mcpId')
+  String get mcpId => throw _privateConstructorUsedError;
+  @JsonKey(name: 'githubUrl')
+  String get githubUrl => throw _privateConstructorUsedError;
+  @JsonKey(name: 'logoUrl')
+  String? get logoUrl => throw _privateConstructorUsedError;
   String get name => throw _privateConstructorUsedError;
-  String get description => throw _privateConstructorUsedError;
   String get author => throw _privateConstructorUsedError;
-  String get version => throw _privateConstructorUsedError;
-  List<String> get tags => throw _privateConstructorUsedError;
+  String get description => throw _privateConstructorUsedError;
   String get category => throw _privateConstructorUsedError;
+  List<String> get tags => throw _privateConstructorUsedError;
+  @JsonKey(name: 'installCmd')
+  String get installCmd => throw _privateConstructorUsedError;
+  @JsonKey(name: 'mcpConfig')
+  String? get mcpConfig => throw _privateConstructorUsedError;
+  @JsonKey(name: 'isRecommended')
+  bool get isRecommended => throw _privateConstructorUsedError;
+  @JsonKey(name: 'usedCount')
+  int get usedCount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'downloadCount')
   int get downloadCount => throw _privateConstructorUsedError;
-  double get rating => throw _privateConstructorUsedError;
-  List<String> get screenshots => throw _privateConstructorUsedError;
-  String get readme => throw _privateConstructorUsedError;
-  MCPServerInstallConfig get installConfig =>
-      throw _privateConstructorUsedError;
-  List<String> get capabilities => throw _privateConstructorUsedError;
-  Map<String, dynamic> get metadata => throw _privateConstructorUsedError;
-  DateTime get publishedAt => throw _privateConstructorUsedError;
-  DateTime get updatedAt => throw _privateConstructorUsedError;
-  String get iconUrl => throw _privateConstructorUsedError;
-  String get homepage => throw _privateConstructorUsedError;
-  String get repository => throw _privateConstructorUsedError;
-  List<String> get keywords => throw _privateConstructorUsedError;
-  String get license => throw _privateConstructorUsedError;
-  int get reviewCount => throw _privateConstructorUsedError;
+  @JsonKey(name: 'createdAt')
+  String get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'updatedAt')
+  String get updatedAt => throw _privateConstructorUsedError;
 
-  /// Serializes this MCPMarketServer to a JSON map.
+  /// Serializes this MarketServerModel to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of MCPMarketServer
+  /// Create a copy of MarketServerModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $MCPMarketServerCopyWith<MCPMarketServer> get copyWith =>
+  $MarketServerModelCopyWith<MarketServerModel> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $MCPMarketServerCopyWith<$Res> {
-  factory $MCPMarketServerCopyWith(
-    MCPMarketServer value,
-    $Res Function(MCPMarketServer) then,
-  ) = _$MCPMarketServerCopyWithImpl<$Res, MCPMarketServer>;
+abstract class $MarketServerModelCopyWith<$Res> {
+  factory $MarketServerModelCopyWith(
+    MarketServerModel value,
+    $Res Function(MarketServerModel) then,
+  ) = _$MarketServerModelCopyWithImpl<$Res, MarketServerModel>;
   @useResult
   $Res call({
-    String id,
+    @JsonKey(name: 'mcpId') String mcpId,
+    @JsonKey(name: 'githubUrl') String githubUrl,
+    @JsonKey(name: 'logoUrl') String? logoUrl,
     String name,
-    String description,
     String author,
-    String version,
-    List<String> tags,
+    String description,
     String category,
-    int downloadCount,
-    double rating,
-    List<String> screenshots,
-    String readme,
-    MCPServerInstallConfig installConfig,
-    List<String> capabilities,
-    Map<String, dynamic> metadata,
-    DateTime publishedAt,
-    DateTime updatedAt,
-    String iconUrl,
-    String homepage,
-    String repository,
-    List<String> keywords,
-    String license,
-    int reviewCount,
+    List<String> tags,
+    @JsonKey(name: 'installCmd') String installCmd,
+    @JsonKey(name: 'mcpConfig') String? mcpConfig,
+    @JsonKey(name: 'isRecommended') bool isRecommended,
+    @JsonKey(name: 'usedCount') int usedCount,
+    @JsonKey(name: 'downloadCount') int downloadCount,
+    @JsonKey(name: 'createdAt') String createdAt,
+    @JsonKey(name: 'updatedAt') String updatedAt,
   });
-
-  $MCPServerInstallConfigCopyWith<$Res> get installConfig;
 }
 
 /// @nodoc
-class _$MCPMarketServerCopyWithImpl<$Res, $Val extends MCPMarketServer>
-    implements $MCPMarketServerCopyWith<$Res> {
-  _$MCPMarketServerCopyWithImpl(this._value, this._then);
+class _$MarketServerModelCopyWithImpl<$Res, $Val extends MarketServerModel>
+    implements $MarketServerModelCopyWith<$Res> {
+  _$MarketServerModelCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of MCPMarketServer
+  /// Create a copy of MarketServerModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? mcpId = null,
+    Object? githubUrl = null,
+    Object? logoUrl = freezed,
+    Object? name = null,
+    Object? author = null,
+    Object? description = null,
+    Object? category = null,
+    Object? tags = null,
+    Object? installCmd = null,
+    Object? mcpConfig = freezed,
+    Object? isRecommended = null,
+    Object? usedCount = null,
+    Object? downloadCount = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
+  }) {
+    return _then(
+      _value.copyWith(
+            mcpId: null == mcpId
+                ? _value.mcpId
+                : mcpId // ignore: cast_nullable_to_non_nullable
+                      as String,
+            githubUrl: null == githubUrl
+                ? _value.githubUrl
+                : githubUrl // ignore: cast_nullable_to_non_nullable
+                      as String,
+            logoUrl: freezed == logoUrl
+                ? _value.logoUrl
+                : logoUrl // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            name: null == name
+                ? _value.name
+                : name // ignore: cast_nullable_to_non_nullable
+                      as String,
+            author: null == author
+                ? _value.author
+                : author // ignore: cast_nullable_to_non_nullable
+                      as String,
+            description: null == description
+                ? _value.description
+                : description // ignore: cast_nullable_to_non_nullable
+                      as String,
+            category: null == category
+                ? _value.category
+                : category // ignore: cast_nullable_to_non_nullable
+                      as String,
+            tags: null == tags
+                ? _value.tags
+                : tags // ignore: cast_nullable_to_non_nullable
+                      as List<String>,
+            installCmd: null == installCmd
+                ? _value.installCmd
+                : installCmd // ignore: cast_nullable_to_non_nullable
+                      as String,
+            mcpConfig: freezed == mcpConfig
+                ? _value.mcpConfig
+                : mcpConfig // ignore: cast_nullable_to_non_nullable
+                      as String?,
+            isRecommended: null == isRecommended
+                ? _value.isRecommended
+                : isRecommended // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            usedCount: null == usedCount
+                ? _value.usedCount
+                : usedCount // ignore: cast_nullable_to_non_nullable
+                      as int,
+            downloadCount: null == downloadCount
+                ? _value.downloadCount
+                : downloadCount // ignore: cast_nullable_to_non_nullable
+                      as int,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
+                      as String,
+            updatedAt: null == updatedAt
+                ? _value.updatedAt
+                : updatedAt // ignore: cast_nullable_to_non_nullable
+                      as String,
+          )
+          as $Val,
+    );
+  }
+}
+
+/// @nodoc
+abstract class _$$MarketServerModelImplCopyWith<$Res>
+    implements $MarketServerModelCopyWith<$Res> {
+  factory _$$MarketServerModelImplCopyWith(
+    _$MarketServerModelImpl value,
+    $Res Function(_$MarketServerModelImpl) then,
+  ) = __$$MarketServerModelImplCopyWithImpl<$Res>;
+  @override
+  @useResult
+  $Res call({
+    @JsonKey(name: 'mcpId') String mcpId,
+    @JsonKey(name: 'githubUrl') String githubUrl,
+    @JsonKey(name: 'logoUrl') String? logoUrl,
+    String name,
+    String author,
+    String description,
+    String category,
+    List<String> tags,
+    @JsonKey(name: 'installCmd') String installCmd,
+    @JsonKey(name: 'mcpConfig') String? mcpConfig,
+    @JsonKey(name: 'isRecommended') bool isRecommended,
+    @JsonKey(name: 'usedCount') int usedCount,
+    @JsonKey(name: 'downloadCount') int downloadCount,
+    @JsonKey(name: 'createdAt') String createdAt,
+    @JsonKey(name: 'updatedAt') String updatedAt,
+  });
+}
+
+/// @nodoc
+class __$$MarketServerModelImplCopyWithImpl<$Res>
+    extends _$MarketServerModelCopyWithImpl<$Res, _$MarketServerModelImpl>
+    implements _$$MarketServerModelImplCopyWith<$Res> {
+  __$$MarketServerModelImplCopyWithImpl(
+    _$MarketServerModelImpl _value,
+    $Res Function(_$MarketServerModelImpl) _then,
+  ) : super(_value, _then);
+
+  /// Create a copy of MarketServerModel
+  /// with the given fields replaced by the non-null parameter values.
+  @pragma('vm:prefer-inline')
+  @override
+  $Res call({
+    Object? mcpId = null,
+    Object? githubUrl = null,
+    Object? logoUrl = freezed,
+    Object? name = null,
+    Object? author = null,
+    Object? description = null,
+    Object? category = null,
+    Object? tags = null,
+    Object? installCmd = null,
+    Object? mcpConfig = freezed,
+    Object? isRecommended = null,
+    Object? usedCount = null,
+    Object? downloadCount = null,
+    Object? createdAt = null,
+    Object? updatedAt = null,
+  }) {
+    return _then(
+      _$MarketServerModelImpl(
+        mcpId: null == mcpId
+            ? _value.mcpId
+            : mcpId // ignore: cast_nullable_to_non_nullable
+                  as String,
+        githubUrl: null == githubUrl
+            ? _value.githubUrl
+            : githubUrl // ignore: cast_nullable_to_non_nullable
+                  as String,
+        logoUrl: freezed == logoUrl
+            ? _value.logoUrl
+            : logoUrl // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        name: null == name
+            ? _value.name
+            : name // ignore: cast_nullable_to_non_nullable
+                  as String,
+        author: null == author
+            ? _value.author
+            : author // ignore: cast_nullable_to_non_nullable
+                  as String,
+        description: null == description
+            ? _value.description
+            : description // ignore: cast_nullable_to_non_nullable
+                  as String,
+        category: null == category
+            ? _value.category
+            : category // ignore: cast_nullable_to_non_nullable
+                  as String,
+        tags: null == tags
+            ? _value._tags
+            : tags // ignore: cast_nullable_to_non_nullable
+                  as List<String>,
+        installCmd: null == installCmd
+            ? _value.installCmd
+            : installCmd // ignore: cast_nullable_to_non_nullable
+                  as String,
+        mcpConfig: freezed == mcpConfig
+            ? _value.mcpConfig
+            : mcpConfig // ignore: cast_nullable_to_non_nullable
+                  as String?,
+        isRecommended: null == isRecommended
+            ? _value.isRecommended
+            : isRecommended // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        usedCount: null == usedCount
+            ? _value.usedCount
+            : usedCount // ignore: cast_nullable_to_non_nullable
+                  as int,
+        downloadCount: null == downloadCount
+            ? _value.downloadCount
+            : downloadCount // ignore: cast_nullable_to_non_nullable
+                  as int,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
+                  as String,
+        updatedAt: null == updatedAt
+            ? _value.updatedAt
+            : updatedAt // ignore: cast_nullable_to_non_nullable
+                  as String,
+      ),
+    );
+  }
+}
+
+/// @nodoc
+@JsonSerializable()
+class _$MarketServerModelImpl implements _MarketServerModel {
+  const _$MarketServerModelImpl({
+    @JsonKey(name: 'mcpId') required this.mcpId,
+    @JsonKey(name: 'githubUrl') required this.githubUrl,
+    @JsonKey(name: 'logoUrl') this.logoUrl,
+    required this.name,
+    required this.author,
+    required this.description,
+    required this.category,
+    required final List<String> tags,
+    @JsonKey(name: 'installCmd') required this.installCmd,
+    @JsonKey(name: 'mcpConfig') this.mcpConfig,
+    @JsonKey(name: 'isRecommended') this.isRecommended = false,
+    @JsonKey(name: 'usedCount') this.usedCount = 0,
+    @JsonKey(name: 'downloadCount') this.downloadCount = 0,
+    @JsonKey(name: 'createdAt') required this.createdAt,
+    @JsonKey(name: 'updatedAt') required this.updatedAt,
+  }) : _tags = tags;
+
+  factory _$MarketServerModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$MarketServerModelImplFromJson(json);
+
+  @override
+  @JsonKey(name: 'mcpId')
+  final String mcpId;
+  @override
+  @JsonKey(name: 'githubUrl')
+  final String githubUrl;
+  @override
+  @JsonKey(name: 'logoUrl')
+  final String? logoUrl;
+  @override
+  final String name;
+  @override
+  final String author;
+  @override
+  final String description;
+  @override
+  final String category;
+  final List<String> _tags;
+  @override
+  List<String> get tags {
+    if (_tags is EqualUnmodifiableListView) return _tags;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_tags);
+  }
+
+  @override
+  @JsonKey(name: 'installCmd')
+  final String installCmd;
+  @override
+  @JsonKey(name: 'mcpConfig')
+  final String? mcpConfig;
+  @override
+  @JsonKey(name: 'isRecommended')
+  final bool isRecommended;
+  @override
+  @JsonKey(name: 'usedCount')
+  final int usedCount;
+  @override
+  @JsonKey(name: 'downloadCount')
+  final int downloadCount;
+  @override
+  @JsonKey(name: 'createdAt')
+  final String createdAt;
+  @override
+  @JsonKey(name: 'updatedAt')
+  final String updatedAt;
+
+  @override
+  String toString() {
+    return 'MarketServerModel(mcpId: $mcpId, githubUrl: $githubUrl, logoUrl: $logoUrl, name: $name, author: $author, description: $description, category: $category, tags: $tags, installCmd: $installCmd, mcpConfig: $mcpConfig, isRecommended: $isRecommended, usedCount: $usedCount, downloadCount: $downloadCount, createdAt: $createdAt, updatedAt: $updatedAt)';
+  }
+
+  @override
+  bool operator ==(Object other) {
+    return identical(this, other) ||
+        (other.runtimeType == runtimeType &&
+            other is _$MarketServerModelImpl &&
+            (identical(other.mcpId, mcpId) || other.mcpId == mcpId) &&
+            (identical(other.githubUrl, githubUrl) ||
+                other.githubUrl == githubUrl) &&
+            (identical(other.logoUrl, logoUrl) || other.logoUrl == logoUrl) &&
+            (identical(other.name, name) || other.name == name) &&
+            (identical(other.author, author) || other.author == author) &&
+            (identical(other.description, description) ||
+                other.description == description) &&
+            (identical(other.category, category) ||
+                other.category == category) &&
+            const DeepCollectionEquality().equals(other._tags, _tags) &&
+            (identical(other.installCmd, installCmd) ||
+                other.installCmd == installCmd) &&
+            (identical(other.mcpConfig, mcpConfig) ||
+                other.mcpConfig == mcpConfig) &&
+            (identical(other.isRecommended, isRecommended) ||
+                other.isRecommended == isRecommended) &&
+            (identical(other.usedCount, usedCount) ||
+                other.usedCount == usedCount) &&
+            (identical(other.downloadCount, downloadCount) ||
+                other.downloadCount == downloadCount) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
+            (identical(other.updatedAt, updatedAt) ||
+                other.updatedAt == updatedAt));
+  }
+
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  int get hashCode => Object.hash(
+    runtimeType,
+    mcpId,
+    githubUrl,
+    logoUrl,
+    name,
+    author,
+    description,
+    category,
+    const DeepCollectionEquality().hash(_tags),
+    installCmd,
+    mcpConfig,
+    isRecommended,
+    usedCount,
+    downloadCount,
+    createdAt,
+    updatedAt,
+  );
+
+  /// Create a copy of MarketServerModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  @override
+  @pragma('vm:prefer-inline')
+  _$$MarketServerModelImplCopyWith<_$MarketServerModelImpl> get copyWith =>
+      __$$MarketServerModelImplCopyWithImpl<_$MarketServerModelImpl>(
+        this,
+        _$identity,
+      );
+
+  @override
+  Map<String, dynamic> toJson() {
+    return _$$MarketServerModelImplToJson(this);
+  }
+}
+
+abstract class _MarketServerModel implements MarketServerModel {
+  const factory _MarketServerModel({
+    @JsonKey(name: 'mcpId') required final String mcpId,
+    @JsonKey(name: 'githubUrl') required final String githubUrl,
+    @JsonKey(name: 'logoUrl') final String? logoUrl,
+    required final String name,
+    required final String author,
+    required final String description,
+    required final String category,
+    required final List<String> tags,
+    @JsonKey(name: 'installCmd') required final String installCmd,
+    @JsonKey(name: 'mcpConfig') final String? mcpConfig,
+    @JsonKey(name: 'isRecommended') final bool isRecommended,
+    @JsonKey(name: 'usedCount') final int usedCount,
+    @JsonKey(name: 'downloadCount') final int downloadCount,
+    @JsonKey(name: 'createdAt') required final String createdAt,
+    @JsonKey(name: 'updatedAt') required final String updatedAt,
+  }) = _$MarketServerModelImpl;
+
+  factory _MarketServerModel.fromJson(Map<String, dynamic> json) =
+      _$MarketServerModelImpl.fromJson;
+
+  @override
+  @JsonKey(name: 'mcpId')
+  String get mcpId;
+  @override
+  @JsonKey(name: 'githubUrl')
+  String get githubUrl;
+  @override
+  @JsonKey(name: 'logoUrl')
+  String? get logoUrl;
+  @override
+  String get name;
+  @override
+  String get author;
+  @override
+  String get description;
+  @override
+  String get category;
+  @override
+  List<String> get tags;
+  @override
+  @JsonKey(name: 'installCmd')
+  String get installCmd;
+  @override
+  @JsonKey(name: 'mcpConfig')
+  String? get mcpConfig;
+  @override
+  @JsonKey(name: 'isRecommended')
+  bool get isRecommended;
+  @override
+  @JsonKey(name: 'usedCount')
+  int get usedCount;
+  @override
+  @JsonKey(name: 'downloadCount')
+  int get downloadCount;
+  @override
+  @JsonKey(name: 'createdAt')
+  String get createdAt;
+  @override
+  @JsonKey(name: 'updatedAt')
+  String get updatedAt;
+
+  /// Create a copy of MarketServerModel
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  _$$MarketServerModelImplCopyWith<_$MarketServerModelImpl> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+MarketCategoryModel _$MarketCategoryModelFromJson(Map<String, dynamic> json) {
+  return _MarketCategoryModel.fromJson(json);
+}
+
+/// @nodoc
+mixin _$MarketCategoryModel {
+  int get id => throw _privateConstructorUsedError;
+  String get code => throw _privateConstructorUsedError;
+  String get name => throw _privateConstructorUsedError;
+  String get description => throw _privateConstructorUsedError;
+  @JsonKey(name: 'is_active')
+  bool get isActive => throw _privateConstructorUsedError;
+  @JsonKey(name: 'created_at')
+  String get createdAt => throw _privateConstructorUsedError;
+  @JsonKey(name: 'updated_at')
+  String get updatedAt => throw _privateConstructorUsedError;
+
+  /// Serializes this MarketCategoryModel to a JSON map.
+  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
+
+  /// Create a copy of MarketCategoryModel
+  /// with the given fields replaced by the non-null parameter values.
+  @JsonKey(includeFromJson: false, includeToJson: false)
+  $MarketCategoryModelCopyWith<MarketCategoryModel> get copyWith =>
+      throw _privateConstructorUsedError;
+}
+
+/// @nodoc
+abstract class $MarketCategoryModelCopyWith<$Res> {
+  factory $MarketCategoryModelCopyWith(
+    MarketCategoryModel value,
+    $Res Function(MarketCategoryModel) then,
+  ) = _$MarketCategoryModelCopyWithImpl<$Res, MarketCategoryModel>;
+  @useResult
+  $Res call({
+    int id,
+    String code,
+    String name,
+    String description,
+    @JsonKey(name: 'is_active') bool isActive,
+    @JsonKey(name: 'created_at') String createdAt,
+    @JsonKey(name: 'updated_at') String updatedAt,
+  });
+}
+
+/// @nodoc
+class _$MarketCategoryModelCopyWithImpl<$Res, $Val extends MarketCategoryModel>
+    implements $MarketCategoryModelCopyWith<$Res> {
+  _$MarketCategoryModelCopyWithImpl(this._value, this._then);
+
+  // ignore: unused_field
+  final $Val _value;
+  // ignore: unused_field
+  final $Res Function($Val) _then;
+
+  /// Create a copy of MarketCategoryModel
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? id = null,
+    Object? code = null,
     Object? name = null,
     Object? description = null,
-    Object? author = null,
-    Object? version = null,
-    Object? tags = null,
-    Object? category = null,
-    Object? downloadCount = null,
-    Object? rating = null,
-    Object? screenshots = null,
-    Object? readme = null,
-    Object? installConfig = null,
-    Object? capabilities = null,
-    Object? metadata = null,
-    Object? publishedAt = null,
+    Object? isActive = null,
+    Object? createdAt = null,
     Object? updatedAt = null,
-    Object? iconUrl = null,
-    Object? homepage = null,
-    Object? repository = null,
-    Object? keywords = null,
-    Object? license = null,
-    Object? reviewCount = null,
   }) {
     return _then(
       _value.copyWith(
             id: null == id
                 ? _value.id
                 : id // ignore: cast_nullable_to_non_nullable
+                      as int,
+            code: null == code
+                ? _value.code
+                : code // ignore: cast_nullable_to_non_nullable
                       as String,
             name: null == name
                 ? _value.name
@@ -142,178 +610,75 @@ class _$MCPMarketServerCopyWithImpl<$Res, $Val extends MCPMarketServer>
                 ? _value.description
                 : description // ignore: cast_nullable_to_non_nullable
                       as String,
-            author: null == author
-                ? _value.author
-                : author // ignore: cast_nullable_to_non_nullable
+            isActive: null == isActive
+                ? _value.isActive
+                : isActive // ignore: cast_nullable_to_non_nullable
+                      as bool,
+            createdAt: null == createdAt
+                ? _value.createdAt
+                : createdAt // ignore: cast_nullable_to_non_nullable
                       as String,
-            version: null == version
-                ? _value.version
-                : version // ignore: cast_nullable_to_non_nullable
-                      as String,
-            tags: null == tags
-                ? _value.tags
-                : tags // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-            category: null == category
-                ? _value.category
-                : category // ignore: cast_nullable_to_non_nullable
-                      as String,
-            downloadCount: null == downloadCount
-                ? _value.downloadCount
-                : downloadCount // ignore: cast_nullable_to_non_nullable
-                      as int,
-            rating: null == rating
-                ? _value.rating
-                : rating // ignore: cast_nullable_to_non_nullable
-                      as double,
-            screenshots: null == screenshots
-                ? _value.screenshots
-                : screenshots // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-            readme: null == readme
-                ? _value.readme
-                : readme // ignore: cast_nullable_to_non_nullable
-                      as String,
-            installConfig: null == installConfig
-                ? _value.installConfig
-                : installConfig // ignore: cast_nullable_to_non_nullable
-                      as MCPServerInstallConfig,
-            capabilities: null == capabilities
-                ? _value.capabilities
-                : capabilities // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-            metadata: null == metadata
-                ? _value.metadata
-                : metadata // ignore: cast_nullable_to_non_nullable
-                      as Map<String, dynamic>,
-            publishedAt: null == publishedAt
-                ? _value.publishedAt
-                : publishedAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
             updatedAt: null == updatedAt
                 ? _value.updatedAt
                 : updatedAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
-            iconUrl: null == iconUrl
-                ? _value.iconUrl
-                : iconUrl // ignore: cast_nullable_to_non_nullable
                       as String,
-            homepage: null == homepage
-                ? _value.homepage
-                : homepage // ignore: cast_nullable_to_non_nullable
-                      as String,
-            repository: null == repository
-                ? _value.repository
-                : repository // ignore: cast_nullable_to_non_nullable
-                      as String,
-            keywords: null == keywords
-                ? _value.keywords
-                : keywords // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-            license: null == license
-                ? _value.license
-                : license // ignore: cast_nullable_to_non_nullable
-                      as String,
-            reviewCount: null == reviewCount
-                ? _value.reviewCount
-                : reviewCount // ignore: cast_nullable_to_non_nullable
-                      as int,
           )
           as $Val,
     );
   }
-
-  /// Create a copy of MCPMarketServer
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @pragma('vm:prefer-inline')
-  $MCPServerInstallConfigCopyWith<$Res> get installConfig {
-    return $MCPServerInstallConfigCopyWith<$Res>(_value.installConfig, (value) {
-      return _then(_value.copyWith(installConfig: value) as $Val);
-    });
-  }
 }
 
 /// @nodoc
-abstract class _$$MCPMarketServerImplCopyWith<$Res>
-    implements $MCPMarketServerCopyWith<$Res> {
-  factory _$$MCPMarketServerImplCopyWith(
-    _$MCPMarketServerImpl value,
-    $Res Function(_$MCPMarketServerImpl) then,
-  ) = __$$MCPMarketServerImplCopyWithImpl<$Res>;
+abstract class _$$MarketCategoryModelImplCopyWith<$Res>
+    implements $MarketCategoryModelCopyWith<$Res> {
+  factory _$$MarketCategoryModelImplCopyWith(
+    _$MarketCategoryModelImpl value,
+    $Res Function(_$MarketCategoryModelImpl) then,
+  ) = __$$MarketCategoryModelImplCopyWithImpl<$Res>;
   @override
   @useResult
   $Res call({
-    String id,
+    int id,
+    String code,
     String name,
     String description,
-    String author,
-    String version,
-    List<String> tags,
-    String category,
-    int downloadCount,
-    double rating,
-    List<String> screenshots,
-    String readme,
-    MCPServerInstallConfig installConfig,
-    List<String> capabilities,
-    Map<String, dynamic> metadata,
-    DateTime publishedAt,
-    DateTime updatedAt,
-    String iconUrl,
-    String homepage,
-    String repository,
-    List<String> keywords,
-    String license,
-    int reviewCount,
+    @JsonKey(name: 'is_active') bool isActive,
+    @JsonKey(name: 'created_at') String createdAt,
+    @JsonKey(name: 'updated_at') String updatedAt,
   });
-
-  @override
-  $MCPServerInstallConfigCopyWith<$Res> get installConfig;
 }
 
 /// @nodoc
-class __$$MCPMarketServerImplCopyWithImpl<$Res>
-    extends _$MCPMarketServerCopyWithImpl<$Res, _$MCPMarketServerImpl>
-    implements _$$MCPMarketServerImplCopyWith<$Res> {
-  __$$MCPMarketServerImplCopyWithImpl(
-    _$MCPMarketServerImpl _value,
-    $Res Function(_$MCPMarketServerImpl) _then,
+class __$$MarketCategoryModelImplCopyWithImpl<$Res>
+    extends _$MarketCategoryModelCopyWithImpl<$Res, _$MarketCategoryModelImpl>
+    implements _$$MarketCategoryModelImplCopyWith<$Res> {
+  __$$MarketCategoryModelImplCopyWithImpl(
+    _$MarketCategoryModelImpl _value,
+    $Res Function(_$MarketCategoryModelImpl) _then,
   ) : super(_value, _then);
 
-  /// Create a copy of MCPMarketServer
+  /// Create a copy of MarketCategoryModel
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
     Object? id = null,
+    Object? code = null,
     Object? name = null,
     Object? description = null,
-    Object? author = null,
-    Object? version = null,
-    Object? tags = null,
-    Object? category = null,
-    Object? downloadCount = null,
-    Object? rating = null,
-    Object? screenshots = null,
-    Object? readme = null,
-    Object? installConfig = null,
-    Object? capabilities = null,
-    Object? metadata = null,
-    Object? publishedAt = null,
+    Object? isActive = null,
+    Object? createdAt = null,
     Object? updatedAt = null,
-    Object? iconUrl = null,
-    Object? homepage = null,
-    Object? repository = null,
-    Object? keywords = null,
-    Object? license = null,
-    Object? reviewCount = null,
   }) {
     return _then(
-      _$MCPMarketServerImpl(
+      _$MarketCategoryModelImpl(
         id: null == id
             ? _value.id
             : id // ignore: cast_nullable_to_non_nullable
+                  as int,
+        code: null == code
+            ? _value.code
+            : code // ignore: cast_nullable_to_non_nullable
                   as String,
         name: null == name
             ? _value.name
@@ -323,82 +688,18 @@ class __$$MCPMarketServerImplCopyWithImpl<$Res>
             ? _value.description
             : description // ignore: cast_nullable_to_non_nullable
                   as String,
-        author: null == author
-            ? _value.author
-            : author // ignore: cast_nullable_to_non_nullable
+        isActive: null == isActive
+            ? _value.isActive
+            : isActive // ignore: cast_nullable_to_non_nullable
+                  as bool,
+        createdAt: null == createdAt
+            ? _value.createdAt
+            : createdAt // ignore: cast_nullable_to_non_nullable
                   as String,
-        version: null == version
-            ? _value.version
-            : version // ignore: cast_nullable_to_non_nullable
-                  as String,
-        tags: null == tags
-            ? _value._tags
-            : tags // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-        category: null == category
-            ? _value.category
-            : category // ignore: cast_nullable_to_non_nullable
-                  as String,
-        downloadCount: null == downloadCount
-            ? _value.downloadCount
-            : downloadCount // ignore: cast_nullable_to_non_nullable
-                  as int,
-        rating: null == rating
-            ? _value.rating
-            : rating // ignore: cast_nullable_to_non_nullable
-                  as double,
-        screenshots: null == screenshots
-            ? _value._screenshots
-            : screenshots // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-        readme: null == readme
-            ? _value.readme
-            : readme // ignore: cast_nullable_to_non_nullable
-                  as String,
-        installConfig: null == installConfig
-            ? _value.installConfig
-            : installConfig // ignore: cast_nullable_to_non_nullable
-                  as MCPServerInstallConfig,
-        capabilities: null == capabilities
-            ? _value._capabilities
-            : capabilities // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-        metadata: null == metadata
-            ? _value._metadata
-            : metadata // ignore: cast_nullable_to_non_nullable
-                  as Map<String, dynamic>,
-        publishedAt: null == publishedAt
-            ? _value.publishedAt
-            : publishedAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
         updatedAt: null == updatedAt
             ? _value.updatedAt
             : updatedAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
-        iconUrl: null == iconUrl
-            ? _value.iconUrl
-            : iconUrl // ignore: cast_nullable_to_non_nullable
                   as String,
-        homepage: null == homepage
-            ? _value.homepage
-            : homepage // ignore: cast_nullable_to_non_nullable
-                  as String,
-        repository: null == repository
-            ? _value.repository
-            : repository // ignore: cast_nullable_to_non_nullable
-                  as String,
-        keywords: null == keywords
-            ? _value._keywords
-            : keywords // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-        license: null == license
-            ? _value.license
-            : license // ignore: cast_nullable_to_non_nullable
-                  as String,
-        reviewCount: null == reviewCount
-            ? _value.reviewCount
-            : reviewCount // ignore: cast_nullable_to_non_nullable
-                  as int,
       ),
     );
   }
@@ -406,521 +707,262 @@ class __$$MCPMarketServerImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$MCPMarketServerImpl implements _MCPMarketServer {
-  const _$MCPMarketServerImpl({
+class _$MarketCategoryModelImpl implements _MarketCategoryModel {
+  const _$MarketCategoryModelImpl({
     required this.id,
+    required this.code,
     required this.name,
     required this.description,
-    required this.author,
-    required this.version,
-    required final List<String> tags,
-    required this.category,
-    this.downloadCount = 0,
-    this.rating = 0.0,
-    final List<String> screenshots = const [],
-    this.readme = '',
-    required this.installConfig,
-    final List<String> capabilities = const [],
-    final Map<String, dynamic> metadata = const {},
-    required this.publishedAt,
-    required this.updatedAt,
-    this.iconUrl = '',
-    this.homepage = '',
-    this.repository = '',
-    final List<String> keywords = const [],
-    this.license = '',
-    this.reviewCount = 0,
-  }) : _tags = tags,
-       _screenshots = screenshots,
-       _capabilities = capabilities,
-       _metadata = metadata,
-       _keywords = keywords;
+    @JsonKey(name: 'is_active') this.isActive = true,
+    @JsonKey(name: 'created_at') required this.createdAt,
+    @JsonKey(name: 'updated_at') required this.updatedAt,
+  });
 
-  factory _$MCPMarketServerImpl.fromJson(Map<String, dynamic> json) =>
-      _$$MCPMarketServerImplFromJson(json);
+  factory _$MarketCategoryModelImpl.fromJson(Map<String, dynamic> json) =>
+      _$$MarketCategoryModelImplFromJson(json);
 
   @override
-  final String id;
+  final int id;
+  @override
+  final String code;
   @override
   final String name;
   @override
   final String description;
   @override
-  final String author;
+  @JsonKey(name: 'is_active')
+  final bool isActive;
   @override
-  final String version;
-  final List<String> _tags;
+  @JsonKey(name: 'created_at')
+  final String createdAt;
   @override
-  List<String> get tags {
-    if (_tags is EqualUnmodifiableListView) return _tags;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_tags);
-  }
-
-  @override
-  final String category;
-  @override
-  @JsonKey()
-  final int downloadCount;
-  @override
-  @JsonKey()
-  final double rating;
-  final List<String> _screenshots;
-  @override
-  @JsonKey()
-  List<String> get screenshots {
-    if (_screenshots is EqualUnmodifiableListView) return _screenshots;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_screenshots);
-  }
-
-  @override
-  @JsonKey()
-  final String readme;
-  @override
-  final MCPServerInstallConfig installConfig;
-  final List<String> _capabilities;
-  @override
-  @JsonKey()
-  List<String> get capabilities {
-    if (_capabilities is EqualUnmodifiableListView) return _capabilities;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_capabilities);
-  }
-
-  final Map<String, dynamic> _metadata;
-  @override
-  @JsonKey()
-  Map<String, dynamic> get metadata {
-    if (_metadata is EqualUnmodifiableMapView) return _metadata;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_metadata);
-  }
-
-  @override
-  final DateTime publishedAt;
-  @override
-  final DateTime updatedAt;
-  @override
-  @JsonKey()
-  final String iconUrl;
-  @override
-  @JsonKey()
-  final String homepage;
-  @override
-  @JsonKey()
-  final String repository;
-  final List<String> _keywords;
-  @override
-  @JsonKey()
-  List<String> get keywords {
-    if (_keywords is EqualUnmodifiableListView) return _keywords;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_keywords);
-  }
-
-  @override
-  @JsonKey()
-  final String license;
-  @override
-  @JsonKey()
-  final int reviewCount;
+  @JsonKey(name: 'updated_at')
+  final String updatedAt;
 
   @override
   String toString() {
-    return 'MCPMarketServer(id: $id, name: $name, description: $description, author: $author, version: $version, tags: $tags, category: $category, downloadCount: $downloadCount, rating: $rating, screenshots: $screenshots, readme: $readme, installConfig: $installConfig, capabilities: $capabilities, metadata: $metadata, publishedAt: $publishedAt, updatedAt: $updatedAt, iconUrl: $iconUrl, homepage: $homepage, repository: $repository, keywords: $keywords, license: $license, reviewCount: $reviewCount)';
+    return 'MarketCategoryModel(id: $id, code: $code, name: $name, description: $description, isActive: $isActive, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$MCPMarketServerImpl &&
+            other is _$MarketCategoryModelImpl &&
             (identical(other.id, id) || other.id == id) &&
+            (identical(other.code, code) || other.code == code) &&
             (identical(other.name, name) || other.name == name) &&
             (identical(other.description, description) ||
                 other.description == description) &&
-            (identical(other.author, author) || other.author == author) &&
-            (identical(other.version, version) || other.version == version) &&
-            const DeepCollectionEquality().equals(other._tags, _tags) &&
-            (identical(other.category, category) ||
-                other.category == category) &&
-            (identical(other.downloadCount, downloadCount) ||
-                other.downloadCount == downloadCount) &&
-            (identical(other.rating, rating) || other.rating == rating) &&
-            const DeepCollectionEquality().equals(
-              other._screenshots,
-              _screenshots,
-            ) &&
-            (identical(other.readme, readme) || other.readme == readme) &&
-            (identical(other.installConfig, installConfig) ||
-                other.installConfig == installConfig) &&
-            const DeepCollectionEquality().equals(
-              other._capabilities,
-              _capabilities,
-            ) &&
-            const DeepCollectionEquality().equals(other._metadata, _metadata) &&
-            (identical(other.publishedAt, publishedAt) ||
-                other.publishedAt == publishedAt) &&
+            (identical(other.isActive, isActive) ||
+                other.isActive == isActive) &&
+            (identical(other.createdAt, createdAt) ||
+                other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
-                other.updatedAt == updatedAt) &&
-            (identical(other.iconUrl, iconUrl) || other.iconUrl == iconUrl) &&
-            (identical(other.homepage, homepage) ||
-                other.homepage == homepage) &&
-            (identical(other.repository, repository) ||
-                other.repository == repository) &&
-            const DeepCollectionEquality().equals(other._keywords, _keywords) &&
-            (identical(other.license, license) || other.license == license) &&
-            (identical(other.reviewCount, reviewCount) ||
-                other.reviewCount == reviewCount));
+                other.updatedAt == updatedAt));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hashAll([
+  int get hashCode => Object.hash(
     runtimeType,
     id,
+    code,
     name,
     description,
-    author,
-    version,
-    const DeepCollectionEquality().hash(_tags),
-    category,
-    downloadCount,
-    rating,
-    const DeepCollectionEquality().hash(_screenshots),
-    readme,
-    installConfig,
-    const DeepCollectionEquality().hash(_capabilities),
-    const DeepCollectionEquality().hash(_metadata),
-    publishedAt,
+    isActive,
+    createdAt,
     updatedAt,
-    iconUrl,
-    homepage,
-    repository,
-    const DeepCollectionEquality().hash(_keywords),
-    license,
-    reviewCount,
-  ]);
+  );
 
-  /// Create a copy of MCPMarketServer
+  /// Create a copy of MarketCategoryModel
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$MCPMarketServerImplCopyWith<_$MCPMarketServerImpl> get copyWith =>
-      __$$MCPMarketServerImplCopyWithImpl<_$MCPMarketServerImpl>(
+  _$$MarketCategoryModelImplCopyWith<_$MarketCategoryModelImpl> get copyWith =>
+      __$$MarketCategoryModelImplCopyWithImpl<_$MarketCategoryModelImpl>(
         this,
         _$identity,
       );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MCPMarketServerImplToJson(this);
+    return _$$MarketCategoryModelImplToJson(this);
   }
 }
 
-abstract class _MCPMarketServer implements MCPMarketServer {
-  const factory _MCPMarketServer({
-    required final String id,
+abstract class _MarketCategoryModel implements MarketCategoryModel {
+  const factory _MarketCategoryModel({
+    required final int id,
+    required final String code,
     required final String name,
     required final String description,
-    required final String author,
-    required final String version,
-    required final List<String> tags,
-    required final String category,
-    final int downloadCount,
-    final double rating,
-    final List<String> screenshots,
-    final String readme,
-    required final MCPServerInstallConfig installConfig,
-    final List<String> capabilities,
-    final Map<String, dynamic> metadata,
-    required final DateTime publishedAt,
-    required final DateTime updatedAt,
-    final String iconUrl,
-    final String homepage,
-    final String repository,
-    final List<String> keywords,
-    final String license,
-    final int reviewCount,
-  }) = _$MCPMarketServerImpl;
+    @JsonKey(name: 'is_active') final bool isActive,
+    @JsonKey(name: 'created_at') required final String createdAt,
+    @JsonKey(name: 'updated_at') required final String updatedAt,
+  }) = _$MarketCategoryModelImpl;
 
-  factory _MCPMarketServer.fromJson(Map<String, dynamic> json) =
-      _$MCPMarketServerImpl.fromJson;
+  factory _MarketCategoryModel.fromJson(Map<String, dynamic> json) =
+      _$MarketCategoryModelImpl.fromJson;
 
   @override
-  String get id;
+  int get id;
+  @override
+  String get code;
   @override
   String get name;
   @override
   String get description;
   @override
-  String get author;
+  @JsonKey(name: 'is_active')
+  bool get isActive;
   @override
-  String get version;
+  @JsonKey(name: 'created_at')
+  String get createdAt;
   @override
-  List<String> get tags;
-  @override
-  String get category;
-  @override
-  int get downloadCount;
-  @override
-  double get rating;
-  @override
-  List<String> get screenshots;
-  @override
-  String get readme;
-  @override
-  MCPServerInstallConfig get installConfig;
-  @override
-  List<String> get capabilities;
-  @override
-  Map<String, dynamic> get metadata;
-  @override
-  DateTime get publishedAt;
-  @override
-  DateTime get updatedAt;
-  @override
-  String get iconUrl;
-  @override
-  String get homepage;
-  @override
-  String get repository;
-  @override
-  List<String> get keywords;
-  @override
-  String get license;
-  @override
-  int get reviewCount;
+  @JsonKey(name: 'updated_at')
+  String get updatedAt;
 
-  /// Create a copy of MCPMarketServer
+  /// Create a copy of MarketCategoryModel
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$MCPMarketServerImplCopyWith<_$MCPMarketServerImpl> get copyWith =>
+  _$$MarketCategoryModelImplCopyWith<_$MarketCategoryModelImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
-MCPServerInstallConfig _$MCPServerInstallConfigFromJson(
-  Map<String, dynamic> json,
-) {
-  return _MCPServerInstallConfig.fromJson(json);
+MarketServerResponse _$MarketServerResponseFromJson(Map<String, dynamic> json) {
+  return _MarketServerResponse.fromJson(json);
 }
 
 /// @nodoc
-mixin _$MCPServerInstallConfig {
-  String get installMethod =>
-      throw _privateConstructorUsedError; // 'uvx' | 'npx' | 'git' | 'manual'
-  String get packageName => throw _privateConstructorUsedError;
-  List<String> get installArgs => throw _privateConstructorUsedError;
-  Map<String, String> get envVars => throw _privateConstructorUsedError;
-  List<String> get dependencies => throw _privateConstructorUsedError;
-  Map<String, dynamic> get mcpConfig => throw _privateConstructorUsedError;
-  String get repositoryUrl => throw _privateConstructorUsedError;
-  String get branch => throw _privateConstructorUsedError;
-  String get subPath => throw _privateConstructorUsedError;
-  List<String> get buildCommands => throw _privateConstructorUsedError;
+mixin _$MarketServerResponse {
+  int get code => throw _privateConstructorUsedError;
+  String get message => throw _privateConstructorUsedError;
+  MarketServerData get data => throw _privateConstructorUsedError;
 
-  /// Serializes this MCPServerInstallConfig to a JSON map.
+  /// Serializes this MarketServerResponse to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of MCPServerInstallConfig
+  /// Create a copy of MarketServerResponse
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $MCPServerInstallConfigCopyWith<MCPServerInstallConfig> get copyWith =>
+  $MarketServerResponseCopyWith<MarketServerResponse> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $MCPServerInstallConfigCopyWith<$Res> {
-  factory $MCPServerInstallConfigCopyWith(
-    MCPServerInstallConfig value,
-    $Res Function(MCPServerInstallConfig) then,
-  ) = _$MCPServerInstallConfigCopyWithImpl<$Res, MCPServerInstallConfig>;
+abstract class $MarketServerResponseCopyWith<$Res> {
+  factory $MarketServerResponseCopyWith(
+    MarketServerResponse value,
+    $Res Function(MarketServerResponse) then,
+  ) = _$MarketServerResponseCopyWithImpl<$Res, MarketServerResponse>;
   @useResult
-  $Res call({
-    String installMethod,
-    String packageName,
-    List<String> installArgs,
-    Map<String, String> envVars,
-    List<String> dependencies,
-    Map<String, dynamic> mcpConfig,
-    String repositoryUrl,
-    String branch,
-    String subPath,
-    List<String> buildCommands,
-  });
+  $Res call({int code, String message, MarketServerData data});
+
+  $MarketServerDataCopyWith<$Res> get data;
 }
 
 /// @nodoc
-class _$MCPServerInstallConfigCopyWithImpl<
+class _$MarketServerResponseCopyWithImpl<
   $Res,
-  $Val extends MCPServerInstallConfig
+  $Val extends MarketServerResponse
 >
-    implements $MCPServerInstallConfigCopyWith<$Res> {
-  _$MCPServerInstallConfigCopyWithImpl(this._value, this._then);
+    implements $MarketServerResponseCopyWith<$Res> {
+  _$MarketServerResponseCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of MCPServerInstallConfig
+  /// Create a copy of MarketServerResponse
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? installMethod = null,
-    Object? packageName = null,
-    Object? installArgs = null,
-    Object? envVars = null,
-    Object? dependencies = null,
-    Object? mcpConfig = null,
-    Object? repositoryUrl = null,
-    Object? branch = null,
-    Object? subPath = null,
-    Object? buildCommands = null,
+    Object? code = null,
+    Object? message = null,
+    Object? data = null,
   }) {
     return _then(
       _value.copyWith(
-            installMethod: null == installMethod
-                ? _value.installMethod
-                : installMethod // ignore: cast_nullable_to_non_nullable
+            code: null == code
+                ? _value.code
+                : code // ignore: cast_nullable_to_non_nullable
+                      as int,
+            message: null == message
+                ? _value.message
+                : message // ignore: cast_nullable_to_non_nullable
                       as String,
-            packageName: null == packageName
-                ? _value.packageName
-                : packageName // ignore: cast_nullable_to_non_nullable
-                      as String,
-            installArgs: null == installArgs
-                ? _value.installArgs
-                : installArgs // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-            envVars: null == envVars
-                ? _value.envVars
-                : envVars // ignore: cast_nullable_to_non_nullable
-                      as Map<String, String>,
-            dependencies: null == dependencies
-                ? _value.dependencies
-                : dependencies // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-            mcpConfig: null == mcpConfig
-                ? _value.mcpConfig
-                : mcpConfig // ignore: cast_nullable_to_non_nullable
-                      as Map<String, dynamic>,
-            repositoryUrl: null == repositoryUrl
-                ? _value.repositoryUrl
-                : repositoryUrl // ignore: cast_nullable_to_non_nullable
-                      as String,
-            branch: null == branch
-                ? _value.branch
-                : branch // ignore: cast_nullable_to_non_nullable
-                      as String,
-            subPath: null == subPath
-                ? _value.subPath
-                : subPath // ignore: cast_nullable_to_non_nullable
-                      as String,
-            buildCommands: null == buildCommands
-                ? _value.buildCommands
-                : buildCommands // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
+            data: null == data
+                ? _value.data
+                : data // ignore: cast_nullable_to_non_nullable
+                      as MarketServerData,
           )
           as $Val,
     );
   }
+
+  /// Create a copy of MarketServerResponse
+  /// with the given fields replaced by the non-null parameter values.
+  @override
+  @pragma('vm:prefer-inline')
+  $MarketServerDataCopyWith<$Res> get data {
+    return $MarketServerDataCopyWith<$Res>(_value.data, (value) {
+      return _then(_value.copyWith(data: value) as $Val);
+    });
+  }
 }
 
 /// @nodoc
-abstract class _$$MCPServerInstallConfigImplCopyWith<$Res>
-    implements $MCPServerInstallConfigCopyWith<$Res> {
-  factory _$$MCPServerInstallConfigImplCopyWith(
-    _$MCPServerInstallConfigImpl value,
-    $Res Function(_$MCPServerInstallConfigImpl) then,
-  ) = __$$MCPServerInstallConfigImplCopyWithImpl<$Res>;
+abstract class _$$MarketServerResponseImplCopyWith<$Res>
+    implements $MarketServerResponseCopyWith<$Res> {
+  factory _$$MarketServerResponseImplCopyWith(
+    _$MarketServerResponseImpl value,
+    $Res Function(_$MarketServerResponseImpl) then,
+  ) = __$$MarketServerResponseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    String installMethod,
-    String packageName,
-    List<String> installArgs,
-    Map<String, String> envVars,
-    List<String> dependencies,
-    Map<String, dynamic> mcpConfig,
-    String repositoryUrl,
-    String branch,
-    String subPath,
-    List<String> buildCommands,
-  });
+  $Res call({int code, String message, MarketServerData data});
+
+  @override
+  $MarketServerDataCopyWith<$Res> get data;
 }
 
 /// @nodoc
-class __$$MCPServerInstallConfigImplCopyWithImpl<$Res>
-    extends
-        _$MCPServerInstallConfigCopyWithImpl<$Res, _$MCPServerInstallConfigImpl>
-    implements _$$MCPServerInstallConfigImplCopyWith<$Res> {
-  __$$MCPServerInstallConfigImplCopyWithImpl(
-    _$MCPServerInstallConfigImpl _value,
-    $Res Function(_$MCPServerInstallConfigImpl) _then,
+class __$$MarketServerResponseImplCopyWithImpl<$Res>
+    extends _$MarketServerResponseCopyWithImpl<$Res, _$MarketServerResponseImpl>
+    implements _$$MarketServerResponseImplCopyWith<$Res> {
+  __$$MarketServerResponseImplCopyWithImpl(
+    _$MarketServerResponseImpl _value,
+    $Res Function(_$MarketServerResponseImpl) _then,
   ) : super(_value, _then);
 
-  /// Create a copy of MCPServerInstallConfig
+  /// Create a copy of MarketServerResponse
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? installMethod = null,
-    Object? packageName = null,
-    Object? installArgs = null,
-    Object? envVars = null,
-    Object? dependencies = null,
-    Object? mcpConfig = null,
-    Object? repositoryUrl = null,
-    Object? branch = null,
-    Object? subPath = null,
-    Object? buildCommands = null,
+    Object? code = null,
+    Object? message = null,
+    Object? data = null,
   }) {
     return _then(
-      _$MCPServerInstallConfigImpl(
-        installMethod: null == installMethod
-            ? _value.installMethod
-            : installMethod // ignore: cast_nullable_to_non_nullable
+      _$MarketServerResponseImpl(
+        code: null == code
+            ? _value.code
+            : code // ignore: cast_nullable_to_non_nullable
+                  as int,
+        message: null == message
+            ? _value.message
+            : message // ignore: cast_nullable_to_non_nullable
                   as String,
-        packageName: null == packageName
-            ? _value.packageName
-            : packageName // ignore: cast_nullable_to_non_nullable
-                  as String,
-        installArgs: null == installArgs
-            ? _value._installArgs
-            : installArgs // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-        envVars: null == envVars
-            ? _value._envVars
-            : envVars // ignore: cast_nullable_to_non_nullable
-                  as Map<String, String>,
-        dependencies: null == dependencies
-            ? _value._dependencies
-            : dependencies // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-        mcpConfig: null == mcpConfig
-            ? _value._mcpConfig
-            : mcpConfig // ignore: cast_nullable_to_non_nullable
-                  as Map<String, dynamic>,
-        repositoryUrl: null == repositoryUrl
-            ? _value.repositoryUrl
-            : repositoryUrl // ignore: cast_nullable_to_non_nullable
-                  as String,
-        branch: null == branch
-            ? _value.branch
-            : branch // ignore: cast_nullable_to_non_nullable
-                  as String,
-        subPath: null == subPath
-            ? _value.subPath
-            : subPath // ignore: cast_nullable_to_non_nullable
-                  as String,
-        buildCommands: null == buildCommands
-            ? _value._buildCommands
-            : buildCommands // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
+        data: null == data
+            ? _value.data
+            : data // ignore: cast_nullable_to_non_nullable
+                  as MarketServerData,
       ),
     );
   }
@@ -928,304 +970,153 @@ class __$$MCPServerInstallConfigImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$MCPServerInstallConfigImpl implements _MCPServerInstallConfig {
-  const _$MCPServerInstallConfigImpl({
-    required this.installMethod,
-    required this.packageName,
-    final List<String> installArgs = const [],
-    final Map<String, String> envVars = const {},
-    final List<String> dependencies = const [],
-    final Map<String, dynamic> mcpConfig = const {},
-    this.repositoryUrl = '',
-    this.branch = '',
-    this.subPath = '',
-    final List<String> buildCommands = const [],
-  }) : _installArgs = installArgs,
-       _envVars = envVars,
-       _dependencies = dependencies,
-       _mcpConfig = mcpConfig,
-       _buildCommands = buildCommands;
+class _$MarketServerResponseImpl implements _MarketServerResponse {
+  const _$MarketServerResponseImpl({
+    required this.code,
+    required this.message,
+    required this.data,
+  });
 
-  factory _$MCPServerInstallConfigImpl.fromJson(Map<String, dynamic> json) =>
-      _$$MCPServerInstallConfigImplFromJson(json);
+  factory _$MarketServerResponseImpl.fromJson(Map<String, dynamic> json) =>
+      _$$MarketServerResponseImplFromJson(json);
 
   @override
-  final String installMethod;
-  // 'uvx' | 'npx' | 'git' | 'manual'
+  final int code;
   @override
-  final String packageName;
-  final List<String> _installArgs;
+  final String message;
   @override
-  @JsonKey()
-  List<String> get installArgs {
-    if (_installArgs is EqualUnmodifiableListView) return _installArgs;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_installArgs);
-  }
-
-  final Map<String, String> _envVars;
-  @override
-  @JsonKey()
-  Map<String, String> get envVars {
-    if (_envVars is EqualUnmodifiableMapView) return _envVars;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_envVars);
-  }
-
-  final List<String> _dependencies;
-  @override
-  @JsonKey()
-  List<String> get dependencies {
-    if (_dependencies is EqualUnmodifiableListView) return _dependencies;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_dependencies);
-  }
-
-  final Map<String, dynamic> _mcpConfig;
-  @override
-  @JsonKey()
-  Map<String, dynamic> get mcpConfig {
-    if (_mcpConfig is EqualUnmodifiableMapView) return _mcpConfig;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableMapView(_mcpConfig);
-  }
-
-  @override
-  @JsonKey()
-  final String repositoryUrl;
-  @override
-  @JsonKey()
-  final String branch;
-  @override
-  @JsonKey()
-  final String subPath;
-  final List<String> _buildCommands;
-  @override
-  @JsonKey()
-  List<String> get buildCommands {
-    if (_buildCommands is EqualUnmodifiableListView) return _buildCommands;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_buildCommands);
-  }
+  final MarketServerData data;
 
   @override
   String toString() {
-    return 'MCPServerInstallConfig(installMethod: $installMethod, packageName: $packageName, installArgs: $installArgs, envVars: $envVars, dependencies: $dependencies, mcpConfig: $mcpConfig, repositoryUrl: $repositoryUrl, branch: $branch, subPath: $subPath, buildCommands: $buildCommands)';
+    return 'MarketServerResponse(code: $code, message: $message, data: $data)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$MCPServerInstallConfigImpl &&
-            (identical(other.installMethod, installMethod) ||
-                other.installMethod == installMethod) &&
-            (identical(other.packageName, packageName) ||
-                other.packageName == packageName) &&
-            const DeepCollectionEquality().equals(
-              other._installArgs,
-              _installArgs,
-            ) &&
-            const DeepCollectionEquality().equals(other._envVars, _envVars) &&
-            const DeepCollectionEquality().equals(
-              other._dependencies,
-              _dependencies,
-            ) &&
-            const DeepCollectionEquality().equals(
-              other._mcpConfig,
-              _mcpConfig,
-            ) &&
-            (identical(other.repositoryUrl, repositoryUrl) ||
-                other.repositoryUrl == repositoryUrl) &&
-            (identical(other.branch, branch) || other.branch == branch) &&
-            (identical(other.subPath, subPath) || other.subPath == subPath) &&
-            const DeepCollectionEquality().equals(
-              other._buildCommands,
-              _buildCommands,
-            ));
+            other is _$MarketServerResponseImpl &&
+            (identical(other.code, code) || other.code == code) &&
+            (identical(other.message, message) || other.message == message) &&
+            (identical(other.data, data) || other.data == data));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    installMethod,
-    packageName,
-    const DeepCollectionEquality().hash(_installArgs),
-    const DeepCollectionEquality().hash(_envVars),
-    const DeepCollectionEquality().hash(_dependencies),
-    const DeepCollectionEquality().hash(_mcpConfig),
-    repositoryUrl,
-    branch,
-    subPath,
-    const DeepCollectionEquality().hash(_buildCommands),
-  );
+  int get hashCode => Object.hash(runtimeType, code, message, data);
 
-  /// Create a copy of MCPServerInstallConfig
+  /// Create a copy of MarketServerResponse
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$MCPServerInstallConfigImplCopyWith<_$MCPServerInstallConfigImpl>
+  _$$MarketServerResponseImplCopyWith<_$MarketServerResponseImpl>
   get copyWith =>
-      __$$MCPServerInstallConfigImplCopyWithImpl<_$MCPServerInstallConfigImpl>(
+      __$$MarketServerResponseImplCopyWithImpl<_$MarketServerResponseImpl>(
         this,
         _$identity,
       );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MCPServerInstallConfigImplToJson(this);
+    return _$$MarketServerResponseImplToJson(this);
   }
 }
 
-abstract class _MCPServerInstallConfig implements MCPServerInstallConfig {
-  const factory _MCPServerInstallConfig({
-    required final String installMethod,
-    required final String packageName,
-    final List<String> installArgs,
-    final Map<String, String> envVars,
-    final List<String> dependencies,
-    final Map<String, dynamic> mcpConfig,
-    final String repositoryUrl,
-    final String branch,
-    final String subPath,
-    final List<String> buildCommands,
-  }) = _$MCPServerInstallConfigImpl;
+abstract class _MarketServerResponse implements MarketServerResponse {
+  const factory _MarketServerResponse({
+    required final int code,
+    required final String message,
+    required final MarketServerData data,
+  }) = _$MarketServerResponseImpl;
 
-  factory _MCPServerInstallConfig.fromJson(Map<String, dynamic> json) =
-      _$MCPServerInstallConfigImpl.fromJson;
+  factory _MarketServerResponse.fromJson(Map<String, dynamic> json) =
+      _$MarketServerResponseImpl.fromJson;
 
   @override
-  String get installMethod; // 'uvx' | 'npx' | 'git' | 'manual'
+  int get code;
   @override
-  String get packageName;
+  String get message;
   @override
-  List<String> get installArgs;
-  @override
-  Map<String, String> get envVars;
-  @override
-  List<String> get dependencies;
-  @override
-  Map<String, dynamic> get mcpConfig;
-  @override
-  String get repositoryUrl;
-  @override
-  String get branch;
-  @override
-  String get subPath;
-  @override
-  List<String> get buildCommands;
+  MarketServerData get data;
 
-  /// Create a copy of MCPServerInstallConfig
+  /// Create a copy of MarketServerResponse
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$MCPServerInstallConfigImplCopyWith<_$MCPServerInstallConfigImpl>
+  _$$MarketServerResponseImplCopyWith<_$MarketServerResponseImpl>
   get copyWith => throw _privateConstructorUsedError;
 }
 
-ServerReview _$ServerReviewFromJson(Map<String, dynamic> json) {
-  return _ServerReview.fromJson(json);
+MarketServerData _$MarketServerDataFromJson(Map<String, dynamic> json) {
+  return _MarketServerData.fromJson(json);
 }
 
 /// @nodoc
-mixin _$ServerReview {
-  String get id => throw _privateConstructorUsedError;
-  String get serverId => throw _privateConstructorUsedError;
-  String get userId => throw _privateConstructorUsedError;
-  String get userName => throw _privateConstructorUsedError;
-  double get rating => throw _privateConstructorUsedError;
-  String get comment => throw _privateConstructorUsedError;
-  DateTime get createdAt => throw _privateConstructorUsedError;
-  int get helpfulCount => throw _privateConstructorUsedError;
+mixin _$MarketServerData {
+  List<MarketServerModel> get items => throw _privateConstructorUsedError;
+  int get page => throw _privateConstructorUsedError;
+  int get size => throw _privateConstructorUsedError;
+  int get total => throw _privateConstructorUsedError;
 
-  /// Serializes this ServerReview to a JSON map.
+  /// Serializes this MarketServerData to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of ServerReview
+  /// Create a copy of MarketServerData
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $ServerReviewCopyWith<ServerReview> get copyWith =>
+  $MarketServerDataCopyWith<MarketServerData> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $ServerReviewCopyWith<$Res> {
-  factory $ServerReviewCopyWith(
-    ServerReview value,
-    $Res Function(ServerReview) then,
-  ) = _$ServerReviewCopyWithImpl<$Res, ServerReview>;
+abstract class $MarketServerDataCopyWith<$Res> {
+  factory $MarketServerDataCopyWith(
+    MarketServerData value,
+    $Res Function(MarketServerData) then,
+  ) = _$MarketServerDataCopyWithImpl<$Res, MarketServerData>;
   @useResult
-  $Res call({
-    String id,
-    String serverId,
-    String userId,
-    String userName,
-    double rating,
-    String comment,
-    DateTime createdAt,
-    int helpfulCount,
-  });
+  $Res call({List<MarketServerModel> items, int page, int size, int total});
 }
 
 /// @nodoc
-class _$ServerReviewCopyWithImpl<$Res, $Val extends ServerReview>
-    implements $ServerReviewCopyWith<$Res> {
-  _$ServerReviewCopyWithImpl(this._value, this._then);
+class _$MarketServerDataCopyWithImpl<$Res, $Val extends MarketServerData>
+    implements $MarketServerDataCopyWith<$Res> {
+  _$MarketServerDataCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of ServerReview
+  /// Create a copy of MarketServerData
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? serverId = null,
-    Object? userId = null,
-    Object? userName = null,
-    Object? rating = null,
-    Object? comment = null,
-    Object? createdAt = null,
-    Object? helpfulCount = null,
+    Object? items = null,
+    Object? page = null,
+    Object? size = null,
+    Object? total = null,
   }) {
     return _then(
       _value.copyWith(
-            id: null == id
-                ? _value.id
-                : id // ignore: cast_nullable_to_non_nullable
-                      as String,
-            serverId: null == serverId
-                ? _value.serverId
-                : serverId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            userId: null == userId
-                ? _value.userId
-                : userId // ignore: cast_nullable_to_non_nullable
-                      as String,
-            userName: null == userName
-                ? _value.userName
-                : userName // ignore: cast_nullable_to_non_nullable
-                      as String,
-            rating: null == rating
-                ? _value.rating
-                : rating // ignore: cast_nullable_to_non_nullable
-                      as double,
-            comment: null == comment
-                ? _value.comment
-                : comment // ignore: cast_nullable_to_non_nullable
-                      as String,
-            createdAt: null == createdAt
-                ? _value.createdAt
-                : createdAt // ignore: cast_nullable_to_non_nullable
-                      as DateTime,
-            helpfulCount: null == helpfulCount
-                ? _value.helpfulCount
-                : helpfulCount // ignore: cast_nullable_to_non_nullable
+            items: null == items
+                ? _value.items
+                : items // ignore: cast_nullable_to_non_nullable
+                      as List<MarketServerModel>,
+            page: null == page
+                ? _value.page
+                : page // ignore: cast_nullable_to_non_nullable
+                      as int,
+            size: null == size
+                ? _value.size
+                : size // ignore: cast_nullable_to_non_nullable
+                      as int,
+            total: null == total
+                ? _value.total
+                : total // ignore: cast_nullable_to_non_nullable
                       as int,
           )
           as $Val,
@@ -1234,82 +1125,53 @@ class _$ServerReviewCopyWithImpl<$Res, $Val extends ServerReview>
 }
 
 /// @nodoc
-abstract class _$$ServerReviewImplCopyWith<$Res>
-    implements $ServerReviewCopyWith<$Res> {
-  factory _$$ServerReviewImplCopyWith(
-    _$ServerReviewImpl value,
-    $Res Function(_$ServerReviewImpl) then,
-  ) = __$$ServerReviewImplCopyWithImpl<$Res>;
+abstract class _$$MarketServerDataImplCopyWith<$Res>
+    implements $MarketServerDataCopyWith<$Res> {
+  factory _$$MarketServerDataImplCopyWith(
+    _$MarketServerDataImpl value,
+    $Res Function(_$MarketServerDataImpl) then,
+  ) = __$$MarketServerDataImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    String id,
-    String serverId,
-    String userId,
-    String userName,
-    double rating,
-    String comment,
-    DateTime createdAt,
-    int helpfulCount,
-  });
+  $Res call({List<MarketServerModel> items, int page, int size, int total});
 }
 
 /// @nodoc
-class __$$ServerReviewImplCopyWithImpl<$Res>
-    extends _$ServerReviewCopyWithImpl<$Res, _$ServerReviewImpl>
-    implements _$$ServerReviewImplCopyWith<$Res> {
-  __$$ServerReviewImplCopyWithImpl(
-    _$ServerReviewImpl _value,
-    $Res Function(_$ServerReviewImpl) _then,
+class __$$MarketServerDataImplCopyWithImpl<$Res>
+    extends _$MarketServerDataCopyWithImpl<$Res, _$MarketServerDataImpl>
+    implements _$$MarketServerDataImplCopyWith<$Res> {
+  __$$MarketServerDataImplCopyWithImpl(
+    _$MarketServerDataImpl _value,
+    $Res Function(_$MarketServerDataImpl) _then,
   ) : super(_value, _then);
 
-  /// Create a copy of ServerReview
+  /// Create a copy of MarketServerData
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? id = null,
-    Object? serverId = null,
-    Object? userId = null,
-    Object? userName = null,
-    Object? rating = null,
-    Object? comment = null,
-    Object? createdAt = null,
-    Object? helpfulCount = null,
+    Object? items = null,
+    Object? page = null,
+    Object? size = null,
+    Object? total = null,
   }) {
     return _then(
-      _$ServerReviewImpl(
-        id: null == id
-            ? _value.id
-            : id // ignore: cast_nullable_to_non_nullable
-                  as String,
-        serverId: null == serverId
-            ? _value.serverId
-            : serverId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        userId: null == userId
-            ? _value.userId
-            : userId // ignore: cast_nullable_to_non_nullable
-                  as String,
-        userName: null == userName
-            ? _value.userName
-            : userName // ignore: cast_nullable_to_non_nullable
-                  as String,
-        rating: null == rating
-            ? _value.rating
-            : rating // ignore: cast_nullable_to_non_nullable
-                  as double,
-        comment: null == comment
-            ? _value.comment
-            : comment // ignore: cast_nullable_to_non_nullable
-                  as String,
-        createdAt: null == createdAt
-            ? _value.createdAt
-            : createdAt // ignore: cast_nullable_to_non_nullable
-                  as DateTime,
-        helpfulCount: null == helpfulCount
-            ? _value.helpfulCount
-            : helpfulCount // ignore: cast_nullable_to_non_nullable
+      _$MarketServerDataImpl(
+        items: null == items
+            ? _value._items
+            : items // ignore: cast_nullable_to_non_nullable
+                  as List<MarketServerModel>,
+        page: null == page
+            ? _value.page
+            : page // ignore: cast_nullable_to_non_nullable
+                  as int,
+        size: null == size
+            ? _value.size
+            : size // ignore: cast_nullable_to_non_nullable
+                  as int,
+        total: null == total
+            ? _value.total
+            : total // ignore: cast_nullable_to_non_nullable
                   as int,
       ),
     );
@@ -1318,505 +1180,174 @@ class __$$ServerReviewImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$ServerReviewImpl implements _ServerReview {
-  const _$ServerReviewImpl({
-    required this.id,
-    required this.serverId,
-    required this.userId,
-    required this.userName,
-    required this.rating,
-    required this.comment,
-    required this.createdAt,
-    this.helpfulCount = 0,
-  });
+class _$MarketServerDataImpl implements _MarketServerData {
+  const _$MarketServerDataImpl({
+    required final List<MarketServerModel> items,
+    this.page = 1,
+    this.size = 20,
+    this.total = 0,
+  }) : _items = items;
 
-  factory _$ServerReviewImpl.fromJson(Map<String, dynamic> json) =>
-      _$$ServerReviewImplFromJson(json);
+  factory _$MarketServerDataImpl.fromJson(Map<String, dynamic> json) =>
+      _$$MarketServerDataImplFromJson(json);
 
+  final List<MarketServerModel> _items;
   @override
-  final String id;
-  @override
-  final String serverId;
-  @override
-  final String userId;
-  @override
-  final String userName;
-  @override
-  final double rating;
-  @override
-  final String comment;
-  @override
-  final DateTime createdAt;
+  List<MarketServerModel> get items {
+    if (_items is EqualUnmodifiableListView) return _items;
+    // ignore: implicit_dynamic_type
+    return EqualUnmodifiableListView(_items);
+  }
+
   @override
   @JsonKey()
-  final int helpfulCount;
+  final int page;
+  @override
+  @JsonKey()
+  final int size;
+  @override
+  @JsonKey()
+  final int total;
 
   @override
   String toString() {
-    return 'ServerReview(id: $id, serverId: $serverId, userId: $userId, userName: $userName, rating: $rating, comment: $comment, createdAt: $createdAt, helpfulCount: $helpfulCount)';
+    return 'MarketServerData(items: $items, page: $page, size: $size, total: $total)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$ServerReviewImpl &&
-            (identical(other.id, id) || other.id == id) &&
-            (identical(other.serverId, serverId) ||
-                other.serverId == serverId) &&
-            (identical(other.userId, userId) || other.userId == userId) &&
-            (identical(other.userName, userName) ||
-                other.userName == userName) &&
-            (identical(other.rating, rating) || other.rating == rating) &&
-            (identical(other.comment, comment) || other.comment == comment) &&
-            (identical(other.createdAt, createdAt) ||
-                other.createdAt == createdAt) &&
-            (identical(other.helpfulCount, helpfulCount) ||
-                other.helpfulCount == helpfulCount));
+            other is _$MarketServerDataImpl &&
+            const DeepCollectionEquality().equals(other._items, _items) &&
+            (identical(other.page, page) || other.page == page) &&
+            (identical(other.size, size) || other.size == size) &&
+            (identical(other.total, total) || other.total == total));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
     runtimeType,
-    id,
-    serverId,
-    userId,
-    userName,
-    rating,
-    comment,
-    createdAt,
-    helpfulCount,
+    const DeepCollectionEquality().hash(_items),
+    page,
+    size,
+    total,
   );
 
-  /// Create a copy of ServerReview
+  /// Create a copy of MarketServerData
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$ServerReviewImplCopyWith<_$ServerReviewImpl> get copyWith =>
-      __$$ServerReviewImplCopyWithImpl<_$ServerReviewImpl>(this, _$identity);
-
-  @override
-  Map<String, dynamic> toJson() {
-    return _$$ServerReviewImplToJson(this);
-  }
-}
-
-abstract class _ServerReview implements ServerReview {
-  const factory _ServerReview({
-    required final String id,
-    required final String serverId,
-    required final String userId,
-    required final String userName,
-    required final double rating,
-    required final String comment,
-    required final DateTime createdAt,
-    final int helpfulCount,
-  }) = _$ServerReviewImpl;
-
-  factory _ServerReview.fromJson(Map<String, dynamic> json) =
-      _$ServerReviewImpl.fromJson;
-
-  @override
-  String get id;
-  @override
-  String get serverId;
-  @override
-  String get userId;
-  @override
-  String get userName;
-  @override
-  double get rating;
-  @override
-  String get comment;
-  @override
-  DateTime get createdAt;
-  @override
-  int get helpfulCount;
-
-  /// Create a copy of ServerReview
-  /// with the given fields replaced by the non-null parameter values.
-  @override
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$ServerReviewImplCopyWith<_$ServerReviewImpl> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-MarketSearchResult _$MarketSearchResultFromJson(Map<String, dynamic> json) {
-  return _MarketSearchResult.fromJson(json);
-}
-
-/// @nodoc
-mixin _$MarketSearchResult {
-  List<MCPMarketServer> get servers => throw _privateConstructorUsedError;
-  int get totalCount => throw _privateConstructorUsedError;
-  int get currentPage => throw _privateConstructorUsedError;
-  int get totalPages => throw _privateConstructorUsedError;
-  List<String> get suggestions => throw _privateConstructorUsedError;
-
-  /// Serializes this MarketSearchResult to a JSON map.
-  Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
-
-  /// Create a copy of MarketSearchResult
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  $MarketSearchResultCopyWith<MarketSearchResult> get copyWith =>
-      throw _privateConstructorUsedError;
-}
-
-/// @nodoc
-abstract class $MarketSearchResultCopyWith<$Res> {
-  factory $MarketSearchResultCopyWith(
-    MarketSearchResult value,
-    $Res Function(MarketSearchResult) then,
-  ) = _$MarketSearchResultCopyWithImpl<$Res, MarketSearchResult>;
-  @useResult
-  $Res call({
-    List<MCPMarketServer> servers,
-    int totalCount,
-    int currentPage,
-    int totalPages,
-    List<String> suggestions,
-  });
-}
-
-/// @nodoc
-class _$MarketSearchResultCopyWithImpl<$Res, $Val extends MarketSearchResult>
-    implements $MarketSearchResultCopyWith<$Res> {
-  _$MarketSearchResultCopyWithImpl(this._value, this._then);
-
-  // ignore: unused_field
-  final $Val _value;
-  // ignore: unused_field
-  final $Res Function($Val) _then;
-
-  /// Create a copy of MarketSearchResult
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? servers = null,
-    Object? totalCount = null,
-    Object? currentPage = null,
-    Object? totalPages = null,
-    Object? suggestions = null,
-  }) {
-    return _then(
-      _value.copyWith(
-            servers: null == servers
-                ? _value.servers
-                : servers // ignore: cast_nullable_to_non_nullable
-                      as List<MCPMarketServer>,
-            totalCount: null == totalCount
-                ? _value.totalCount
-                : totalCount // ignore: cast_nullable_to_non_nullable
-                      as int,
-            currentPage: null == currentPage
-                ? _value.currentPage
-                : currentPage // ignore: cast_nullable_to_non_nullable
-                      as int,
-            totalPages: null == totalPages
-                ? _value.totalPages
-                : totalPages // ignore: cast_nullable_to_non_nullable
-                      as int,
-            suggestions: null == suggestions
-                ? _value.suggestions
-                : suggestions // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-          )
-          as $Val,
-    );
-  }
-}
-
-/// @nodoc
-abstract class _$$MarketSearchResultImplCopyWith<$Res>
-    implements $MarketSearchResultCopyWith<$Res> {
-  factory _$$MarketSearchResultImplCopyWith(
-    _$MarketSearchResultImpl value,
-    $Res Function(_$MarketSearchResultImpl) then,
-  ) = __$$MarketSearchResultImplCopyWithImpl<$Res>;
-  @override
-  @useResult
-  $Res call({
-    List<MCPMarketServer> servers,
-    int totalCount,
-    int currentPage,
-    int totalPages,
-    List<String> suggestions,
-  });
-}
-
-/// @nodoc
-class __$$MarketSearchResultImplCopyWithImpl<$Res>
-    extends _$MarketSearchResultCopyWithImpl<$Res, _$MarketSearchResultImpl>
-    implements _$$MarketSearchResultImplCopyWith<$Res> {
-  __$$MarketSearchResultImplCopyWithImpl(
-    _$MarketSearchResultImpl _value,
-    $Res Function(_$MarketSearchResultImpl) _then,
-  ) : super(_value, _then);
-
-  /// Create a copy of MarketSearchResult
-  /// with the given fields replaced by the non-null parameter values.
-  @pragma('vm:prefer-inline')
-  @override
-  $Res call({
-    Object? servers = null,
-    Object? totalCount = null,
-    Object? currentPage = null,
-    Object? totalPages = null,
-    Object? suggestions = null,
-  }) {
-    return _then(
-      _$MarketSearchResultImpl(
-        servers: null == servers
-            ? _value._servers
-            : servers // ignore: cast_nullable_to_non_nullable
-                  as List<MCPMarketServer>,
-        totalCount: null == totalCount
-            ? _value.totalCount
-            : totalCount // ignore: cast_nullable_to_non_nullable
-                  as int,
-        currentPage: null == currentPage
-            ? _value.currentPage
-            : currentPage // ignore: cast_nullable_to_non_nullable
-                  as int,
-        totalPages: null == totalPages
-            ? _value.totalPages
-            : totalPages // ignore: cast_nullable_to_non_nullable
-                  as int,
-        suggestions: null == suggestions
-            ? _value._suggestions
-            : suggestions // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-      ),
-    );
-  }
-}
-
-/// @nodoc
-@JsonSerializable()
-class _$MarketSearchResultImpl implements _MarketSearchResult {
-  const _$MarketSearchResultImpl({
-    required final List<MCPMarketServer> servers,
-    required this.totalCount,
-    required this.currentPage,
-    required this.totalPages,
-    final List<String> suggestions = const [],
-  }) : _servers = servers,
-       _suggestions = suggestions;
-
-  factory _$MarketSearchResultImpl.fromJson(Map<String, dynamic> json) =>
-      _$$MarketSearchResultImplFromJson(json);
-
-  final List<MCPMarketServer> _servers;
-  @override
-  List<MCPMarketServer> get servers {
-    if (_servers is EqualUnmodifiableListView) return _servers;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_servers);
-  }
-
-  @override
-  final int totalCount;
-  @override
-  final int currentPage;
-  @override
-  final int totalPages;
-  final List<String> _suggestions;
-  @override
-  @JsonKey()
-  List<String> get suggestions {
-    if (_suggestions is EqualUnmodifiableListView) return _suggestions;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_suggestions);
-  }
-
-  @override
-  String toString() {
-    return 'MarketSearchResult(servers: $servers, totalCount: $totalCount, currentPage: $currentPage, totalPages: $totalPages, suggestions: $suggestions)';
-  }
-
-  @override
-  bool operator ==(Object other) {
-    return identical(this, other) ||
-        (other.runtimeType == runtimeType &&
-            other is _$MarketSearchResultImpl &&
-            const DeepCollectionEquality().equals(other._servers, _servers) &&
-            (identical(other.totalCount, totalCount) ||
-                other.totalCount == totalCount) &&
-            (identical(other.currentPage, currentPage) ||
-                other.currentPage == currentPage) &&
-            (identical(other.totalPages, totalPages) ||
-                other.totalPages == totalPages) &&
-            const DeepCollectionEquality().equals(
-              other._suggestions,
-              _suggestions,
-            ));
-  }
-
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  int get hashCode => Object.hash(
-    runtimeType,
-    const DeepCollectionEquality().hash(_servers),
-    totalCount,
-    currentPage,
-    totalPages,
-    const DeepCollectionEquality().hash(_suggestions),
-  );
-
-  /// Create a copy of MarketSearchResult
-  /// with the given fields replaced by the non-null parameter values.
-  @JsonKey(includeFromJson: false, includeToJson: false)
-  @override
-  @pragma('vm:prefer-inline')
-  _$$MarketSearchResultImplCopyWith<_$MarketSearchResultImpl> get copyWith =>
-      __$$MarketSearchResultImplCopyWithImpl<_$MarketSearchResultImpl>(
+  _$$MarketServerDataImplCopyWith<_$MarketServerDataImpl> get copyWith =>
+      __$$MarketServerDataImplCopyWithImpl<_$MarketServerDataImpl>(
         this,
         _$identity,
       );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MarketSearchResultImplToJson(this);
+    return _$$MarketServerDataImplToJson(this);
   }
 }
 
-abstract class _MarketSearchResult implements MarketSearchResult {
-  const factory _MarketSearchResult({
-    required final List<MCPMarketServer> servers,
-    required final int totalCount,
-    required final int currentPage,
-    required final int totalPages,
-    final List<String> suggestions,
-  }) = _$MarketSearchResultImpl;
+abstract class _MarketServerData implements MarketServerData {
+  const factory _MarketServerData({
+    required final List<MarketServerModel> items,
+    final int page,
+    final int size,
+    final int total,
+  }) = _$MarketServerDataImpl;
 
-  factory _MarketSearchResult.fromJson(Map<String, dynamic> json) =
-      _$MarketSearchResultImpl.fromJson;
+  factory _MarketServerData.fromJson(Map<String, dynamic> json) =
+      _$MarketServerDataImpl.fromJson;
 
   @override
-  List<MCPMarketServer> get servers;
+  List<MarketServerModel> get items;
   @override
-  int get totalCount;
+  int get page;
   @override
-  int get currentPage;
+  int get size;
   @override
-  int get totalPages;
-  @override
-  List<String> get suggestions;
+  int get total;
 
-  /// Create a copy of MarketSearchResult
+  /// Create a copy of MarketServerData
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$MarketSearchResultImplCopyWith<_$MarketSearchResultImpl> get copyWith =>
+  _$$MarketServerDataImplCopyWith<_$MarketServerDataImpl> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
-MarketFilter _$MarketFilterFromJson(Map<String, dynamic> json) {
-  return _MarketFilter.fromJson(json);
+MarketCategoryResponse _$MarketCategoryResponseFromJson(
+  Map<String, dynamic> json,
+) {
+  return _MarketCategoryResponse.fromJson(json);
 }
 
 /// @nodoc
-mixin _$MarketFilter {
-  String get query => throw _privateConstructorUsedError;
-  List<String> get categories => throw _privateConstructorUsedError;
-  List<String> get tags => throw _privateConstructorUsedError;
-  String get author => throw _privateConstructorUsedError;
-  SortBy get sortBy => throw _privateConstructorUsedError;
-  SortOrder get sortOrder => throw _privateConstructorUsedError;
-  double get minRating => throw _privateConstructorUsedError;
-  List<String> get installMethods => throw _privateConstructorUsedError;
+mixin _$MarketCategoryResponse {
+  int get code => throw _privateConstructorUsedError;
+  String get message => throw _privateConstructorUsedError;
+  List<MarketCategoryModel> get data => throw _privateConstructorUsedError;
 
-  /// Serializes this MarketFilter to a JSON map.
+  /// Serializes this MarketCategoryResponse to a JSON map.
   Map<String, dynamic> toJson() => throw _privateConstructorUsedError;
 
-  /// Create a copy of MarketFilter
+  /// Create a copy of MarketCategoryResponse
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
-  $MarketFilterCopyWith<MarketFilter> get copyWith =>
+  $MarketCategoryResponseCopyWith<MarketCategoryResponse> get copyWith =>
       throw _privateConstructorUsedError;
 }
 
 /// @nodoc
-abstract class $MarketFilterCopyWith<$Res> {
-  factory $MarketFilterCopyWith(
-    MarketFilter value,
-    $Res Function(MarketFilter) then,
-  ) = _$MarketFilterCopyWithImpl<$Res, MarketFilter>;
+abstract class $MarketCategoryResponseCopyWith<$Res> {
+  factory $MarketCategoryResponseCopyWith(
+    MarketCategoryResponse value,
+    $Res Function(MarketCategoryResponse) then,
+  ) = _$MarketCategoryResponseCopyWithImpl<$Res, MarketCategoryResponse>;
   @useResult
-  $Res call({
-    String query,
-    List<String> categories,
-    List<String> tags,
-    String author,
-    SortBy sortBy,
-    SortOrder sortOrder,
-    double minRating,
-    List<String> installMethods,
-  });
+  $Res call({int code, String message, List<MarketCategoryModel> data});
 }
 
 /// @nodoc
-class _$MarketFilterCopyWithImpl<$Res, $Val extends MarketFilter>
-    implements $MarketFilterCopyWith<$Res> {
-  _$MarketFilterCopyWithImpl(this._value, this._then);
+class _$MarketCategoryResponseCopyWithImpl<
+  $Res,
+  $Val extends MarketCategoryResponse
+>
+    implements $MarketCategoryResponseCopyWith<$Res> {
+  _$MarketCategoryResponseCopyWithImpl(this._value, this._then);
 
   // ignore: unused_field
   final $Val _value;
   // ignore: unused_field
   final $Res Function($Val) _then;
 
-  /// Create a copy of MarketFilter
+  /// Create a copy of MarketCategoryResponse
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? query = null,
-    Object? categories = null,
-    Object? tags = null,
-    Object? author = null,
-    Object? sortBy = null,
-    Object? sortOrder = null,
-    Object? minRating = null,
-    Object? installMethods = null,
+    Object? code = null,
+    Object? message = null,
+    Object? data = null,
   }) {
     return _then(
       _value.copyWith(
-            query: null == query
-                ? _value.query
-                : query // ignore: cast_nullable_to_non_nullable
+            code: null == code
+                ? _value.code
+                : code // ignore: cast_nullable_to_non_nullable
+                      as int,
+            message: null == message
+                ? _value.message
+                : message // ignore: cast_nullable_to_non_nullable
                       as String,
-            categories: null == categories
-                ? _value.categories
-                : categories // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-            tags: null == tags
-                ? _value.tags
-                : tags // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
-            author: null == author
-                ? _value.author
-                : author // ignore: cast_nullable_to_non_nullable
-                      as String,
-            sortBy: null == sortBy
-                ? _value.sortBy
-                : sortBy // ignore: cast_nullable_to_non_nullable
-                      as SortBy,
-            sortOrder: null == sortOrder
-                ? _value.sortOrder
-                : sortOrder // ignore: cast_nullable_to_non_nullable
-                      as SortOrder,
-            minRating: null == minRating
-                ? _value.minRating
-                : minRating // ignore: cast_nullable_to_non_nullable
-                      as double,
-            installMethods: null == installMethods
-                ? _value.installMethods
-                : installMethods // ignore: cast_nullable_to_non_nullable
-                      as List<String>,
+            data: null == data
+                ? _value.data
+                : data // ignore: cast_nullable_to_non_nullable
+                      as List<MarketCategoryModel>,
           )
           as $Val,
     );
@@ -1824,83 +1355,50 @@ class _$MarketFilterCopyWithImpl<$Res, $Val extends MarketFilter>
 }
 
 /// @nodoc
-abstract class _$$MarketFilterImplCopyWith<$Res>
-    implements $MarketFilterCopyWith<$Res> {
-  factory _$$MarketFilterImplCopyWith(
-    _$MarketFilterImpl value,
-    $Res Function(_$MarketFilterImpl) then,
-  ) = __$$MarketFilterImplCopyWithImpl<$Res>;
+abstract class _$$MarketCategoryResponseImplCopyWith<$Res>
+    implements $MarketCategoryResponseCopyWith<$Res> {
+  factory _$$MarketCategoryResponseImplCopyWith(
+    _$MarketCategoryResponseImpl value,
+    $Res Function(_$MarketCategoryResponseImpl) then,
+  ) = __$$MarketCategoryResponseImplCopyWithImpl<$Res>;
   @override
   @useResult
-  $Res call({
-    String query,
-    List<String> categories,
-    List<String> tags,
-    String author,
-    SortBy sortBy,
-    SortOrder sortOrder,
-    double minRating,
-    List<String> installMethods,
-  });
+  $Res call({int code, String message, List<MarketCategoryModel> data});
 }
 
 /// @nodoc
-class __$$MarketFilterImplCopyWithImpl<$Res>
-    extends _$MarketFilterCopyWithImpl<$Res, _$MarketFilterImpl>
-    implements _$$MarketFilterImplCopyWith<$Res> {
-  __$$MarketFilterImplCopyWithImpl(
-    _$MarketFilterImpl _value,
-    $Res Function(_$MarketFilterImpl) _then,
+class __$$MarketCategoryResponseImplCopyWithImpl<$Res>
+    extends
+        _$MarketCategoryResponseCopyWithImpl<$Res, _$MarketCategoryResponseImpl>
+    implements _$$MarketCategoryResponseImplCopyWith<$Res> {
+  __$$MarketCategoryResponseImplCopyWithImpl(
+    _$MarketCategoryResponseImpl _value,
+    $Res Function(_$MarketCategoryResponseImpl) _then,
   ) : super(_value, _then);
 
-  /// Create a copy of MarketFilter
+  /// Create a copy of MarketCategoryResponse
   /// with the given fields replaced by the non-null parameter values.
   @pragma('vm:prefer-inline')
   @override
   $Res call({
-    Object? query = null,
-    Object? categories = null,
-    Object? tags = null,
-    Object? author = null,
-    Object? sortBy = null,
-    Object? sortOrder = null,
-    Object? minRating = null,
-    Object? installMethods = null,
+    Object? code = null,
+    Object? message = null,
+    Object? data = null,
   }) {
     return _then(
-      _$MarketFilterImpl(
-        query: null == query
-            ? _value.query
-            : query // ignore: cast_nullable_to_non_nullable
+      _$MarketCategoryResponseImpl(
+        code: null == code
+            ? _value.code
+            : code // ignore: cast_nullable_to_non_nullable
+                  as int,
+        message: null == message
+            ? _value.message
+            : message // ignore: cast_nullable_to_non_nullable
                   as String,
-        categories: null == categories
-            ? _value._categories
-            : categories // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-        tags: null == tags
-            ? _value._tags
-            : tags // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
-        author: null == author
-            ? _value.author
-            : author // ignore: cast_nullable_to_non_nullable
-                  as String,
-        sortBy: null == sortBy
-            ? _value.sortBy
-            : sortBy // ignore: cast_nullable_to_non_nullable
-                  as SortBy,
-        sortOrder: null == sortOrder
-            ? _value.sortOrder
-            : sortOrder // ignore: cast_nullable_to_non_nullable
-                  as SortOrder,
-        minRating: null == minRating
-            ? _value.minRating
-            : minRating // ignore: cast_nullable_to_non_nullable
-                  as double,
-        installMethods: null == installMethods
-            ? _value._installMethods
-            : installMethods // ignore: cast_nullable_to_non_nullable
-                  as List<String>,
+        data: null == data
+            ? _value._data
+            : data // ignore: cast_nullable_to_non_nullable
+                  as List<MarketCategoryModel>,
       ),
     );
   }
@@ -1908,157 +1406,91 @@ class __$$MarketFilterImplCopyWithImpl<$Res>
 
 /// @nodoc
 @JsonSerializable()
-class _$MarketFilterImpl implements _MarketFilter {
-  const _$MarketFilterImpl({
-    this.query = '',
-    final List<String> categories = const [],
-    final List<String> tags = const [],
-    this.author = '',
-    this.sortBy = SortBy.popularity,
-    this.sortOrder = SortOrder.descending,
-    this.minRating = 0.0,
-    final List<String> installMethods = const [],
-  }) : _categories = categories,
-       _tags = tags,
-       _installMethods = installMethods;
+class _$MarketCategoryResponseImpl implements _MarketCategoryResponse {
+  const _$MarketCategoryResponseImpl({
+    required this.code,
+    required this.message,
+    required final List<MarketCategoryModel> data,
+  }) : _data = data;
 
-  factory _$MarketFilterImpl.fromJson(Map<String, dynamic> json) =>
-      _$$MarketFilterImplFromJson(json);
+  factory _$MarketCategoryResponseImpl.fromJson(Map<String, dynamic> json) =>
+      _$$MarketCategoryResponseImplFromJson(json);
 
   @override
-  @JsonKey()
-  final String query;
-  final List<String> _categories;
+  final int code;
   @override
-  @JsonKey()
-  List<String> get categories {
-    if (_categories is EqualUnmodifiableListView) return _categories;
+  final String message;
+  final List<MarketCategoryModel> _data;
+  @override
+  List<MarketCategoryModel> get data {
+    if (_data is EqualUnmodifiableListView) return _data;
     // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_categories);
-  }
-
-  final List<String> _tags;
-  @override
-  @JsonKey()
-  List<String> get tags {
-    if (_tags is EqualUnmodifiableListView) return _tags;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_tags);
-  }
-
-  @override
-  @JsonKey()
-  final String author;
-  @override
-  @JsonKey()
-  final SortBy sortBy;
-  @override
-  @JsonKey()
-  final SortOrder sortOrder;
-  @override
-  @JsonKey()
-  final double minRating;
-  final List<String> _installMethods;
-  @override
-  @JsonKey()
-  List<String> get installMethods {
-    if (_installMethods is EqualUnmodifiableListView) return _installMethods;
-    // ignore: implicit_dynamic_type
-    return EqualUnmodifiableListView(_installMethods);
+    return EqualUnmodifiableListView(_data);
   }
 
   @override
   String toString() {
-    return 'MarketFilter(query: $query, categories: $categories, tags: $tags, author: $author, sortBy: $sortBy, sortOrder: $sortOrder, minRating: $minRating, installMethods: $installMethods)';
+    return 'MarketCategoryResponse(code: $code, message: $message, data: $data)';
   }
 
   @override
   bool operator ==(Object other) {
     return identical(this, other) ||
         (other.runtimeType == runtimeType &&
-            other is _$MarketFilterImpl &&
-            (identical(other.query, query) || other.query == query) &&
-            const DeepCollectionEquality().equals(
-              other._categories,
-              _categories,
-            ) &&
-            const DeepCollectionEquality().equals(other._tags, _tags) &&
-            (identical(other.author, author) || other.author == author) &&
-            (identical(other.sortBy, sortBy) || other.sortBy == sortBy) &&
-            (identical(other.sortOrder, sortOrder) ||
-                other.sortOrder == sortOrder) &&
-            (identical(other.minRating, minRating) ||
-                other.minRating == minRating) &&
-            const DeepCollectionEquality().equals(
-              other._installMethods,
-              _installMethods,
-            ));
+            other is _$MarketCategoryResponseImpl &&
+            (identical(other.code, code) || other.code == code) &&
+            (identical(other.message, message) || other.message == message) &&
+            const DeepCollectionEquality().equals(other._data, _data));
   }
 
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   int get hashCode => Object.hash(
     runtimeType,
-    query,
-    const DeepCollectionEquality().hash(_categories),
-    const DeepCollectionEquality().hash(_tags),
-    author,
-    sortBy,
-    sortOrder,
-    minRating,
-    const DeepCollectionEquality().hash(_installMethods),
+    code,
+    message,
+    const DeepCollectionEquality().hash(_data),
   );
 
-  /// Create a copy of MarketFilter
+  /// Create a copy of MarketCategoryResponse
   /// with the given fields replaced by the non-null parameter values.
   @JsonKey(includeFromJson: false, includeToJson: false)
   @override
   @pragma('vm:prefer-inline')
-  _$$MarketFilterImplCopyWith<_$MarketFilterImpl> get copyWith =>
-      __$$MarketFilterImplCopyWithImpl<_$MarketFilterImpl>(this, _$identity);
+  _$$MarketCategoryResponseImplCopyWith<_$MarketCategoryResponseImpl>
+  get copyWith =>
+      __$$MarketCategoryResponseImplCopyWithImpl<_$MarketCategoryResponseImpl>(
+        this,
+        _$identity,
+      );
 
   @override
   Map<String, dynamic> toJson() {
-    return _$$MarketFilterImplToJson(this);
+    return _$$MarketCategoryResponseImplToJson(this);
   }
 }
 
-abstract class _MarketFilter implements MarketFilter {
-  const factory _MarketFilter({
-    final String query,
-    final List<String> categories,
-    final List<String> tags,
-    final String author,
-    final SortBy sortBy,
-    final SortOrder sortOrder,
-    final double minRating,
-    final List<String> installMethods,
-  }) = _$MarketFilterImpl;
+abstract class _MarketCategoryResponse implements MarketCategoryResponse {
+  const factory _MarketCategoryResponse({
+    required final int code,
+    required final String message,
+    required final List<MarketCategoryModel> data,
+  }) = _$MarketCategoryResponseImpl;
 
-  factory _MarketFilter.fromJson(Map<String, dynamic> json) =
-      _$MarketFilterImpl.fromJson;
+  factory _MarketCategoryResponse.fromJson(Map<String, dynamic> json) =
+      _$MarketCategoryResponseImpl.fromJson;
 
   @override
-  String get query;
+  int get code;
   @override
-  List<String> get categories;
+  String get message;
   @override
-  List<String> get tags;
-  @override
-  String get author;
-  @override
-  SortBy get sortBy;
-  @override
-  SortOrder get sortOrder;
-  @override
-  double get minRating;
-  @override
-  List<String> get installMethods;
+  List<MarketCategoryModel> get data;
 
-  /// Create a copy of MarketFilter
+  /// Create a copy of MarketCategoryResponse
   /// with the given fields replaced by the non-null parameter values.
   @override
   @JsonKey(includeFromJson: false, includeToJson: false)
-  _$$MarketFilterImplCopyWith<_$MarketFilterImpl> get copyWith =>
-      throw _privateConstructorUsedError;
+  _$$MarketCategoryResponseImplCopyWith<_$MarketCategoryResponseImpl>
+  get copyWith => throw _privateConstructorUsedError;
 }

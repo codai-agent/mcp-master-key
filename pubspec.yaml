@@ -52,6 +52,7 @@ dependencies:
   # 文件操作
   path_provider: ^2.1.1
   path: ^1.8.3
+  http: ^1.1.0
   
   # 网络请求
   dio: ^5.4.0

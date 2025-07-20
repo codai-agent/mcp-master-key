@@ -35,6 +35,7 @@
   
   "nav_servers": "服务器管理",
   "nav_install": "安装服务器",
+  "nav_market": "MCP服务商店",
   "nav_monitor": "监控",
   "nav_settings": "设置",
   
@@ -211,6 +212,24 @@
   "config_step_input_command_required": "请输入安装命令",
   "config_step_command_parse_success": "命令解析成功！配置已自动填入",
   "config_step_command_parse_failed": "命令解析失败：{error}",
+  
+  "market_title": "MCP服务商店",
+  "market_search_hint": "搜索MCP服务器...",
+  "market_all_categories": "所有类别",
+  "market_loading": "加载中...",
+  "market_load_error": "加载失败",
+  "market_retry": "重试",
+  "market_no_results": "未找到相关服务器",
+  "market_install": "安装",
+  "market_installed": "已安装",
+  "market_download_count": "下载量",
+  "market_used_count": "使用量",
+  "market_view_github": "查看GitHub",
+  "market_page_info": "第 {current} 页，共 {total} 个结果",
+  "market_previous_page": "上一页",
+  "market_next_page": "下一页",
+  "market_install_success": "安装成功",
+  "market_install_failed": "安装失败",
   
   "analysis_step_title": "分析安装策略",
   "analysis_step_subtitle": "正在分析MCP服务器配置...",

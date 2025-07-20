@@ -108,6 +108,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nav_install => '安装服务器';
 
   @override
+  String get nav_market => 'MCP服务商店';
+
+  @override
   String get nav_monitor => '监控';
 
   @override
@@ -616,6 +619,59 @@ class AppLocalizationsZh extends AppLocalizations {
   String config_step_command_parse_failed(Object error) {
     return '命令解析失败：$error';
   }
+
+  @override
+  String get market_title => 'MCP服务商店';
+
+  @override
+  String get market_search_hint => '搜索MCP服务器...';
+
+  @override
+  String get market_all_categories => '所有类别';
+
+  @override
+  String get market_loading => '加载中...';
+
+  @override
+  String get market_load_error => '加载失败';
+
+  @override
+  String get market_retry => '重试';
+
+  @override
+  String get market_no_results => '未找到相关服务器';
+
+  @override
+  String get market_install => '安装';
+
+  @override
+  String get market_installed => '已安装';
+
+  @override
+  String get market_download_count => '下载量';
+
+  @override
+  String get market_used_count => '使用量';
+
+  @override
+  String get market_view_github => '查看GitHub';
+
+  @override
+  String market_page_info(Object current, Object total) {
+    return '第 $current 页，共 $total 个结果';
+  }
+
+  @override
+  String get market_previous_page => '上一页';
+
+  @override
+  String get market_next_page => '下一页';
+
+  @override
+  String get market_install_success => '安装成功';
+
+  @override
+  String get market_install_failed => '安装失败';
 
   @override
   String get analysis_step_title => '分析安装策略';

@@ -4,6 +4,7 @@ import 'servers_list_page.dart';
 import 'hub_monitor_page.dart';
 import 'settings_page.dart';
 import 'installation_wizard_page_new.dart';
+import 'mcp_market_page.dart';
 import '../themes/app_theme.dart';
 import '../../l10n/generated/app_localizations.dart';
 
@@ -29,6 +30,11 @@ class _HomePageState extends ConsumerState<HomePage> {
         icon: Icons.add_circle,
         label: l10n.nav_install,
         page: const InstallationWizardPageNew(),
+      ),
+      NavigationItem(
+        icon: Icons.store,
+        label: l10n.nav_market,
+        page: const McpMarketPage(),
       ),
       NavigationItem(
         icon: Icons.monitor,

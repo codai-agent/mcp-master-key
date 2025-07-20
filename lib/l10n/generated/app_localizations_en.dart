@@ -108,6 +108,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nav_install => 'Install Server';
 
   @override
+  String get nav_market => 'MCP Store';
+
+  @override
   String get nav_monitor => 'Monitor';
 
   @override
@@ -654,6 +657,59 @@ class AppLocalizationsEn extends AppLocalizations {
   String config_step_command_parse_failed(Object error) {
     return 'Command parsing failed: $error';
   }
+
+  @override
+  String get market_title => 'MCP Store';
+
+  @override
+  String get market_search_hint => 'Search MCP servers...';
+
+  @override
+  String get market_all_categories => 'All Categories';
+
+  @override
+  String get market_loading => 'Loading...';
+
+  @override
+  String get market_load_error => 'Failed to load';
+
+  @override
+  String get market_retry => 'Retry';
+
+  @override
+  String get market_no_results => 'No servers found';
+
+  @override
+  String get market_install => 'Install';
+
+  @override
+  String get market_installed => 'Installed';
+
+  @override
+  String get market_download_count => 'Downloads';
+
+  @override
+  String get market_used_count => 'Usage';
+
+  @override
+  String get market_view_github => 'View GitHub';
+
+  @override
+  String market_page_info(Object current, Object total) {
+    return 'Page $current, $total results total';
+  }
+
+  @override
+  String get market_previous_page => 'Previous';
+
+  @override
+  String get market_next_page => 'Next';
+
+  @override
+  String get market_install_success => 'Installation successful';
+
+  @override
+  String get market_install_failed => 'Installation failed';
 
   @override
   String get analysis_step_title => 'Analyze Installation Strategy';

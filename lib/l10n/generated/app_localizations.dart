@@ -296,6 +296,12 @@ abstract class AppLocalizations {
   /// **'Install Server'**
   String get nav_install;
 
+  /// No description provided for @nav_market.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP Store'**
+  String get nav_market;
+
   /// No description provided for @nav_monitor.
   ///
   /// In en, this message translates to:
@@ -1261,6 +1267,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Command parsing failed: {error}'**
   String config_step_command_parse_failed(Object error);
+
+  /// No description provided for @market_title.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP Store'**
+  String get market_title;
+
+  /// No description provided for @market_search_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'Search MCP servers...'**
+  String get market_search_hint;
+
+  /// No description provided for @market_all_categories.
+  ///
+  /// In en, this message translates to:
+  /// **'All Categories'**
+  String get market_all_categories;
+
+  /// No description provided for @market_loading.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get market_loading;
+
+  /// No description provided for @market_load_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load'**
+  String get market_load_error;
+
+  /// No description provided for @market_retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get market_retry;
+
+  /// No description provided for @market_no_results.
+  ///
+  /// In en, this message translates to:
+  /// **'No servers found'**
+  String get market_no_results;
+
+  /// No description provided for @market_install.
+  ///
+  /// In en, this message translates to:
+  /// **'Install'**
+  String get market_install;
+
+  /// No description provided for @market_installed.
+  ///
+  /// In en, this message translates to:
+  /// **'Installed'**
+  String get market_installed;
+
+  /// No description provided for @market_download_count.
+  ///
+  /// In en, this message translates to:
+  /// **'Downloads'**
+  String get market_download_count;
+
+  /// No description provided for @market_used_count.
+  ///
+  /// In en, this message translates to:
+  /// **'Usage'**
+  String get market_used_count;
+
+  /// No description provided for @market_view_github.
+  ///
+  /// In en, this message translates to:
+  /// **'View GitHub'**
+  String get market_view_github;
+
+  /// No description provided for @market_page_info.
+  ///
+  /// In en, this message translates to:
+  /// **'Page {current}, {total} results total'**
+  String market_page_info(Object current, Object total);
+
+  /// No description provided for @market_previous_page.
+  ///
+  /// In en, this message translates to:
+  /// **'Previous'**
+  String get market_previous_page;
+
+  /// No description provided for @market_next_page.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get market_next_page;
+
+  /// No description provided for @market_install_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation successful'**
+  String get market_install_success;
+
+  /// No description provided for @market_install_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Installation failed'**
+  String get market_install_failed;
 
   /// No description provided for @analysis_step_title.
   ///
