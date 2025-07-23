@@ -195,7 +195,7 @@
   "config_step_title": "配置MCP服务器",
   "config_step_subtitle": "请输入MCP服务器的基本信息和配置",
   "config_step_basic_info": "基本信息",
-  "config_step_server_name": "服务器名称（可选）",
+  "config_step_server_name": "服务器名称（自动）",
   "config_step_server_name_hint": "例如：my-mcp-server",
   "config_step_server_description": "服务器描述（可选）",
   "config_step_server_description_hint": "例如：用于文件操作的MCP服务器",

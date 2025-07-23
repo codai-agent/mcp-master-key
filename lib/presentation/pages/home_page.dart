@@ -16,11 +16,16 @@ class HomePage extends ConsumerStatefulWidget {
 }
 
 class _HomePageState extends ConsumerState<HomePage> {
-  int _selectedIndex = 0;
+  int _selectedIndex = 1;
   bool _isSidebarExpanded = true;
   
   List<NavigationItem> _getNavigationItems(AppLocalizations l10n) {
     return [
+      NavigationItem(
+        icon: Icons.store,
+        label: l10n.nav_market,
+        page: const McpMarketPage(),
+      ),
       NavigationItem(
         icon: Icons.dashboard,
         label: l10n.nav_servers,
@@ -30,11 +35,6 @@ class _HomePageState extends ConsumerState<HomePage> {
         icon: Icons.add_circle,
         label: l10n.nav_install,
         page: const InstallationWizardPageNew(),
-      ),
-      NavigationItem(
-        icon: Icons.store,
-        label: l10n.nav_market,
-        page: const McpMarketPage(),
       ),
       NavigationItem(
         icon: Icons.monitor,

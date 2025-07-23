@@ -567,7 +567,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get config_step_basic_info => '基本信息';
 
   @override
-  String get config_step_server_name => '服务器名称（可选）';
+  String get config_step_server_name => '服务器名称（自动）';
 
   @override
   String get config_step_server_name_hint => '例如：my-mcp-server';
