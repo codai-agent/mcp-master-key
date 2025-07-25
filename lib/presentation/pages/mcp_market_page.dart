@@ -26,23 +26,26 @@ class MarketServerState {
   final List<MarketServerModel> servers;
   final bool isLoading;
   final String? error;
-  final int currentPage;
   final int totalPages;
   final int totalCount;
+  final bool hasNextPage;
+  
+  // 查询参数组 - 这是查询的唯一来源
+  final int currentPage;
   final String searchQuery;
   final String? selectedCategory;
-  final bool hasNextPage;
 
   MarketServerState({
     this.servers = const [],
     this.isLoading = false,
     this.error,
-    this.currentPage = 1,
     this.totalPages = 1,
     this.totalCount = 0,
+    this.hasNextPage = true,
+    // 查询参数
+    this.currentPage = 1,
     this.searchQuery = '',
     this.selectedCategory,
-    this.hasNextPage = true,
   });
 
   MarketServerState copyWith({
@@ -55,6 +58,7 @@ class MarketServerState {
     String? searchQuery,
     String? selectedCategory,
     bool? hasNextPage,
+    bool? clearSelectedCategory, // 新增参数，用于明确清空selectedCategory
   }) {
     return MarketServerState(
       servers: servers ?? this.servers,
@@ -64,7 +68,7 @@ class MarketServerState {
       totalPages: totalPages ?? this.totalPages,
       totalCount: totalCount ?? this.totalCount,
       searchQuery: searchQuery ?? this.searchQuery,
-      selectedCategory: selectedCategory ?? this.selectedCategory,
+      selectedCategory: clearSelectedCategory == true ? null : (selectedCategory ?? this.selectedCategory),
       hasNextPage: hasNextPage ?? this.hasNextPage,
     );
   }
@@ -72,37 +76,33 @@ class MarketServerState {
 
 class MarketServerNotifier extends StateNotifier<MarketServerState> {
   MarketServerNotifier() : super(MarketServerState()) {
-    loadServers();
+    _executeQuery(); // 初始加载
   }
 
   final _service = McpMarketService.instance;
 
-  Future<void> loadServers({
-    int? page,
-    String? search,
-    String? category,
-  }) async {
+  // 简化的加载方法 - 始终使用state中的查询参数
+  Future<void> _executeQuery() async {
     state = state.copyWith(isLoading: true, error: null);
-
+    
     try {
+      print('🔍 _executeQuery: page=${state.currentPage}, search="${state.searchQuery}", category=${state.selectedCategory}');
+      
       final response = await _service.getServers(
-        page: page ?? state.currentPage,
-        search: search ?? state.searchQuery,
-        category: category ?? state.selectedCategory,
+        page: state.currentPage,
+        search: state.searchQuery,
+        category: state.selectedCategory,
         size: 9,
       );
 
       final totalPages = (response.data.total / 9).ceil();
-      final hasNextPage = response.data.items.length == 9; // 如果返回了9个项目，可能还有下一页
+      final hasNextPage = response.data.items.length == 9;
 
       state = state.copyWith(
         servers: response.data.items,
         isLoading: false,
-        currentPage: response.data.page,
         totalPages: totalPages,
         totalCount: response.data.total,
-        searchQuery: search ?? state.searchQuery,
-        selectedCategory: category ?? state.selectedCategory,
         hasNextPage: hasNextPage,
       );
     } catch (e) {
@@ -114,81 +114,46 @@ class MarketServerNotifier extends StateNotifier<MarketServerState> {
   }
 
   void setSearchQuery(String query) {
+    // 更新查询参数并重新查询
     state = state.copyWith(searchQuery: query, currentPage: 1, hasNextPage: true);
-    loadServers(page: 1, search: query);
+    _executeQuery();
   }
 
   void setCategory(String? category) {
-    state = state.copyWith(selectedCategory: category, currentPage: 1, hasNextPage: true);
-    loadServers(page: 1, category: category);
+    print('📝 setCategory called with: $category');
+    print('📝 Before update - state.selectedCategory: ${state.selectedCategory}');
+    
+    // 更新查询参数并重新查询
+    if (category == null) {
+      // 明确清空selectedCategory
+      state = state.copyWith(clearSelectedCategory: true, currentPage: 1, hasNextPage: true);
+    } else {
+      // 设置具体的category值
+      state = state.copyWith(selectedCategory: category, currentPage: 1, hasNextPage: true);
+    }
+    
+    print('📝 After update - state.selectedCategory: ${state.selectedCategory}');
+    _executeQuery();
   }
 
   void nextPage() async {
-    if (state.hasNextPage) {
-      final currentPage = state.currentPage;
-      try {
-        final response = await _service.getServers(
-          page: currentPage + 1,
-          search: state.searchQuery,
-          category: state.selectedCategory,
-          size: 9,
-        );
-        
-        // 如果下一页没有数据，保持当前页不变，标记没有下一页
-        if (response.data.items.isEmpty) {
-          state = state.copyWith(hasNextPage: false);
-        } else {
-          // 有数据，正常更新到下一页
-          final totalPages = (response.data.total / 9).ceil();
-          final hasNextPage = response.data.items.length == 9;
-          
-          state = state.copyWith(
-            servers: response.data.items,
-            currentPage: currentPage + 1,
-            totalPages: totalPages,
-            totalCount: response.data.total,
-            hasNextPage: hasNextPage,
-          );
-        }
-      } catch (e) {
-        // 发生错误时，标记没有下一页
-        state = state.copyWith(hasNextPage: false);
-      }
+    if (state.hasNextPage && !state.isLoading) {
+      // 更新页码并查询
+      state = state.copyWith(currentPage: state.currentPage + 1);
+      await _executeQuery();
     }
   }
 
   void previousPage() async {
-    if (state.currentPage > 1) {
-      try {
-        final response = await _service.getServers(
-          page: state.currentPage - 1,
-          search: state.searchQuery,
-          category: state.selectedCategory,
-          size: 9,
-        );
-        
-        final totalPages = (response.data.total / 9).ceil();
-        final hasNextPage = response.data.items.length == 9;
-        
-        state = state.copyWith(
-          servers: response.data.items,
-          currentPage: state.currentPage - 1,
-          totalPages: totalPages,
-          totalCount: response.data.total,
-          hasNextPage: hasNextPage,
-          isLoading: false,
-        );
-      } catch (e) {
-        state = state.copyWith(
-          error: e.toString(),
-          isLoading: false,
-        );
-      }
+    if (state.currentPage > 1 && !state.isLoading) {
+      // 更新页码并查询
+      state = state.copyWith(currentPage: state.currentPage - 1);
+      await _executeQuery();
     }
   }
 
   void refresh() {
-    loadServers();
+    _executeQuery();
   }
 }
 
