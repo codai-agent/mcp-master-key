@@ -506,6 +506,78 @@ abstract class AppLocalizations {
   /// **'Load failed: {error}'**
   String servers_load_failed(String error);
 
+  /// No description provided for @servers_edit_dialog_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Server Configuration - {serverName}'**
+  String servers_edit_dialog_title(String serverName);
+
+  /// No description provided for @servers_edit_command_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Command'**
+  String get servers_edit_command_label;
+
+  /// No description provided for @servers_edit_command_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g.: node, python, /path/to/executable'**
+  String get servers_edit_command_hint;
+
+  /// No description provided for @servers_edit_command_helper.
+  ///
+  /// In en, this message translates to:
+  /// **'Path to executable or command'**
+  String get servers_edit_command_helper;
+
+  /// No description provided for @servers_edit_args_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Arguments'**
+  String get servers_edit_args_label;
+
+  /// No description provided for @servers_edit_args_hint.
+  ///
+  /// In en, this message translates to:
+  /// **'e.g.: --port 3000 --config \"path/to/config.json\"'**
+  String get servers_edit_args_hint;
+
+  /// No description provided for @servers_edit_args_helper.
+  ///
+  /// In en, this message translates to:
+  /// **'Command line arguments, space-separated, use quotes for arguments with spaces'**
+  String get servers_edit_args_helper;
+
+  /// No description provided for @servers_edit_preview_title.
+  ///
+  /// In en, this message translates to:
+  /// **'Preview Full Command'**
+  String get servers_edit_preview_title;
+
+  /// No description provided for @servers_edit_command_empty.
+  ///
+  /// In en, this message translates to:
+  /// **'Command cannot be empty'**
+  String get servers_edit_command_empty;
+
+  /// No description provided for @servers_edit_save_success.
+  ///
+  /// In en, this message translates to:
+  /// **'Server configuration updated'**
+  String get servers_edit_save_success;
+
+  /// No description provided for @servers_edit_save_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Save failed: {error}'**
+  String servers_edit_save_failed(String error);
+
+  /// No description provided for @servers_edit_load_failed.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load server information'**
+  String get servers_edit_load_failed;
+
   /// No description provided for @install_title.
   ///
   /// In en, this message translates to:

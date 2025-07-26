@@ -86,7 +86,7 @@ class MarketServerNotifier extends StateNotifier<MarketServerState> {
     state = state.copyWith(isLoading: true, error: null);
     
     try {
-      print('🔍 _executeQuery: page=${state.currentPage}, search="${state.searchQuery}", category=${state.selectedCategory}');
+
       
       final response = await _service.getServers(
         page: state.currentPage,
@@ -120,9 +120,6 @@ class MarketServerNotifier extends StateNotifier<MarketServerState> {
   }
 
   void setCategory(String? category) {
-    print('📝 setCategory called with: $category');
-    print('📝 Before update - state.selectedCategory: ${state.selectedCategory}');
-    
     // 更新查询参数并重新查询
     if (category == null) {
       // 明确清空selectedCategory
@@ -132,7 +129,6 @@ class MarketServerNotifier extends StateNotifier<MarketServerState> {
       state = state.copyWith(selectedCategory: category, currentPage: 1, hasNextPage: true);
     }
     
-    print('📝 After update - state.selectedCategory: ${state.selectedCategory}');
     _executeQuery();
   }
 

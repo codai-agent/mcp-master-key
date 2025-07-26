@@ -231,6 +231,49 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String servers_edit_dialog_title(String serverName) {
+    return 'Edit Server Configuration - $serverName';
+  }
+
+  @override
+  String get servers_edit_command_label => 'Command';
+
+  @override
+  String get servers_edit_command_hint =>
+      'e.g.: node, python, /path/to/executable';
+
+  @override
+  String get servers_edit_command_helper => 'Path to executable or command';
+
+  @override
+  String get servers_edit_args_label => 'Arguments';
+
+  @override
+  String get servers_edit_args_hint =>
+      'e.g.: --port 3000 --config \"path/to/config.json\"';
+
+  @override
+  String get servers_edit_args_helper =>
+      'Command line arguments, space-separated, use quotes for arguments with spaces';
+
+  @override
+  String get servers_edit_preview_title => 'Preview Full Command';
+
+  @override
+  String get servers_edit_command_empty => 'Command cannot be empty';
+
+  @override
+  String get servers_edit_save_success => 'Server configuration updated';
+
+  @override
+  String servers_edit_save_failed(String error) {
+    return 'Save failed: $error';
+  }
+
+  @override
+  String get servers_edit_load_failed => 'Failed to load server information';
+
+  @override
   String get install_title => 'Install MCP Server';
 
   @override

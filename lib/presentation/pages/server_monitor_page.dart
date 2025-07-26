@@ -7,6 +7,7 @@ import '../../business/managers/enhanced_mcp_process_manager.dart';
 import '../../infrastructure/mcp/mcp_tools_aggregator.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../providers/servers_provider.dart';
+import '../widgets/server_edit_dialog.dart';
 
 class ServerMonitorPage extends ConsumerStatefulWidget {
   final String serverId;
@@ -1054,10 +1055,7 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
           await serverActions.restartServer(widget.serverId);
           break;
         case 'edit':
-          // TODO: 导航到编辑页面
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('编辑功能开发中')),
-          );
+          await _showEditDialog();
           break;
         case 'delete':
           final confirmed = await _showDeleteConfirmation();
@@ -1080,6 +1078,41 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
         );
       }
     }
+  }
+
+  Future<void> _showEditDialog() async {
+    final l10n = AppLocalizations.of(context)!;
+    final serverAsync = ref.read(serverProvider(widget.serverId));
+    final server = serverAsync.value;
+    
+    if (server == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.servers_edit_load_failed)),
+      );
+      return;
+    }
+
+    await showDialog<void>(
+      context: context,
+      builder: (context) => ServerEditDialog(
+        server: server,
+        onSave: (command, args) async {
+          // 更新服务器配置
+          final updatedServer = server.copyWith(
+            command: command,
+            args: args,
+            updatedAt: DateTime.now(),
+          );
+          
+          // 保存到数据库
+          final serverActions = ref.read(serverActionsProvider);
+          await serverActions.updateServer(updatedServer);
+          
+          // 刷新服务器信息
+          ref.refresh(serverProvider(widget.serverId));
+        },
+      ),
+    );
   }
 
   Future<bool> _showDeleteConfirmation() async {

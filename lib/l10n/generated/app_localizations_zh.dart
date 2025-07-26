@@ -229,6 +229,48 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String servers_edit_dialog_title(String serverName) {
+    return '编辑服务器配置 - $serverName';
+  }
+
+  @override
+  String get servers_edit_command_label => '命令';
+
+  @override
+  String get servers_edit_command_hint =>
+      '例如: node, python, /path/to/executable';
+
+  @override
+  String get servers_edit_command_helper => '可执行文件的路径或命令';
+
+  @override
+  String get servers_edit_args_label => '参数';
+
+  @override
+  String get servers_edit_args_hint =>
+      '例如: --port 3000 --config \"path/to/config.json\"';
+
+  @override
+  String get servers_edit_args_helper => '命令行参数，用空格分隔，可使用引号包含带空格的参数';
+
+  @override
+  String get servers_edit_preview_title => '预览完整命令';
+
+  @override
+  String get servers_edit_command_empty => '命令不能为空';
+
+  @override
+  String get servers_edit_save_success => '服务器配置已更新';
+
+  @override
+  String servers_edit_save_failed(String error) {
+    return '保存失败: $error';
+  }
+
+  @override
+  String get servers_edit_load_failed => '服务器信息加载失败';
+
+  @override
   String get install_title => '安装MCP服务器';
 
   @override
