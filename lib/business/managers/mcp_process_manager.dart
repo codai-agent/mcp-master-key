@@ -552,19 +552,29 @@ class McpProcessManager {
     }
 
     // 安全地添加服务器特定的环境变量
-    // try {
-    //   for (final entry in server.env.entries) {
-    //     final key = entry.key;
-    //     final value = entry.value;
-    //
-    //     // 验证键值对有效性
-    //     if (key.isNotEmpty && key.length < 1000 && value.length < 10000) {
-    //       environment[key] = value;
-    //     }
-    //   }
-    // } catch (e) {
-    //   print('   ⚠️ Warning: Failed to add server environment variables: $e');
-    // }
+    try {
+      for (final entry in server.env.entries) {
+        final key = entry.key;
+        final value = entry.value;
+        //PATH已经在上面组装过了，这里直接跳过，避免覆盖掉 //huqb
+        if (key == 'PATH') {
+          continue;
+        }
+        // 验证键值对有效性
+        if (key.isNotEmpty && key.length < 1000 && value.length < 10000) {
+          environment[key] = value;
+          print('   ✅ Added server env var: $key = ${value.length > 50 ? '${value.substring(0, 50)}...' : value}');
+        } else {
+          print('   ⚠️ Skipped invalid env var: $key (key: ${key.length} chars, value: ${value.length} chars)');
+        }
+      }
+      
+      if (server.env.isNotEmpty) {
+        print('   🌍 Added ${server.env.length} server-specific environment variables');
+      }
+    } catch (e) {
+      print('   ⚠️ Warning: Failed to add server environment variables: $e');
+    }
 
     return environment;
   }
@@ -1530,6 +1540,9 @@ npmExec.on('exit', (code) => process.exit(code));
   /// 查找UVX已安装的可执行文件（跨平台兼容）
   Future<String?> _findUvxExecutable(String packageName) async {
     try {
+      if (packageName.contains("@")) {
+        packageName = packageName.split('@').first;//huqb
+      }
       final mcpHubBasePath = PathConstants.getUserMcpHubPath();
       final uvToolsDir = '$mcpHubBasePath/packages/uv/tools/$packageName';
       

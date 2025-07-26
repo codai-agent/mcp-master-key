@@ -481,7 +481,7 @@ class UvxInstallManager implements InstallManagerInterface {
       final uvPath = await _runtimeManager.getUvExecutable();
       final environment = await getEnvironmentVariables(server);
 
-      final args = ['tool', 'install', packageName];
+      final args = ['tool', 'install', packageName, '--force'];
       // 检查是否包含--from参数并获取安装源
       if (server.args.contains('--from') || server.args.contains('--directory')) {
         String param = '--from';
