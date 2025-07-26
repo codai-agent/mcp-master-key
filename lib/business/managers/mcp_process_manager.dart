@@ -270,11 +270,15 @@ class McpProcessManager {
       } catch (e) {
         print('   ⚠️ Warning: Failed to get runtime paths: $e');
       }
-      
+
+      var pathSeparator = ":";
+      if (Platform.isWindows) {
+        pathSeparator = ";";
+      }
       // // 2. 然后添加用户当前环境的PATH（保持兼容性）
       // final userPath = Platform.environment['PATH'];
       // if (userPath != null && userPath.isNotEmpty) {
-      //   final userPaths = userPath.split(Platform.pathSeparator)
+      //   final userPaths = userPath.split(pathSeparator)
       //       .where((path) => path.isNotEmpty && !pathComponents.contains(path))
       //       .toList();
       //   pathComponents.addAll(userPaths);
@@ -317,10 +321,7 @@ class McpProcessManager {
           pathComponents.add(essentialPath);
         }
       }
-      var pathSeparator = ":";
-      if (Platform.isWindows) {
-        pathSeparator = ";";
-      }
+
       environment['PATH'] = pathComponents.join(pathSeparator);
       
       // 🏠 基础环境变量 - 智能继承用户环境
@@ -711,9 +712,15 @@ class McpProcessManager {
           final workingDir = await getServerWorkingDirectory(server);
           await _ensureLocalPackageInstalled(packageName, workingDir);
           
-          // 修改为使用node直接运行包的入口文件
+          // 修改为使用node直接运行包的入口文件，并包含包名后的参数
           final packageDir = path.join(workingDir, 'node_modules', packageName);
-          final args = [path.join(packageDir, 'build', 'index.js')];
+          final entryFile = path.join(packageDir, 'build', 'index.js');
+          
+          // 提取包名后的所有参数
+          final packageArgs = _extractArgsAfterPackage(server.args, packageName);
+          
+          // 组合入口文件和参数
+          final args = [entryFile, ...packageArgs];
           print('   📦 Using direct Node.js execution with args: ${args.join(' ')}');
           return args;
         } else {
@@ -727,22 +734,27 @@ class McpProcessManager {
           
           // 从包名中提取可执行文件名
           // 对于@wopal/mcp-server-hotnews，可执行文件名通常是mcp-server-hotnews
-          String executableName = await _getNpxBinName(packageName) ?? packageName;
+          String executableName = await _getNpxBinName(packageName) ?? packageName;//huqb 这里需要注意，生成的执行文件可能跟报名不一致
           if (executableName.contains('/')) {
             // 对于scoped包（如@wopal/mcp-server-hotnews），通常可执行文件名是包名的后半部分
             executableName = executableName.split('/').last;
           }
           
+          // 提取包名后的所有参数
+          final packageArgs = _extractArgsAfterPackage(server.args, packageName);
+          final argsString = packageArgs.map((arg) => '"${arg.replaceAll('"', '\\"')}"').join(', ');
+          
           // 构建JavaScript代码，确保路径正确转义
           final jsCode = '''
 process.chdir("${workingDir.replaceAll('\\', '\\\\')}");
 process.env.PATH = "${binDir.replaceAll('\\', '\\\\')}:" + (process.env.PATH || "");
-require("child_process").spawn("$executableName", process.argv.slice(1), {stdio: "inherit"});
+require("child_process").spawn("$executableName", [$argsString], {stdio: "inherit"});
 '''.trim();
           
           final args = ['-e', jsCode];
           print('   📦 Using Node.js spawn method with enhanced PATH:');
           print('   📋 Executable name: $executableName (from $packageName)');
+          print('   📋 Package args: $packageArgs');
           print('   📋 JavaScript code: ${jsCode.replaceAll('\n', '; ')}');
           return args;
         }
@@ -928,6 +940,24 @@ npmExec.on('exit', (code) => process.exit(code));
     
     print('   ❌ Could not extract package name from args');
     return null;
+  }
+
+  /// 提取包名后的所有参数
+  List<String> _extractArgsAfterPackage(List<String> args, String packageName) {
+    print('   🔍 Extracting args after package: $packageName from args: $args');
+    
+    // 找到包名在args中的位置
+    for (int i = 0; i < args.length; i++) {
+      if (args[i] == packageName) {
+        // 返回包名后的所有参数
+        final packageArgs = args.skip(i + 1).toList();
+        print('   ✅ Found args after package: $packageArgs');
+        return packageArgs;
+      }
+    }
+    
+    print('   ⚠️ Package name not found in args, returning empty list');
+    return [];
   }
 
   /// 确保包在本地目录也安装了（Windows特定）
