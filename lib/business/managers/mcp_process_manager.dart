@@ -271,15 +271,15 @@ class McpProcessManager {
         print('   ⚠️ Warning: Failed to get runtime paths: $e');
       }
       
-      // 2. 然后添加用户当前环境的PATH（保持兼容性）
-      final userPath = Platform.environment['PATH'];
-      if (userPath != null && userPath.isNotEmpty) {
-        final userPaths = userPath.split(Platform.pathSeparator)
-            .where((path) => path.isNotEmpty && !pathComponents.contains(path))
-            .toList();
-        pathComponents.addAll(userPaths);
-        print('   📋 Inherited ${userPaths.length} paths from user environment');
-      }
+      // // 2. 然后添加用户当前环境的PATH（保持兼容性）
+      // final userPath = Platform.environment['PATH'];
+      // if (userPath != null && userPath.isNotEmpty) {
+      //   final userPaths = userPath.split(Platform.pathSeparator)
+      //       .where((path) => path.isNotEmpty && !pathComponents.contains(path))
+      //       .toList();
+      //   pathComponents.addAll(userPaths);
+      //   print('   📋 Inherited ${userPaths.length} paths from user environment');
+      // }
       
       // 3. 最后确保关键系统路径存在（作为后备）
       List<String> essentialPaths;
@@ -317,8 +317,11 @@ class McpProcessManager {
           pathComponents.add(essentialPath);
         }
       }
-      
-      environment['PATH'] = pathComponents.join(Platform.pathSeparator);
+      var pathSeparator = ":";
+      if (Platform.isWindows) {
+        pathSeparator = ";";
+      }
+      environment['PATH'] = pathComponents.join(pathSeparator);
       
       // 🏠 基础环境变量 - 智能继承用户环境
       environment['HOME'] = Platform.environment['HOME'] ?? 
@@ -548,19 +551,19 @@ class McpProcessManager {
     }
 
     // 安全地添加服务器特定的环境变量
-    try {
-      for (final entry in server.env.entries) {
-        final key = entry.key;
-        final value = entry.value;
-        
-        // 验证键值对有效性
-        if (key.isNotEmpty && key.length < 1000 && value.length < 10000) {
-          environment[key] = value;
-        }
-      }
-    } catch (e) {
-      print('   ⚠️ Warning: Failed to add server environment variables: $e');
-    }
+    // try {
+    //   for (final entry in server.env.entries) {
+    //     final key = entry.key;
+    //     final value = entry.value;
+    //
+    //     // 验证键值对有效性
+    //     if (key.isNotEmpty && key.length < 1000 && value.length < 10000) {
+    //       environment[key] = value;
+    //     }
+    //   }
+    // } catch (e) {
+    //   print('   ⚠️ Warning: Failed to add server environment variables: $e');
+    // }
 
     return environment;
   }
@@ -724,7 +727,7 @@ class McpProcessManager {
           
           // 从包名中提取可执行文件名
           // 对于@wopal/mcp-server-hotnews，可执行文件名通常是mcp-server-hotnews
-          String executableName = packageName;
+          String executableName = await _getNpxBinName(packageName) ?? packageName;
           if (executableName.contains('/')) {
             // 对于scoped包（如@wopal/mcp-server-hotnews），通常可执行文件名是包名的后半部分
             executableName = executableName.split('/').last;
@@ -1062,6 +1065,49 @@ npmExec.on('exit', (code) => process.exit(code));
     }
     
     await _ensureNpxPackageInstalledWithPackageName(server, packageName);
+  }
+
+  /// 获取NPX安装包下面的package.json中的‘bin’中定义的执行文件名
+  Future<String?> _getNpxBinName(String packageName) async {
+    try {
+      final nodeExe = await _runtimeManager.getNodeExecutable();
+      final nodeBasePath = path.dirname(path.dirname(nodeExe));
+
+      String nodeModulesPath;
+      if (Platform.isWindows) {
+        // Windows: 直接在node_modules目录下
+        nodeModulesPath = path.join(nodeBasePath, 'node_modules', packageName, 'package.json');
+      } else {
+        // Unix/Linux/macOS: lib/node_modules目录下
+        nodeModulesPath = path.join(nodeBasePath, 'lib', 'node_modules', packageName, 'package.json');
+      }
+
+      print('   🔍 Checking package bin path: $nodeModulesPath');
+      final exists = await File(nodeModulesPath).exists();
+      print('   📋 Package bin exists: $exists');
+      if (exists) {
+        //读取bin
+        final file = File(nodeModulesPath);
+        final jsonString = await file.readAsString();
+
+        // 2. 解析 JSON
+        final jsonMap = jsonDecode(jsonString) as Map<String, dynamic>;
+
+        // 3. 获取 bin 对象的键名
+        if (jsonMap.containsKey('bin') && jsonMap['bin'] is Map) {
+          final binMap = jsonMap['bin'] as Map<String, dynamic>;
+          final keys = binMap.keys.toList();
+          if (keys.isNotEmpty) {
+            print('bin name: ${keys.first}');//是否需要判断bin[keys.first]=='dist/index.js'
+            return keys.first;
+          }
+        }
+      }
+      return null;
+    } catch (e) {
+      print('   ❌ Error checking package installation: $e');
+      return null;
+    }
   }
   
   /// 检查NPX包是否已安装（跨平台兼容）

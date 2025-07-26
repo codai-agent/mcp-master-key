@@ -36,7 +36,7 @@ class UvxInstallManager implements InstallManagerInterface {
         );
       }
 
-      final packageName = _extractPackageName(server);
+      var packageName = _extractPackageName(server);
       if (packageName == null) {
         return InstallResult(
           success: false,
@@ -62,7 +62,12 @@ class UvxInstallManager implements InstallManagerInterface {
       }
 
       // 执行安装
-      final result = await _installUvxPackage(packageName, server);
+      var result = await _installUvxPackage(packageName, server);
+      //如果安装失败，可能是package不对，再从启动参数里面去取一次程序名称
+      if (!result.success) {
+        packageName = _extractRuntimePkgName(server);
+        result = await _installUvxPackage(packageName!, server);
+      }
       
       return InstallResult(
         success: result.success,
@@ -412,7 +417,7 @@ class UvxInstallManager implements InstallManagerInterface {
     Function(Process)? onProcessStarted,
   }) async {
     try {
-      final packageName = _extractPackageName(server);
+      var packageName = _extractPackageName(server);
       if (packageName == null) {
         return InstallResult(
           success: false,
@@ -440,8 +445,12 @@ class UvxInstallManager implements InstallManagerInterface {
       }
 
       // 执行可取消安装
-      final result = await _installUvxPackageCancellable(packageName, server, onProcessStarted);
-      
+      var result = await _installUvxPackageCancellable(packageName, server, onProcessStarted);
+      //如果安装失败，可能是package不对，再从启动参数里面去取一次程序名称
+      if (!result.success) {
+        packageName = _extractRuntimePkgName(server);
+        result = await _installUvxPackageCancellable(packageName!, server, onProcessStarted);
+      }
       return InstallResult(
         success: result.success,
         installType: installType,

@@ -739,7 +739,7 @@ class _McpMarketPageState extends ConsumerState<McpMarketPage> {
       final installResult = await installService.installServer(tempServer);
       
       if (!installResult.success) {
-        if (mounted) Navigator.of(context).pop(); // 关闭加载对话框
+        // 不在这里关闭对话框，让外层catch统一处理
         throw Exception('安装失败：${installResult.errorMessage}');
       }
       
@@ -797,10 +797,17 @@ class _McpMarketPageState extends ConsumerState<McpMarketPage> {
       print('❌ Market installation failed: $e');
       
       if (mounted) {
+        // 提取异常消息，避免双重前缀
+        String errorMessage = e.toString();
+        if (errorMessage.startsWith('Exception: ')) {
+          errorMessage = errorMessage.substring(11); // 移除 "Exception: " 前缀
+        }
+        
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('安装失败：$e'),
+            content: Text(errorMessage),
             backgroundColor: Colors.red,
+            duration: const Duration(seconds: 5), // 延长显示时间，让用户能看清错误
           ),
         );
       }
