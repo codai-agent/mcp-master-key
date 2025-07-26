@@ -141,17 +141,16 @@ class McpServerService {
         if (server.status == models.McpServerStatus.starting) {
           print('⚠️ Server is in starting state, will retry startup: ${server.name}');
         }
-        
         // 直接调用Hub启动方法
         print('🚀 Direct start: Calling Hub to start server ${server.name}');
-        
-        // 首先更新状态为starting
-        await _simpleUpdateStatus(serverId, models.McpServerStatus.starting);
 
-        //huqb 重复启动了服务器，数据库监控的地方也会去启动
+        //huqb 重复启动了服务器，数据库监控的地方也会去启动,解决办法：先设置标识，在设置状态，最后调用启动服务
         // 导入Hub服务并直接调用启动方法
         try {
           final hubService = McpHubService.instance;
+          hubService.setDirectlyId(server);
+          // 首先更新状态为starting
+          await _simpleUpdateStatus(serverId, models.McpServerStatus.starting);
           await hubService.startServerDirectly(server);
           print('✅ Direct start completed for ${server.name}');
         } catch (hubError) {

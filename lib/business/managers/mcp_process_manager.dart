@@ -888,11 +888,11 @@ npmExec.on('exit', (code) => process.exit(code));
   String? _extractPackageNameFromArgs(McpServer server) {
     print('   🔍 Extracting package name from args: ${server.args}');
     
-    // 优先使用installSource
-    if (server.installSource != null && server.installSource!.isNotEmpty) {
-      print('   ✅ Found package name in installSource: ${server.installSource}');
-      return server.installSource;
-    }
+    // 优先使用installSource//huqb
+    // if (server.installSource != null && server.installSource!.isNotEmpty) {
+    //   print('   ✅ Found package name in installSource: ${server.installSource}');
+    //   return server.installSource;
+    // }
     
     // 从args中提取包名
     // 支持两种格式：

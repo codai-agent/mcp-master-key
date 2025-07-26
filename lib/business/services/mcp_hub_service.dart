@@ -1815,13 +1815,15 @@ class McpHubService {
   /// 获取子服务器列表
   List<ChildServerInfo> get childServers => _childServers.values.toList();
 
+  /// 设置标识
+  void setDirectlyId(models.McpServer server) {
+    // 标记这是用户手动启动的操作
+    _userInitiatedOperations.add(server.id);
+  }
+
   /// 直接启动服务器（用于用户手动启动）
   Future<void> startServerDirectly(models.McpServer server) async {
     print('🚀 Direct start request: ${server.name} (${server.id})');
-    
-    // 标记这是用户手动启动的操作
-    _userInitiatedOperations.add(server.id);
-    
     try {
       await _hubStartServer(server);
     } finally {
