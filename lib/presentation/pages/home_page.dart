@@ -189,55 +189,67 @@ class _HomePageState extends ConsumerState<HomePage> {
                             ? Border.all(color: AppTheme.vscodeBlue.withOpacity(0.3))
                             : null,
                         ),
-                        child: _isSidebarExpanded
-                          ? ListTile(
-                              dense: true,
-                              leading: Icon(
-                                item.icon,
-                                size: 20,
-                                color: isSelected 
-                                  ? AppTheme.vscodeBlue
-                                  : (isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary),
-                              ),
-                              title: Text(
-                                item.label,
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
-                                  color: isSelected 
-                                    ? AppTheme.vscodeBlue
-                                    : (isDark ? AppTheme.darkText : AppTheme.lightText),
-                                ),
-                              ),
-                              onTap: () {
-                                setState(() {
-                                  _selectedIndex = index;
-                                });
-                              },
-                              contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                            )
-                          : Tooltip(
-                              message: item.label,
-                              child: InkWell(
-                                onTap: () {
-                                  setState(() {
-                                    _selectedIndex = index;
-                                  });
-                                },
-                                borderRadius: BorderRadius.circular(6),
-                                child: Container(
-                                  height: 44,
-                                  alignment: Alignment.center,
-                                  child: Icon(
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          transitionBuilder: (Widget child, Animation<double> animation) {
+                            return FadeTransition(opacity: animation, child: child);
+                          },
+                          child: _isSidebarExpanded
+                            ? SizedBox(
+                                key: const ValueKey('expanded'),
+                                height: 44,
+                                child: ListTile(
+                                  dense: true,
+                                  leading: Icon(
                                     item.icon,
                                     size: 20,
                                     color: isSelected 
                                       ? AppTheme.vscodeBlue
                                       : (isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary),
                                   ),
+                                  title: Text(
+                                    item.label,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                                      color: isSelected 
+                                        ? AppTheme.vscodeBlue
+                                        : (isDark ? AppTheme.darkText : AppTheme.lightText),
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedIndex = index;
+                                    });
+                                  },
+                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                                ),
+                              )
+                            : Tooltip(
+                                key: const ValueKey('collapsed'),
+                                message: item.label,
+                                child: InkWell(
+                                  onTap: () {
+                                    setState(() {
+                                      _selectedIndex = index;
+                                    });
+                                  },
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Container(
+                                    height: 44,
+                                    alignment: Alignment.center,
+                                    child: Icon(
+                                      item.icon,
+                                      size: 20,
+                                      color: isSelected 
+                                        ? AppTheme.vscodeBlue
+                                        : (isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary),
+                                    ),
+                                  ),
                                 ),
                               ),
-                            ),
+                        ),
                       );
                     },
                   ),
