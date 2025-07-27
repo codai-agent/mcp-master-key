@@ -274,6 +274,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get servers_edit_load_failed => 'Failed to load server information';
 
   @override
+  String get servers_edit_env_label => 'Environment Variables';
+
+  @override
+  String get servers_edit_env_hint_key => 'Variable Name';
+
+  @override
+  String get servers_edit_env_hint_value => 'Variable Value';
+
+  @override
+  String get servers_edit_env_add => 'Add Environment Variable';
+
+  @override
   String get install_title => 'Install MCP Server';
 
   @override

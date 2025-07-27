@@ -160,6 +160,10 @@
     }
   },
   "servers_edit_load_failed": "Failed to load server information",
+  "servers_edit_env_label": "Environment Variables",
+  "servers_edit_env_hint_key": "Variable Name",
+  "servers_edit_env_hint_value": "Variable Value",
+  "servers_edit_env_add": "Add Environment Variable",
   
   "install_title": "Install MCP Server",
   "install_subtitle": "Add new MCP servers to your collection",

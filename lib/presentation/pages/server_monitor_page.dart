@@ -1096,11 +1096,12 @@ class _ServerMonitorPageState extends ConsumerState<ServerMonitorPage>
       context: context,
       builder: (context) => ServerEditDialog(
         server: server,
-        onSave: (command, args) async {
+        onSave: (command, args, env) async {
           // 更新服务器配置
           final updatedServer = server.copyWith(
             command: command,
             args: args,
+            env: env,
             updatedAt: DateTime.now(),
           );
           

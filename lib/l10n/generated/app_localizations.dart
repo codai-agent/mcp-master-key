@@ -578,6 +578,30 @@ abstract class AppLocalizations {
   /// **'Failed to load server information'**
   String get servers_edit_load_failed;
 
+  /// No description provided for @servers_edit_env_label.
+  ///
+  /// In en, this message translates to:
+  /// **'Environment Variables'**
+  String get servers_edit_env_label;
+
+  /// No description provided for @servers_edit_env_hint_key.
+  ///
+  /// In en, this message translates to:
+  /// **'Variable Name'**
+  String get servers_edit_env_hint_key;
+
+  /// No description provided for @servers_edit_env_hint_value.
+  ///
+  /// In en, this message translates to:
+  /// **'Variable Value'**
+  String get servers_edit_env_hint_value;
+
+  /// No description provided for @servers_edit_env_add.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Environment Variable'**
+  String get servers_edit_env_add;
+
   /// No description provided for @install_title.
   ///
   /// In en, this message translates to:

@@ -84,6 +84,10 @@
   "servers_edit_save_success": "服务器配置已更新",
   "servers_edit_save_failed": "保存失败: {error}",
   "servers_edit_load_failed": "服务器信息加载失败",
+  "servers_edit_env_label": "环境变量",
+  "servers_edit_env_hint_key": "环境变量名",
+  "servers_edit_env_hint_value": "环境变量值",
+  "servers_edit_env_add": "添加环境变量",
   
   "install_title": "安装MCP服务器",
   "install_subtitle": "将新的MCP服务器添加到您的集合中",

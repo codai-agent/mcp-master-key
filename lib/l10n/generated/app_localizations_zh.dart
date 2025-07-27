@@ -271,6 +271,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get servers_edit_load_failed => '服务器信息加载失败';
 
   @override
+  String get servers_edit_env_label => '环境变量';
+
+  @override
+  String get servers_edit_env_hint_key => '环境变量名';
+
+  @override
+  String get servers_edit_env_hint_value => '环境变量值';
+
+  @override
+  String get servers_edit_env_add => '添加环境变量';
+
+  @override
   String get install_title => '安装MCP服务器';
 
   @override
