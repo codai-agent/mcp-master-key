@@ -13,6 +13,7 @@ import '../../infrastructure/mcp/mcp_tools_aggregator.dart';
 import '../../infrastructure/mcp/streamable_mcp_hub.dart';
 import '../managers/mcp_process_manager.dart';
 import 'mcp_server_service.dart';
+import 'mcp_market_service.dart';
 import 'config_service.dart';
 
 /// 子服务器连接信息
@@ -709,6 +710,9 @@ class McpHubService {
       
       // 成功连接后，更新数据库状态为running
       await _updateServerStatus(server.id, models.McpServerStatus.running);
+      
+      // 如果服务器来自商店安装，增加使用次数
+      await _incrementUsageCountIfFromMarket(server);
       
     } catch (e) {
       print('❌ Hub: Failed to start and connect server ${server.name}: $e');
@@ -2721,6 +2725,25 @@ class McpHubService {
       'streamable_status': _streamableHub!.getStatus(),
     },
   };
-  
 
+  /// 如果服务器来自商店安装，增加使用次数
+  Future<void> _incrementUsageCountIfFromMarket(models.McpServer server) async {
+    try {
+      // 检查服务器是否来自商店安装
+      if (server.installSourceType == AppConstants.installSourceMarket) {
+        print('📊 Server ${server.name} is from market, incrementing usage count...');
+        final success = await McpMarketService.instance.incrementUsedCount(server.id);
+        if (success) {
+          print('✅ Successfully incremented usage count for ${server.name}');
+        } else {
+          print('⚠️ Failed to increment usage count for ${server.name} (silent failure)');
+        }
+      } else {
+        print('ℹ️ Server ${server.name} is not from market (source: ${server.installSourceType ?? 'manual'}), skipping usage count increment');
+      }
+         } catch (e) {
+       print('❌ Error checking/incrementing usage count for ${server.name}: $e');
+       // 静默失败，不影响服务器启动
+     }
+   }
 } 

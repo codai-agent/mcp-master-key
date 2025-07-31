@@ -755,11 +755,18 @@ class McpProcessManager {
           final argsString = packageArgs.map((arg) => '"${arg.replaceAll('"', '\\"')}"').join(', ');
           
           // 构建JavaScript代码，确保路径正确转义
-          final jsCode = '''
+          var jsCode = '''
 process.chdir("${workingDir.replaceAll('\\', '\\\\')}");
 process.env.PATH = "${binDir.replaceAll('\\', '\\\\')}:" + (process.env.PATH || "");
 require("child_process").spawn("$executableName", [$argsString], {stdio: "inherit"});
 '''.trim();
+          if(packageArgs.isEmpty) {
+            jsCode = '''
+process.chdir("${workingDir.replaceAll('\\', '\\\\')}");
+process.env.PATH = "${binDir.replaceAll('\\', '\\\\')}:" + (process.env.PATH || "");
+require("child_process").spawn("$executableName", process.argv.slice(1), {stdio: "inherit"});
+'''.trim();
+          }
           
           final args = ['-e', jsCode];
           print('   📦 Using Node.js spawn method with enhanced PATH:');
@@ -1121,7 +1128,8 @@ npmExec.on('exit', (code) => process.exit(code));
         // Unix/Linux/macOS: lib/node_modules目录下
         nodeModulesPath = path.join(nodeBasePath, 'lib', 'node_modules', packageName, 'package.json');
       }
-
+      //如果路径里面有version：@latest,需要去掉
+      nodeModulesPath = nodeModulesPath.replaceAll('@latest', '');
       print('   🔍 Checking package bin path: $nodeModulesPath');
       final exists = await File(nodeModulesPath).exists();
       print('   📋 Package bin exists: $exists');
@@ -1490,12 +1498,20 @@ npmExec.on('exit', (code) => process.exit(code));
         print('   📦 Package name to check: $packageName');
         
         // 首先检查UV tools目录中是否有可执行文件
-        final executablePath = await _findUvxExecutable(packageName);
+        var executablePath = await _findUvxExecutable(packageName);
         print('   🔧 Executable path found: $executablePath');
         
         if (executablePath != null) {
           print('   ✅ Found UVX executable, will use direct execution: $executablePath');
           return true;
+        } else {
+          //判断是否包含了@latest
+          final newPackageName = packageName.replaceAll('@latest', '');
+          executablePath = await _findUvxExecutable(newPackageName);
+          if (executablePath != null) {
+            print('   ✅ Found UVX executable, will use direct execution: $executablePath');
+            return true;
+          }
         }
         
         // 如果没找到可执行文件，再检查Python包
@@ -1544,7 +1560,7 @@ npmExec.on('exit', (code) => process.exit(code));
         packageName = packageName.split('@').first;//huqb
       }
       final mcpHubBasePath = PathConstants.getUserMcpHubPath();
-      final uvToolsDir = '$mcpHubBasePath/packages/uv/tools/$packageName';
+      final uvToolsDir = '$mcpHubBasePath/packages/uv';//'$mcpHubBasePath/packages/uv/tools/$packageName';
       
       // 跨平台可执行文件路径
       String executablePath;

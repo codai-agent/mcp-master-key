@@ -772,8 +772,8 @@ class _McpMarketPageState extends ConsumerState<McpMarketPage> {
         // 8. 更新服务器状态为已安装
         await serverService.updateServerStatus(server.mcpId, McpServerStatus.installed);
         
-        // 9. 增加使用计数
-      await McpMarketService.instance.incrementUsedCount(server.mcpId);
+        // 9. 增加下载计数
+        await McpMarketService.instance.incrementDownloadCount(server.mcpId);
       
       // 10. 更新本地已安装列表
       setState(() {

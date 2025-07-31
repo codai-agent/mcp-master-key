@@ -106,32 +106,44 @@ class McpMarketService {
 
   /// 增加使用计数
   Future<bool> incrementUsedCount(String mcpId) async {
-    final uri = Uri.parse('$_baseUrl/api/mcp-servers/$mcpId/used');
-
-    try {
-      final response = await http.post(
-        uri,
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      return response.statusCode == 200;
-    } catch (e) {
-      return false; // 静默失败，不影响用户体验
-    }
+    return await _incrementCounts(mcpId, incrementUsedCount: true);
   }
 
   /// 增加下载计数
   Future<bool> incrementDownloadCount(String mcpId) async {
-    final uri = Uri.parse('$_baseUrl/api/mcp-servers/$mcpId/download');
+    return await _incrementCounts(mcpId, incrementDownloadCount: true);
+  }
+
+  /// 统一的增加计数方法
+  Future<bool> _incrementCounts(String mcpId, {
+    bool incrementUsedCount = false,
+    bool incrementDownloadCount = false,
+  }) async {
+    // 至少需要指定一个参数为true
+    if (!incrementUsedCount && !incrementDownloadCount) {
+      throw ArgumentError('At least one of incrementUsedCount or incrementDownloadCount must be true');
+    }
+
+    final uri = Uri.parse('$_baseUrl/api/mcp-servers/$mcpId/increment');
 
     try {
-      final response = await http.post(
+      final requestBody = <String, bool>{};
+      if (incrementUsedCount) {
+        requestBody['increment_used_count'] = true;
+      }
+      if (incrementDownloadCount) {
+        requestBody['increment_download_count'] = true;
+      }
+
+      final response = await http.patch(
         uri,
         headers: {'Content-Type': 'application/json'},
+        body: json.encode(requestBody),
       );
 
       return response.statusCode == 200;
     } catch (e) {
+      print('❌ Error incrementing counts for $mcpId: $e');
       return false; // 静默失败，不影响用户体验
     }
   }
