@@ -600,6 +600,71 @@ class StreamableMcpHub {
           print('✅ Synchronously responded to tools/list with ${toolListJson.length} tools.');
           return; // 请求处理完毕
         }
+
+        // ⭐️ FIX: 针对简化的客户端，同步处理tools/call请求
+        if (body is Map<String, dynamic> && body['method'] == 'tools/call') {
+          print('⚡️ Intercepting tools/call for synchronous response.');
+          
+          try {
+            final params = body['params'] as Map<String, dynamic>?;
+            if (params == null) {
+              throw Exception('Missing params for tools/call');
+            }
+            
+            final toolName = params['name'] as String?;
+            final arguments = params['arguments'] as Map<String, dynamic>? ?? {};
+            
+            if (toolName == null) {
+              throw Exception('Missing tool name in tools/call params');
+            }
+            
+            print('🔧 Synchronously executing tool: $toolName with args: $arguments');
+            
+            // 直接调用工具（绕过transport）
+            final result = await _forwardWrappedToolCall(toolName, arguments);
+            
+            final responsePayload = {
+              'jsonrpc': '2.0',
+              'id': body['id'],
+              'result': {
+                'content': result.content.map((content) => {
+                  'type': content is TextContent ? 'text' : 'unknown',
+                  'text': content is TextContent ? content.text : content.toString(),
+                }).toList(),
+                'isError': result.isError ?? false,
+              },
+            };
+            
+            request.response
+              ..statusCode = HttpStatus.ok
+              ..headers.contentType = ContentType.json
+              ..write(jsonEncode(responsePayload));
+            await request.response.close();
+            
+            print('✅ Synchronously responded to tools/call for $toolName.');
+            return; // 请求处理完毕
+            
+          } catch (e) {
+            print('❌ Error in synchronous tools/call: $e');
+            
+            final errorPayload = {
+              'jsonrpc': '2.0',
+              'id': body['id'],
+              'error': {
+                'code': -32603,
+                'message': 'Internal error',
+                'data': e.toString(),
+              },
+            };
+            
+            request.response
+              ..statusCode = HttpStatus.internalServerError
+              ..headers.contentType = ContentType.json
+              ..write(jsonEncode(errorPayload));
+            await request.response.close();
+            return;
+          }
+        }
         
         // 用现有transport处理请求
         await transport.handleRequest(request, body);
