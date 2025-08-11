@@ -101,7 +101,7 @@ const _$McpInstallTypeEnumMap = {
   McpInstallType.localPython: 'localPython',
   McpInstallType.localJar: 'localJar',
   McpInstallType.localExecutable: 'localExecutable',
-  McpInstallType.github: 'github',
+  McpInstallType.localNode: 'node',
   McpInstallType.preInstalled: 'preInstalled',
 };
 

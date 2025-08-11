@@ -180,28 +180,74 @@ class McpConfigParser {
 
   /// 分析安装策略
   _InstallAnalysis _analyzeInstallStrategy(String command, List<String> args) {
-    // 1. 检查自包含命令
-    if (_isSelfContainedCommand(command, args)) {
-      return _analyzeSelfContainedCommand(command, args);
-    }
-
-    // 2. 检查本地路径
-    if (_isLocalPath(command)) {
-      return _analyzeLocalPath(command);
-    }
-
-    // 3. 检查预安装命令
-    if (_isPreInstalledCommand(command)) {
-      return _analyzePreInstalledCommand(command, args);
-    }
-
-    // 4. 未知命令
+    McpInstallType type = checkInstallType(command, args);
     return _InstallAnalysis(
-      installType: McpInstallType.preInstalled,
+      installType: type,
       strategy: McpInstallStrategy.unknown,
-      needsUserInput: true,
-      userInputReason: '未知命令类型，需要用户手动配置安装方式',
+      needsUserInput: false,
+      userInputReason: getInstallTypeDesc(type),
     );
+  }
+
+  /// 检测并确认安装类型
+  McpInstallType checkInstallType(String cleanedCommand, List<String> args) {
+    McpInstallType detectedType;
+    if (cleanedCommand == 'uvx') {
+      detectedType = McpInstallType.uvx;
+    } else if (cleanedCommand == 'npx') {
+      //进一步看是否是@smithery/cli
+      if (_isSmitheryCli(args)) {
+        detectedType = McpInstallType.smithery;
+      } else {
+        detectedType = McpInstallType.npx;
+      }
+    } else if (cleanedCommand == 'python' || cleanedCommand == 'python3'  || cleanedCommand == 'uv') {
+      detectedType = McpInstallType.localPython;
+    } else if (cleanedCommand == 'node') {
+      detectedType = McpInstallType.localNode;
+    } else if (cleanedCommand == 'jar' || cleanedCommand == 'java') {
+      detectedType = McpInstallType.localJar;
+    } else {
+      detectedType = McpInstallType.localExecutable;
+    }
+    return detectedType;
+  }
+
+  /// 获取命令类型说明
+  String getInstallTypeDesc(McpInstallType type) {
+    String analysisResult = '检测到自定义命令，需要手动配置安装';
+    if (type == McpInstallType.uvx) {
+      analysisResult = '检测到UVX安装类型，可以自动安装';
+    }
+    if (type == McpInstallType.smithery) {
+      analysisResult = '检测到smithery/cli安装类型，可以自动安装';
+    }
+    if (type == McpInstallType.npx) {
+      analysisResult = '检测到NPX安装类型，可以自动安装';
+    }
+    if (type == McpInstallType.localPython) {
+      analysisResult = '检测到Python命令，需要检测安装环境';
+    }
+    if (type == McpInstallType.localNode) {
+      analysisResult = '检测到Node.js命令，需要手动配置安装';
+    }
+    if (type == McpInstallType.localJar) {
+      analysisResult = '检测到Jar命令，可自动执行';
+    }
+
+    return analysisResult;
+  }
+
+  /// 是否为@smithery/cli包
+  bool _isSmitheryCli(List<String> args) {
+    if(args.isNotEmpty) {
+      for (int i = 0; i < args.length; i++) {
+        if (args[i].startsWith('@smithery/cli')) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   /// 检查是否为自包含命令
@@ -397,112 +443,25 @@ class McpConfigParser {
   /// 清理和规范化服务器配置，处理特殊格式的兼容性
   Map<String, dynamic> _cleanupServerConfig(Map<String, dynamic> serverConfig) {
     final cleanedConfig = Map<String, dynamic>.from(serverConfig);
-    String command = cleanedConfig['command'] as String? ?? '';
+    String? commandValue = cleanedConfig['command'];
+    if (commandValue == null) {
+      throw Exception('服务器配置缺少command字段');
+    }
+    String command = commandValue;
     List<String> args = (cleanedConfig['args'] as List<dynamic>?)?.cast<String>() ?? [];
-    
-    // 🔧 处理第二种格式：Windows cmd 命令
+
+    // 处理Windows cmd命令
     if (command == 'cmd' && args.isNotEmpty) {
-      // 提取 /c 后面的实际命令
       if (args[0] == '/c' && args.length > 1) {
-        command = args[1]; // 提取实际命令（如 npx）
-        args = args.sublist(2); // 移除 /c 和命令本身
-        
-        print('🔧 MCP解析器检测到Windows cmd格式，提取实际命令: $command');
-        print('🔧 剩余参数: ${args.join(' ')}');
+        command = args[1];
+        args = args.sublist(2);
+        print('🔧 检测到Windows cmd格式，提取实际命令: $command');
       }
     }
-    
-    // 🔧 处理第一种和第二种格式：带有 @smithery/cli 的特殊NPX格式
-    if (command == 'npx' && args.isNotEmpty) {
-      // 查找是否包含 @smithery/cli@latest 模式
-      int smitheryIndex = -1;
-      for (int i = 0; i < args.length; i++) {
-        if (args[i].startsWith('@smithery/cli')) {
-          smitheryIndex = i;
-          break;
-        }
-      }
-      
-      if (smitheryIndex != -1) {
-        print('🔧 MCP解析器检测到@smithery/cli格式，需要清理参数');
-        print('🔧 原始参数: ${args.join(' ')}');
-        
-        // 移除 @smithery/cli@latest, run/inspect, --key, key值 这些参数
-        final List<String> cleanedArgs = [];
-        bool skipNext = false;
-        bool foundSmithery = false;
-        
-        for (int i = 0; i < args.length; i++) {
-          if (skipNext) {
-            skipNext = false;
-            continue;
-          }
-          
-          final arg = args[i];
-          
-          // 跳过 @smithery/cli@latest
-          if (arg.startsWith('@smithery/cli')) {
-            foundSmithery = true;
-            continue;
-          }
-          
-          // 如果刚刚遇到了@smithery/cli，跳过紧跟的命令（run、inspect等）
-          if (foundSmithery && (arg == 'run' || arg == 'inspect')) {
-            foundSmithery = false; // 重置标志
-            continue;
-          }
-          
-          // 跳过 --key 及其对应的值
-          if (arg == '--key') {
-            skipNext = true; // 下一个参数是key的值，也要跳过
-            continue;
-          }
-          
-          // 保留其他参数
-          cleanedArgs.add(arg);
-          foundSmithery = false; // 重置标志
-        }
-        
-        args = cleanedArgs;
-        print('🔧 MCP解析器清理后的参数: ${args.join(' ')}');
-      }
-    }
-    
-    // 🔧 处理UVX命令（UVX是Python包管理器，不会有@smithery/cli包）
-    if (command == 'uvx' && args.isNotEmpty) {
-      // UVX只需要清理--key参数（如果有的话）
-      final List<String> cleanedArgs = [];
-      bool skipNext = false;
-      
-      for (int i = 0; i < args.length; i++) {
-        if (skipNext) {
-          skipNext = false;
-          continue;
-        }
-        
-        final arg = args[i];
-        
-        // 跳过 --key 及其对应的值
-        if (arg == '--key') {
-          skipNext = true; // 下一个参数是key的值，也要跳过
-          continue;
-        }
-        
-        // 保留其他参数
-        cleanedArgs.add(arg);
-      }
-      
-      // 只有在清理了参数的情况下才更新
-      if (cleanedArgs.length != args.length) {
-        print('🔧 MCP解析器UVX清理--key参数: ${args.join(' ')} → ${cleanedArgs.join(' ')}');
-        args = cleanedArgs;
-      }
-    }
-    
-    // 更新清理后的配置
+
     cleanedConfig['command'] = command;
     cleanedConfig['args'] = args;
-    
+
     return cleanedConfig;
   }
 

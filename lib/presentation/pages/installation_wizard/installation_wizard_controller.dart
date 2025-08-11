@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:mcphub/business/parsers/mcp_config_parser.dart';
 import '../../../business/services/install_service.dart';
 import '../../../business/services/mcp_server_service.dart';
 import '../../../business/managers/install_managers/install_manager_interface.dart';
@@ -143,39 +144,41 @@ class InstallationWizardController extends ChangeNotifier {
       }
 
       // 分析安装类型 可能不能只从command入手，如果是配置远程服务器，就不会有command命令 //huqb
+      McpConfigParser.instance;
       final cleanedCommand = cleanedConfig['command'] as String;
-      McpInstallType? detectedType;
+      final args = (cleanedConfig['args'] as List<dynamic>?)?.cast<String>() ?? [];
+      McpInstallType detectedType = McpConfigParser.instance.checkInstallType(cleanedCommand, args);
       bool needsAdditionalInstall = false;
-      String analysisResult = '';
+      String analysisResult = McpConfigParser.instance.getInstallTypeDesc(detectedType);
 
-      if (cleanedCommand == 'uvx') {
-        detectedType = McpInstallType.uvx;
-        needsAdditionalInstall = false;
-        analysisResult = '检测到UVX安装类型，可以自动安装';
-      } else if (cleanedCommand == 'npx') {
-        //进一步看是否是@smithery/cli
-        if (isSmitheryCli(cleanedConfig)) {
-          detectedType = McpInstallType.smithery;
-          needsAdditionalInstall = false;
-          analysisResult = '检测到smithery/cli安装类型，可以自动安装';
-        } else {
-          detectedType = McpInstallType.npx;
-          needsAdditionalInstall = false;
-          analysisResult = '检测到NPX安装类型，可以自动安装';
-        }
-      } else if (cleanedCommand == 'python' || cleanedCommand == 'python3'  || cleanedCommand == 'uv') {
-        detectedType = McpInstallType.localPython;
-        needsAdditionalInstall = false;
-        analysisResult = '检测到Python命令，需要检测安装环境';
-      } else if (cleanedCommand == 'node') {
-        detectedType = McpInstallType.npx;
-        needsAdditionalInstall = true;
-        analysisResult = '检测到Node.js命令，需要手动配置安装';
-      } else {
-        detectedType = McpInstallType.localExecutable;
-        needsAdditionalInstall = true;
-        analysisResult = '检测到自定义命令，需要手动配置安装';
-      }
+      // if (cleanedCommand == 'uvx') {
+      //   detectedType = McpInstallType.uvx;
+      //   needsAdditionalInstall = false;
+      //   analysisResult = '检测到UVX安装类型，可以自动安装';
+      // } else if (cleanedCommand == 'npx') {
+      //   //进一步看是否是@smithery/cli
+      //   if (isSmitheryCli(cleanedConfig)) {
+      //     detectedType = McpInstallType.smithery;
+      //     needsAdditionalInstall = false;
+      //     analysisResult = '检测到smithery/cli安装类型，可以自动安装';
+      //   } else {
+      //     detectedType = McpInstallType.npx;
+      //     needsAdditionalInstall = false;
+      //     analysisResult = '检测到NPX安装类型，可以自动安装';
+      //   }
+      // } else if (cleanedCommand == 'python' || cleanedCommand == 'python3'  || cleanedCommand == 'uv') {
+      //   detectedType = McpInstallType.localPython;
+      //   needsAdditionalInstall = false;
+      //   analysisResult = '检测到Python命令，需要检测安装环境';
+      // } else if (cleanedCommand == 'node') {
+      //   detectedType = McpInstallType.localNode;
+      //   needsAdditionalInstall = false;
+      //   analysisResult = '检测到Node.js命令，需要手动配置安装';
+      // } else {
+      //   detectedType = McpInstallType.localExecutable;
+      //   needsAdditionalInstall = false;
+      //   analysisResult = '检测到自定义命令，需要手动配置安装';
+      // }
 
       _updateState(_state.copyWith(
         configError: '',
@@ -191,19 +194,6 @@ class InstallationWizardController extends ChangeNotifier {
         parsedConfig: {},
       ));
     }
-  }
-
-  /// 是否为@smithery/cli包
-  bool isSmitheryCli(Map<String, dynamic> serverConfig) {
-    List<String> args = (serverConfig['args'] as List<dynamic>?)?.cast<String>() ?? [];
-    if(args.isNotEmpty) {
-      for (int i = 0; i < args.length; i++) {
-        if (args[i].startsWith('@smithery/cli')) {
-          return true;
-        }
-      }
-    }
-    return false;
   }
 
   /// 清理和规范化服务器配置，处理特殊格式的兼容性

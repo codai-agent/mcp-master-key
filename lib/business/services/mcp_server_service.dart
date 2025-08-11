@@ -4,7 +4,7 @@ import 'package:mcphub/core/models/mcp_server.dart' as models;
 import 'package:mcphub/business/services/install_service.dart';
 // import 'package:mcphub/business/services/process_service.dart';
 import 'package:mcphub/infrastructure/repositories/mcp_server_repository.dart';
-import 'command_resolver_service.dart';
+// import 'command_resolver_service.dart';
 import 'mcp_hub_service.dart';
 
 /// MCP服务器管理服务
@@ -13,7 +13,7 @@ class McpServerService {
   final McpServerRepository _repository = McpServerRepository.instance;
   final InstallService _installService = InstallService.instance;
   // final ProcessService _processService = ProcessService.instance;
-  final CommandResolverService _commandResolver = CommandResolverService.instance;
+  // final CommandResolverService _commandResolver = CommandResolverService.instance;
   final Mutex _statusLock = Mutex(); // 状态读写锁
 
   McpServerService._internal();
@@ -85,14 +85,14 @@ class McpServerService {
       }
       
       // 🔧 解析命令和环境变量，转换为内置runtime路径
-      final resolvedConfig = await _commandResolver.resolveServerConfig(
-        command: command,
-        args: args,
-        env: env,
-        installType: installType,
-      );
+      // final resolvedConfig = await _commandResolver.resolveServerConfig(
+      //   command: command,
+      //   args: args,
+      //   env: env,
+      //   installType: installType,
+      // );
       
-      print('   ✅ Command resolved: ${resolvedConfig.command}');
+      // print('   ✅ Command resolved: ${resolvedConfig.command}');
       print('   ✅ Duplicate check passed');
       
       final server = models.McpServer(
@@ -101,9 +101,9 @@ class McpServerService {
         description: description,
         installType: installType,
         connectionType: connectionType,  // 使用解析的连接类型
-        command: resolvedConfig.command,  // 使用解析后的完整路径
-        args: resolvedConfig.args,        // 使用解析后的参数
-        env: resolvedConfig.env,          // 使用解析后的环境变量
+        command: command,//resolvedConfig.command,  // 使用解析后的完整路径
+        args: args,//resolvedConfig.args,        // 使用解析后的参数
+        env: env,//resolvedConfig.env,          // 使用解析后的环境变量
         workingDirectory: workingDirectory,
         installSource: installSource,
         installSourceType: installSourceType,

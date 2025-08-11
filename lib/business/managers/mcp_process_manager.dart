@@ -65,8 +65,8 @@ class McpProcessManager {
         case McpInstallType.localExecutable:
           throw Exception('Local executable install type not yet implemented');
         // 移除了老的localPath，现在使用具体的本地类型
-        case McpInstallType.github:
-          return await _installGithubServer(server);
+        case McpInstallType.localNode:
+          return await _installGithubServer(server);//huqb
         case McpInstallType.preInstalled:
           return await _verifyPreInstalledServer(server);
       }

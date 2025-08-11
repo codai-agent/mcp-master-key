@@ -97,13 +97,8 @@ class CommandResolverService {
         
       // 移除了老的localPath，现在使用具体的本地类型
         
-      case McpInstallType.github:
-        // GitHub克隆的项目可能需要解析Python或Node命令
-        if (command == 'python' || command == 'python3') {
-          final pythonPath = await _runtimeManager.getPythonExecutable();
-          print('   ✅ Resolved python for github project -> $pythonPath');
-          return pythonPath;
-        } else if (command == 'node') {
+      case McpInstallType.localNode:
+       if (command == 'node') {
           final nodePath = await _runtimeManager.getNodeExecutable();
           print('   ✅ Resolved node for github project -> $nodePath');
           return nodePath;

@@ -305,7 +305,7 @@ class ServerCard extends ConsumerWidget {
         case McpInstallType.localJar:
         case McpInstallType.localExecutable:
         return AppTheme.vscodeOrange;
-      case McpInstallType.github:
+      case McpInstallType.localNode:
         return AppTheme.vscodePurple;
       case McpInstallType.preInstalled:
         return Colors.grey;

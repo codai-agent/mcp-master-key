@@ -85,8 +85,8 @@ enum McpInstallType {
   localJar,
   /// 本地路径可执行程序
   localExecutable,
-  /// GitHub仓库
-  github,
+  /// 本地node
+  localNode,
   /// 预安装命令
   preInstalled,
 }
@@ -107,8 +107,8 @@ extension McpInstallTypeExtension on McpInstallType {
         return 'localJar';
       case McpInstallType.localExecutable:
         return 'localExecutable';
-      case McpInstallType.github:
-        return 'github';
+      case McpInstallType.localNode:
+        return 'localNode';
       case McpInstallType.preInstalled:
         return 'preInstalled';
     }
