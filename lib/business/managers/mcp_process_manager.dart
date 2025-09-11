@@ -43,39 +43,6 @@ class McpProcessManager {
     print('   📁 Environments path: $_environmentsBasePath');
   }
 
-  /// 安装MCP服务器
-  Future<bool> installServer(McpServer server) async {
-    print('📦 Installing MCP server: ${server.name}');
-    print('   🔧 Install type: ${server.installType.name}');
-    print('   📋 Command: ${server.command} ${server.args.join(' ')}');
-    print('   📍 Install source: ${server.installSource}');
-
-    try {
-      switch (server.installType) {
-        case McpInstallType.npx:
-          return await _installNpxServer(server);
-        case McpInstallType.uvx:
-          return await _installUvxServer(server);
-        case McpInstallType.smithery:
-          throw Exception('Smithery install type not yet implemented');
-        case McpInstallType.localPython:
-          throw Exception('Local Python install type not yet implemented');
-        case McpInstallType.localJar:
-          throw Exception('Local JAR install type not yet implemented');
-        case McpInstallType.localExecutable:
-          throw Exception('Local executable install type not yet implemented');
-        // 移除了老的localPath，现在使用具体的本地类型
-        case McpInstallType.localNode:
-          return await _installGithubServer(server);//huqb
-        case McpInstallType.preInstalled:
-          return await _verifyPreInstalledServer(server);
-      }
-    } catch (e) {
-      print('❌ Installation failed: $e');
-      return false;
-    }
-  }
-
   /// 启动MCP服务器
   Future<bool> startServer(McpServer server) async {
     if (_runningProcesses.containsKey(server.id)) {
@@ -1226,147 +1193,6 @@ npmExec.on('exit', (code) => process.exit(code));
     }
   }
 
-  /// 安装NPX服务器
-  Future<bool> _installNpxServer(McpServer server) async {
-    print('📦 Installing NPX server...');
-    print('   📋 Server details:');
-    print('   - Name: ${server.name}');
-    print('   - Install source: ${server.installSource}');
-    print('   - Command: ${server.command}');
-    print('   - Args: ${server.args.join(' ')}');
-    
-    // 对于npx -y命令，包会自动下载，无需预安装
-    if (server.args.contains('-y') || server.args.contains('--yes')) {
-      print('   ✅ NPX server uses auto-install (-y flag detected)');
-      print('   📝 Package will be downloaded on first run: ${server.installSource}');
-      return true;
-    }
-
-    // 对于普通npx命令，我们需要在服务器环境中安装包
-    if (server.installSource != null) {
-      print('   📦 Pre-installing package: ${server.installSource}');
-      
-      final serverDir = await getServerWorkingDirectory(server);
-      print('   📍 Server directory: $serverDir');
-      
-      try {
-        final nodeExe = await _runtimeManager.getNodeExecutable();
-        final npmPath = path.join(path.dirname(nodeExe), 'npm');
-        
-        print('   🔧 Node executable: $nodeExe');
-        print('   🔧 NPM path: $npmPath');
-
-        // 验证npm是否存在
-        if (!await File(npmPath).exists()) {
-          print('   ⚠️ NPM not found at expected path, trying alternative...');
-          final npmExe = await _runtimeManager.getNpmExecutable();
-          print('   🔧 Alternative NPM path: $npmExe');
-        }
-
-        // 初始化package.json
-        await _createPackageJson(serverDir, server);
-
-        // 安装包
-        print('   📦 Running npm install...');
-        final env = await getServerEnvironment(server);
-        
-        // 从args中提取包名，支持CommandResolverService转换后的格式
-        final packageName = _extractPackageNameFromArgs(server);
-        if (packageName == null) {
-          print('   ❌ Cannot extract package name for installation');
-          return false;
-        }
-        
-        final result = await Process.run(
-          npmPath,
-          ['install', packageName],
-          workingDirectory: serverDir,
-          environment: env,
-        );
-
-        print('   📋 NPM install result:');
-        print('   - Exit code: ${result.exitCode}');
-        print('   - Stdout: ${result.stdout}');
-        if (result.stderr.toString().isNotEmpty) {
-          print('   - Stderr: ${result.stderr}');
-        }
-
-        if (result.exitCode == 0) {
-          print('   ✅ NPX package installed successfully');
-          return true;
-        } else {
-          print('   ❌ NPX installation failed');
-          return false;
-        }
-      } catch (e) {
-        print('   ❌ Exception during NPX installation: $e');
-        print('   🔍 Stack trace: ${StackTrace.current}');
-        return false;
-      }
-    }
-
-    print('   ℹ️ No install source specified, assuming package is globally available');
-    return true;
-  }
-
-  /// 安装UVX服务器
-  Future<bool> _installUvxServer(McpServer server) async {
-    print('📦 Installing UVX server...');
-    
-    // UVX会自动管理虚拟环境，无需预安装
-    print('✅ UVX server uses auto-managed virtual environments');
-    return true;
-  }
-
-  // 移除了_setupLocalPathServer方法，现在使用具体的本地类型管理器
-
-  /// 安装GitHub服务器
-  Future<bool> _installGithubServer(McpServer server) async {
-    print('📦 Installing GitHub server...');
-    // TODO: 实现GitHub仓库克隆和安装
-    print('⚠️ GitHub installation not implemented yet');
-    return false;
-  }
-
-  /// 验证预安装服务器
-  Future<bool> _verifyPreInstalledServer(McpServer server) async {
-    print('🔍 Verifying pre-installed server...');
-    
-    try {
-      final result = await Process.run(server.command, ['--version']);
-      if (result.exitCode == 0) {
-        print('✅ Pre-installed command verified: ${server.command}');
-        return true;
-      } else {
-        print('❌ Pre-installed command failed: ${result.stderr}');
-        return false;
-      }
-    } catch (e) {
-      print('❌ Pre-installed command not found: ${server.command}');
-      return false;
-    }
-  }
-
-  /// 创建package.json文件
-  Future<void> _createPackageJson(String directory, McpServer server) async {
-    final packageJsonFile = File(path.join(directory, 'package.json'));
-    
-    if (!await packageJsonFile.exists()) {
-      final packageJson = {
-        'name': 'mcp-server-${server.id}',
-        'version': '1.0.0',
-        'description': 'MCP Server environment for ${server.name}',
-        'private': true,
-        'dependencies': {}
-      };
-
-      await packageJsonFile.writeAsString(
-        const JsonEncoder.withIndent('  ').convert(packageJson)
-      );
-      print('   📄 Created package.json');
-    }
-  }
-
   /// 设置进程日志监听
   void _setupProcessLogging(McpServer server, Process process) {
     // 使用安全的字符解码器，避免RangeError
@@ -1444,36 +1270,6 @@ npmExec.on('exit', (code) => process.exit(code));
       } catch (e) {
         process.kill(ProcessSignal.sigkill);
       }
-    }
-  }
-
-  /// 验证环境变量是否安全
-  bool _isValidEnvironmentVariable(String key, String value) {
-    try {
-      // 检查基本条件
-      if (key.isEmpty || value.isEmpty || key.length > 1000 || value.length > 10000) {
-        return false;
-      }
-
-      // 检查键中的字符是否安全
-      for (int i = 0; i < key.length; i++) {
-        final charCode = key.codeUnitAt(i);
-        if (charCode < 32 || charCode > 126) { // 只允许可打印ASCII字符
-          return false;
-        }
-      }
-
-      // 检查值中的字符，允许更多字符但排除控制字符
-      for (int i = 0; i < value.length; i++) {
-        final charCode = value.codeUnitAt(i);
-        if (charCode < 9 || (charCode > 13 && charCode < 32) || charCode > 255) {
-          return false;
-        }
-      }
-
-      return true;
-    } catch (e) {
-      return false;
     }
   }
 
@@ -1673,7 +1469,7 @@ npmExec.on('exit', (code) => process.exit(code));
       return null;
     }
   }
-
+//暂时保留，后面添加node支持的时候进行参考
   Future<Process> _startNodePackageProcess(String packageName, List<String> args) async {
     final nodePath = await _runtimeManager.getNodeExecutable();
     final npmPath = await _runtimeManager.getNpmExecutable();
