@@ -8,6 +8,7 @@ import '../managers/install_managers/smithery_install_manager.dart';
 import '../managers/install_managers/local_python_install_manager.dart';
 import '../managers/install_managers/local_jar_install_manager.dart';
 import '../managers/install_managers/local_executable_install_manager.dart';
+import '../managers/install_managers/local_node_install_manager.dart';
 
 /// 安装服务 - 统一管理所有类型的安装策略
 class InstallService {
@@ -31,6 +32,7 @@ class InstallService {
     _installManagers[McpInstallType.localPython] = LocalPythonInstallManager();
     _installManagers[McpInstallType.localJar] = LocalJarInstallManager();
     _installManagers[McpInstallType.localExecutable] = LocalExecutableInstallManager();
+    _installManagers[McpInstallType.localNode] = LocalNodeInstallManager();
   }
 
   /// 安装服务器
@@ -150,4 +152,4 @@ class InstallResult {
   String toString() {
     return 'InstallResult(success: $success, installType: $installType, error: $errorMessage)';
   }
-} 
+}

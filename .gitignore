@@ -46,6 +46,7 @@ app.*.map.json
 
 .cursorignore
 /dev_docs/
+.codairules/
 
 assets/runtimes/nodejs*
 assets/runtimes/python*

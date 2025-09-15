@@ -586,11 +586,21 @@ class InstallationWizardController extends ChangeNotifier {
         
         // 添加到服务器列表
         try {
+          // 检查安装结果中是否有更新后的启动参数
+          List<String> finalArgs = args;
+          if (result.metadata != null && result.metadata!.containsKey('updatedArgs')) {
+            final updatedArgs = result.metadata!['updatedArgs'];
+            if (updatedArgs is List<String>) {
+              finalArgs = updatedArgs;
+              _addLog('🔧 使用更新后的启动参数: ${finalArgs.join(' ')}');
+            }
+          }
+          
           await serverService.addServer(
             name: _state.serverName.isNotEmpty ? _state.serverName : serverName,
             description: _state.serverDescription,
             command: serverConfig['command'],
-            args: args,
+            args: finalArgs,
             env: Map<String, String>.from(serverConfig['env'] ?? {}),
             installType: installType,
             installSourceType: AppConstants.installSourceManual, // 手动安装

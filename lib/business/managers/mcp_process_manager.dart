@@ -860,6 +860,60 @@ npmExec.on('exit', (code) => process.exit(code));
           return server.args;
         }
 
+      case McpInstallType.localNode:
+        // 从args中获取快捷方式的全路径（应该是第一个参数）
+        if (server.args.isEmpty) {
+          print('   ⚠️ Cannot extract shortcut path from args: ${server.args}');
+          return server.args;
+        }
+        
+        final shortcutPath = server.args.first;
+        print('   🟢 LocalNode shortcut path: $shortcutPath');
+        
+        if (Platform.isWindows) {
+          // Windows上直接使用快捷方式路径作为Node.js参数
+          // 提取快捷方式后的所有参数
+          final additionalArgs = server.args.skip(1).toList();
+          
+          // 组合快捷方式路径和额外参数
+          final args = [shortcutPath, ...additionalArgs];
+          print('   📦 Windows: Using direct Node.js execution with args: ${args.join(' ')}');
+          return args;
+        } else {
+          // 非Windows平台：使用Node.js spawn方式，参考NPX的实现
+          final workingDir = await getServerWorkingDirectory(server);
+          
+          // 获取快捷方式所在的bin目录
+          final shortcutDir = path.dirname(shortcutPath);
+          final shortcutName = path.basename(shortcutPath);
+          
+          // 提取快捷方式后的所有参数
+          final additionalArgs = server.args.skip(1).toList();
+          final argsString = additionalArgs.map((arg) => '"${arg.replaceAll('"', '\\"')}"').join(', ');
+          
+          // 构建JavaScript代码，确保路径正确转义
+          var jsCode = '''
+process.chdir("${workingDir.replaceAll('\\', '\\\\')}");
+process.env.PATH = "${shortcutDir.replaceAll('\\', '\\\\')}:" + (process.env.PATH || "");
+require("child_process").spawn("$shortcutName", [$argsString], {stdio: "inherit"});
+'''.trim();
+          if(additionalArgs.isEmpty) {
+            jsCode = '''
+process.chdir("${workingDir.replaceAll('\\', '\\\\')}");
+process.env.PATH = "${shortcutDir.replaceAll('\\', '\\\\')}:" + (process.env.PATH || "");
+require("child_process").spawn("$shortcutName", process.argv.slice(1), {stdio: "inherit"});
+'''.trim();
+          }
+          
+          final args = ['-e', jsCode];
+          print('   📦 Non-Windows: Using Node.js spawn method with enhanced PATH:');
+          print('   📋 Shortcut name: $shortcutName (from $shortcutPath)');
+          print('   📋 Shortcut dir: $shortcutDir');
+          print('   📋 Additional args: $additionalArgs');
+          print('   📋 JavaScript code: ${jsCode.replaceAll('\n', '; ')}');
+          return args;
+        }
+
       default:
         print('   ➡️ Using original args for ${server.installType.name}');
         return server.args;
