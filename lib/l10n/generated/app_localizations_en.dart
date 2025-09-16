@@ -779,6 +779,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String get market_install_error => 'Installation failed';
 
   @override
+  String get market_author => 'Author';
+
+  @override
+  String get market_description => 'Description';
+
+  @override
+  String get market_tags => 'Tags';
+
+  @override
+  String get market_statistics => 'Statistics';
+
+  @override
+  String get market_mcp_config => 'MCP Configuration';
+
+  @override
+  String get market_copy_config => 'Copy Config';
+
+  @override
+  String get market_links => 'Links';
+
+  @override
+  String get market_config_copied => 'Configuration copied to clipboard';
+
+  @override
   String get analysis_step_title => 'Analyze Installation Strategy';
 
   @override

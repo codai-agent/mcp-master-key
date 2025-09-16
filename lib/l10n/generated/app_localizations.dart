@@ -1490,6 +1490,54 @@ abstract class AppLocalizations {
   /// **'Installation failed'**
   String get market_install_error;
 
+  /// No description provided for @market_author.
+  ///
+  /// In en, this message translates to:
+  /// **'Author'**
+  String get market_author;
+
+  /// No description provided for @market_description.
+  ///
+  /// In en, this message translates to:
+  /// **'Description'**
+  String get market_description;
+
+  /// No description provided for @market_tags.
+  ///
+  /// In en, this message translates to:
+  /// **'Tags'**
+  String get market_tags;
+
+  /// No description provided for @market_statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get market_statistics;
+
+  /// No description provided for @market_mcp_config.
+  ///
+  /// In en, this message translates to:
+  /// **'MCP Configuration'**
+  String get market_mcp_config;
+
+  /// No description provided for @market_copy_config.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy Config'**
+  String get market_copy_config;
+
+  /// No description provided for @market_links.
+  ///
+  /// In en, this message translates to:
+  /// **'Links'**
+  String get market_links;
+
+  /// No description provided for @market_config_copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Configuration copied to clipboard'**
+  String get market_config_copied;
+
   /// No description provided for @analysis_step_title.
   ///
   /// In en, this message translates to:

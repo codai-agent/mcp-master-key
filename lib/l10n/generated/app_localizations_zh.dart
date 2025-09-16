@@ -740,6 +740,30 @@ class AppLocalizationsZh extends AppLocalizations {
   String get market_install_error => '安装失败';
 
   @override
+  String get market_author => '作者';
+
+  @override
+  String get market_description => '描述';
+
+  @override
+  String get market_tags => '标签';
+
+  @override
+  String get market_statistics => '统计信息';
+
+  @override
+  String get market_mcp_config => 'MCP配置';
+
+  @override
+  String get market_copy_config => '复制配置';
+
+  @override
+  String get market_links => '相关链接';
+
+  @override
+  String get market_config_copied => '配置已复制到剪贴板';
+
+  @override
   String get analysis_step_title => '分析安装策略';
 
   @override

@@ -151,35 +151,6 @@ class InstallationWizardController extends ChangeNotifier {
       bool needsAdditionalInstall = false;
       String analysisResult = McpConfigParser.instance.getInstallTypeDesc(detectedType);
 
-      // if (cleanedCommand == 'uvx') {
-      //   detectedType = McpInstallType.uvx;
-      //   needsAdditionalInstall = false;
-      //   analysisResult = '检测到UVX安装类型，可以自动安装';
-      // } else if (cleanedCommand == 'npx') {
-      //   //进一步看是否是@smithery/cli
-      //   if (isSmitheryCli(cleanedConfig)) {
-      //     detectedType = McpInstallType.smithery;
-      //     needsAdditionalInstall = false;
-      //     analysisResult = '检测到smithery/cli安装类型，可以自动安装';
-      //   } else {
-      //     detectedType = McpInstallType.npx;
-      //     needsAdditionalInstall = false;
-      //     analysisResult = '检测到NPX安装类型，可以自动安装';
-      //   }
-      // } else if (cleanedCommand == 'python' || cleanedCommand == 'python3'  || cleanedCommand == 'uv') {
-      //   detectedType = McpInstallType.localPython;
-      //   needsAdditionalInstall = false;
-      //   analysisResult = '检测到Python命令，需要检测安装环境';
-      // } else if (cleanedCommand == 'node') {
-      //   detectedType = McpInstallType.localNode;
-      //   needsAdditionalInstall = false;
-      //   analysisResult = '检测到Node.js命令，需要手动配置安装';
-      // } else {
-      //   detectedType = McpInstallType.localExecutable;
-      //   needsAdditionalInstall = false;
-      //   analysisResult = '检测到自定义命令，需要手动配置安装';
-      // }
-
       _updateState(_state.copyWith(
         configError: '',
         parsedConfig: config,

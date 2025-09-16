@@ -10,6 +10,7 @@ import '../../core/models/mcp_server.dart';
 import '../../core/constants/app_constants.dart';
 import '../../infrastructure/repositories/mcp_server_repository.dart';
 import '../../l10n/generated/app_localizations.dart';
+import 'mcp_server_detail_page.dart';
 
 /// MCP市场状态提供者
 final marketServerProvider = StateNotifierProvider<MarketServerNotifier, MarketServerState>((ref) {
@@ -422,175 +423,185 @@ class _McpMarketPageState extends ConsumerState<McpMarketPage> {
       child: Card(
         elevation: 2,
         margin: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-          // 头部：Logo、名称、作者
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Logo
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: server.logoUrl != null
-                        ? Image.network(
-                            server.logoUrl!,
-                            width: 40,
-                            height: 40,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return _buildDefaultLogo();
-                            },
-                          )
-                        : _buildDefaultLogo(),
-                  ),
-
-                  const SizedBox(width: 8),
-
-                  // 名称和作者
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          server.name,
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 13,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        const SizedBox(height: 1),
-                        Text(
-                          server.author,
-                          style: TextStyle(
-                            color: Colors.grey[600],
-                            fontSize: 10,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+        child: InkWell(
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => McpServerDetailPage(server: server),
               ),
-              // 插入tags展示
-              if (server.tags.isNotEmpty) ...[
-                const SizedBox(height: 3),
-                SizedBox(
-                  height: 36, // 限制高度，防止overflow
-                  child: Wrap(
-                    spacing: 2,
-                    runSpacing: 2,
-                    children: server.tags.take(4).map((tag) => // 最多显示6个标签
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.blue[50],
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: Colors.blue[200]!, width: 0.5),
-                        ),
-                        child: Text(
-                          tag,
-                          style: TextStyle(
-                            fontSize: 9,
-                            color: Colors.blue[700],
-                            fontWeight: FontWeight.w500,
-                          ),
-                        ),
-                      ),
-                    ).toList(),
-                  ),
-                ),
-              ],
-
-              const SizedBox(height: 3),
-              // 描述
-              Tooltip(
-                message: server.description,
-                child: Text(
-                  server.description,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-
-              const Expanded(child: SizedBox()),
-
-              // 底部菜单
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.grey[50],
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: Row(
+            );
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.all(8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // 头部：Logo、名称、作者
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // GitHub图标
-                    GestureDetector(
-                      onTap: () => _launchUrl(server.githubUrl),
-                      child: Tooltip(
-                        message: l10n.market_view_github,
-                        child: Image.asset(
-                          'assets/images/github.png',
-                          width: 14,
-                          height: 14,
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.code, size: 14);
-                          },
-                        ),
-                      ),
+                    // Logo
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(6),
+                      child: server.logoUrl != null
+                          ? Image.network(
+                              server.logoUrl!,
+                              width: 40,
+                              height: 40,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return _buildDefaultLogo();
+                              },
+                            )
+                          : _buildDefaultLogo(),
                     ),
 
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 8),
 
-                    // 下载量
+                    // 名称和作者
                     Expanded(
-                      child: _buildStatChip(
-                        Icons.download,
-                        '${server.downloadCount}',
-                        l10n.market_download_count,
-                      ),
-                    ),
-
-                    const SizedBox(width: 4),
-
-                    // 使用量
-                    Expanded(
-                      child: _buildStatChip(
-                        Icons.people,
-                        '${server.usedCount}',
-                        l10n.market_used_count,
-                      ),
-                    ),
-
-                    const SizedBox(width: 6),
-
-                    // 安装按钮
-                    SizedBox(
-                      height: 24,
-                      child: ElevatedButton(
-                        onPressed: isInstalled ? null : () => _installServer(server),
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          textStyle: const TextStyle(fontSize: 10),
-                          minimumSize: const Size(50, 24),
-                        ),
-                        child: Text(
-                          isInstalled ? l10n.market_installed : l10n.market_install,
-                        ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            server.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 1),
+                          Text(
+                            server.author,
+                            style: TextStyle(
+                              color: Colors.grey[600],
+                              fontSize: 10,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
-              ),
-            ],
+                // 插入tags展示
+                if (server.tags.isNotEmpty) ...[
+                  const SizedBox(height: 3),
+                  SizedBox(
+                    height: 36, // 限制高度，防止overflow
+                    child: Wrap(
+                      spacing: 2,
+                      runSpacing: 2,
+                      children: server.tags.take(4).map((tag) => // 最多显示4个标签
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(color: Colors.blue[200]!, width: 0.5),
+                          ),
+                          child: Text(
+                            tag,
+                            style: TextStyle(
+                              fontSize: 9,
+                              color: Colors.blue[700],
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      ).toList(),
+                    ),
+                  ),
+                ],
+
+                const SizedBox(height: 3),
+                // 描述
+                Tooltip(
+                  message: server.description,
+                  child: Text(
+                    server.description,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+
+                const Expanded(child: SizedBox()),
+
+                // 底部菜单
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: Colors.grey[50],
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Row(
+                    children: [
+                      // GitHub图标
+                      GestureDetector(
+                        onTap: () => _launchUrl(server.githubUrl),
+                        child: Tooltip(
+                          message: l10n.market_view_github,
+                          child: Image.asset(
+                            'assets/images/github.png',
+                            width: 14,
+                            height: 14,
+                            fit: BoxFit.contain,
+                            errorBuilder: (context, error, stackTrace) {
+                              return const Icon(Icons.code, size: 14);
+                            },
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(width: 6),
+
+                      // 下载量
+                      Expanded(
+                        child: _buildStatChip(
+                          Icons.download,
+                          '${server.downloadCount}',
+                          l10n.market_download_count,
+                        ),
+                      ),
+
+                      const SizedBox(width: 4),
+
+                      // 使用量
+                      Expanded(
+                        child: _buildStatChip(
+                          Icons.people,
+                          '${server.usedCount}',
+                          l10n.market_used_count,
+                        ),
+                      ),
+
+                      const SizedBox(width: 6),
+
+                      // 安装按钮
+                      SizedBox(
+                        height: 24,
+                        child: ElevatedButton(
+                          onPressed: isInstalled ? null : () => _installServer(server),
+                          style: ElevatedButton.styleFrom(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            textStyle: const TextStyle(fontSize: 10),
+                            minimumSize: const Size(50, 24),
+                          ),
+                          child: Text(
+                            isInstalled ? l10n.market_installed : l10n.market_install,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),
