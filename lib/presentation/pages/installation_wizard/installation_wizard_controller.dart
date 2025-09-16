@@ -122,41 +122,18 @@ class InstallationWizardController extends ChangeNotifier {
         return;
       }
 
-      // 分析安装策略
-      final firstServer = mcpServers.values.first as Map<String, dynamic>;
-      final command = firstServer['command'] as String?;
-      
-      if (command == null) {
-        _updateState(_state.copyWith(
-          configError: '服务器配置缺少command字段',
-          parsedConfig: {},
-        ));
+      // 分析安装类型 可能不能只从command入手，如果是配置远程服务器，就不会有command命令 //huqb
+      final parseResult =  McpConfigParser.instance.parseConfig(configText);
+      if (!parseResult.success) {
         return;
       }
-
-      // 清理配置
-      Map<String, dynamic> cleanedConfig;
-      try {
-        cleanedConfig = _cleanupServerConfig(firstServer);
-      } catch (e) {
-        print('🔧 配置清理失败: $e');
-        cleanedConfig = firstServer;
-      }
-
-      // 分析安装类型 可能不能只从command入手，如果是配置远程服务器，就不会有command命令 //huqb
-      McpConfigParser.instance;
-      final cleanedCommand = cleanedConfig['command'] as String;
-      final args = (cleanedConfig['args'] as List<dynamic>?)?.cast<String>() ?? [];
-      McpInstallType detectedType = McpConfigParser.instance.checkInstallType(cleanedCommand, args);
-      bool needsAdditionalInstall = false;
-      String analysisResult = McpConfigParser.instance.getInstallTypeDesc(detectedType);
 
       _updateState(_state.copyWith(
         configError: '',
         parsedConfig: config,
-        detectedInstallType: detectedType,
-        needsAdditionalInstall: needsAdditionalInstall,
-        analysisResult: analysisResult,
+        detectedInstallType: parseResult.servers.first.installType,
+        needsAdditionalInstall: parseResult.servers.first.needsUserInput,
+        analysisResult: parseResult.servers.first.userInputReason,
       ));
 
     } catch (e) {
