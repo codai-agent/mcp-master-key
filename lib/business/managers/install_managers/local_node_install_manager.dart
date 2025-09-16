@@ -55,7 +55,7 @@ class LocalNodeInstallManager implements InstallManagerInterface {
         );
       }
 
-      // 检查是否已安装（即dist/index.js是否存在）
+      // 检查是否已安装（即outDir/index.js是否存在）
       final alreadyInstalled = await isInstalled(server);
       if (alreadyInstalled) {
         print('   ✅ Project already compiled and installed: $projectPath');
@@ -109,9 +109,12 @@ class LocalNodeInstallManager implements InstallManagerInterface {
       final projectPath = _extractProjectPath(server);
       if (projectPath == null) return false;
 
-      // 检查dist/index.js是否存在
-      final distIndexPath = path.join(projectPath, 'dist', 'index.js');
-      return await File(distIndexPath).exists();
+      // 从tsconfig.json读取outDir，如果没有则默认为'dist'
+      final outDir = await _getOutputDirectory(projectPath);
+      
+      // 检查outDir/index.js是否存在
+      final indexPath = path.join(projectPath, outDir, 'index.js');
+      return await File(indexPath).exists();
     } catch (e) {
       print('❌ Error checking local Node.js installation: $e');
       return false;
@@ -124,11 +127,14 @@ class LocalNodeInstallManager implements InstallManagerInterface {
       final projectPath = _extractProjectPath(server);
       if (projectPath == null) return false;
 
-      // 删除dist目录
-      final distDir = Directory(path.join(projectPath, 'dist'));
-      if (await distDir.exists()) {
-        await distDir.delete(recursive: true);
-        print('✅ Removed dist directory: ${distDir.path}');
+      // 从tsconfig.json读取outDir，如果没有则默认为'dist'
+      final outDir = await _getOutputDirectory(projectPath);
+      
+      // 删除outDir目录
+      final outputDir = Directory(path.join(projectPath, outDir));
+      if (await outputDir.exists()) {
+        await outputDir.delete(recursive: true);
+        print('✅ Removed output directory: ${outputDir.path}');
       }
 
       // 删除node_modules目录（可选）
@@ -185,8 +191,11 @@ class LocalNodeInstallManager implements InstallManagerInterface {
       final projectPath = _extractProjectPath(server);
       if (projectPath == null) return null;
 
-      // 返回dist目录路径
-      return path.join(projectPath, 'dist');
+      // 从tsconfig.json读取outDir，如果没有则默认为'dist'
+      final outDir = await _getOutputDirectory(projectPath);
+      
+      // 返回outDir目录路径
+      return path.join(projectPath, outDir);
     } catch (e) {
       return null;
     }
@@ -209,16 +218,19 @@ class LocalNodeInstallManager implements InstallManagerInterface {
       final projectPath = _extractProjectPath(server);
       if (projectPath == null) return server.args;
 
-      // 使用快捷方式路径或dist/index.js路径
+      // 使用快捷方式路径或outDir/index.js路径
       final shortcutPath = await _getShortcutPath(server);
       if (shortcutPath != null && await File(shortcutPath).exists()) {
         return [shortcutPath];
       }
 
-      // 回退到dist/index.js
-      final distIndexPath = path.join(projectPath, 'dist', 'index.js');
-      if (await File(distIndexPath).exists()) {
-        return [distIndexPath];
+      // 从tsconfig.json读取outDir，如果没有则默认为'dist'
+      final outDir = await _getOutputDirectory(projectPath);
+      
+      // 回退到outDir/index.js
+      final indexPath = path.join(projectPath, outDir, 'index.js');
+      if (await File(indexPath).exists()) {
+        return [indexPath];
       }
 
       // 如果都没有，返回原始参数
@@ -311,6 +323,45 @@ class LocalNodeInstallManager implements InstallManagerInterface {
     }
   }
 
+  /// 从tsconfig.json中读取outDir配置，如果没有则默认为'dist'
+  Future<String> _getOutputDirectory(String projectPath) async {
+    try {
+      final tsconfigPath = path.join(projectPath, 'tsconfig.json');
+      final tsconfigFile = File(tsconfigPath);
+      
+      if (!await tsconfigFile.exists()) {
+        print('   ℹ️ tsconfig.json not found, using default outDir: dist');
+        return 'dist';
+      }
+      
+      final tsconfigContent = await tsconfigFile.readAsString();
+      final tsconfig = jsonDecode(tsconfigContent) as Map<String, dynamic>;
+      
+      // 检查compilerOptions.outDir
+      final compilerOptions = tsconfig['compilerOptions'] as Map<String, dynamic>?;
+      if (compilerOptions != null && compilerOptions.containsKey('outDir')) {
+        final outDir = compilerOptions['outDir'] as String;
+        print('   ✅ Found outDir in tsconfig.json: $outDir');
+        
+        // 处理相对路径，确保相对于项目根目录
+        if (outDir.startsWith('./')) {
+          return outDir.substring(2); // 移除 './'
+        } else if (outDir.startsWith('/')) {
+          // 绝对路径，直接返回（但通常不推荐）
+          return outDir;
+        } else {
+          return outDir;
+        }
+      }
+      
+      print('   ℹ️ No outDir found in tsconfig.json, using default: dist');
+      return 'dist';
+    } catch (e) {
+      print('   ⚠️ Error reading tsconfig.json: $e, using default outDir: dist');
+      return 'dist';
+    }
+  }
+
   /// 从服务器配置中提取项目路径
   String? _extractProjectPath(McpServer server) {
     print('   🔍 Extracting project path from server args: ${server.args}');
@@ -367,18 +418,19 @@ class LocalNodeInstallManager implements InstallManagerInterface {
         return buildResult;
       }
 
-      // 5. 检查dist/index.js是否生成
-      final distIndexPath = path.join(projectPath, 'dist', 'index.js');
-      if (!await File(distIndexPath).exists()) {
+      // 5. 从tsconfig.json读取outDir并检查index.js是否生成
+      final outDir = await _getOutputDirectory(projectPath);
+      final indexPath = path.join(projectPath, outDir, 'index.js');
+      if (!await File(indexPath).exists()) {
         return _LocalNodeInstallResult(
           success: false,
-          errorMessage: 'dist/index.js was not generated after build. Build output: ${buildResult.output}',
+          errorMessage: '$outDir/index.js was not generated after build. Build output: ${buildResult.output}',
         );
       }
 
       // 6. 创建快捷方式
-      print('   🔗 Creating shortcut for dist/index.js...');
-      final shortcutResult = await _createShortcut(distIndexPath, server);
+      print('   🔗 Creating shortcut for $outDir/index.js...');
+      final shortcutResult = await _createShortcut(indexPath, server);
       if (!shortcutResult.success) {
         return shortcutResult;
       }
@@ -581,18 +633,19 @@ class LocalNodeInstallManager implements InstallManagerInterface {
         return buildResult;
       }
 
-      // 5. 检查dist/index.js是否生成
-      final distIndexPath = path.join(projectPath, 'dist', 'index.js');
-      if (!await File(distIndexPath).exists()) {
+      // 5. 从tsconfig.json读取outDir并检查index.js是否生成
+      final outDir = await _getOutputDirectory(projectPath);
+      final indexPath = path.join(projectPath, outDir, 'index.js');
+      if (!await File(indexPath).exists()) {
         return _LocalNodeInstallResult(
           success: false,
-          errorMessage: 'dist/index.js was not generated after build. Build output: ${buildResult.output}',
+          errorMessage: '$outDir/index.js was not generated after build. Build output: ${buildResult.output}',
         );
       }
 
       // 6. 创建快捷方式
-      print('   🔗 Creating shortcut for dist/index.js...');
-      final shortcutResult = await _createShortcut(distIndexPath, server);
+      print('   🔗 Creating shortcut for $outDir/index.js...');
+      final shortcutResult = await _createShortcut(indexPath, server);
       if (!shortcutResult.success) {
         return shortcutResult;
       }

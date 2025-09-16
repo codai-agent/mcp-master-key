@@ -453,7 +453,7 @@ class McpHubService {
             .where((server) => server.status == models.McpServerStatus.starting)
             .toList();
         
-        print('🔍 Monitor: Found ${allServers.length} total servers, ${startingServers.length} starting servers');
+        // print('🔍 Monitor: Found ${allServers.length} total servers, ${startingServers.length} starting servers');//huqb
         if (_userInitiatedOperations.isNotEmpty) {
           print('🔍 Monitor: User-initiated operations in progress: ${_userInitiatedOperations.join(', ')}');
         }

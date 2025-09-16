@@ -315,7 +315,7 @@ class StreamableMcpHub {
     final hubService = McpHubService.instance;
     final currentChildServers = hubService.childServers;
     
-    print('🔄 Updating server pool: checking ${currentChildServers.length} child servers...');
+    // print('🔄 Updating server pool: checking ${currentChildServers.length} child servers...');//huqb
     
     // 检查新连接的服务器
     for (final childServer in currentChildServers) {
@@ -338,7 +338,7 @@ class StreamableMcpHub {
       _removeServerFromPool(serverId);
     }
     
-    print('📊 Server pool status: ${_sharedServerPool.length} servers, ${_toolToServerMap.length} tools');
+    // print('📊 Server pool status: ${_sharedServerPool.length} servers, ${_toolToServerMap.length} tools');//huqb
   }
   
   /// 添加服务器到池中
