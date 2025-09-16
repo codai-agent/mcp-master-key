@@ -36,6 +36,7 @@
   "tooltip_mcp_client": "MCP Host",
   "tooltip_feedback": "Community & Feedback",
   "tooltip_refresh": "Refresh Services",
+  "tooltip_view_mcp_config": "View MCP Config",
   "feedback_dialog_title": "Communication & Feedback",
   "feedback_report_bug": "Report Bug",
   
@@ -343,6 +344,7 @@
   "analysis_step_install_type_local_python": "Local Python Package",
   "analysis_step_install_type_local_jar": "Local JAR Package",
   "analysis_step_install_type_local_executable": "Local Executable",
+  "analysis_step_install_type_local_node": "Local Node package",
   "analysis_step_install_type_unknown": "Unknown Type",
   
   "execution_step_title": "Execute Installation",

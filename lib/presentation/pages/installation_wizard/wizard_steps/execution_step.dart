@@ -302,6 +302,8 @@ class _ExecutionStepState extends State<ExecutionStep> {
         return l10n.analysis_step_install_type_local_jar;
       case 'McpInstallType.localExecutable':
         return l10n.analysis_step_install_type_local_executable;
+      case 'McpInstallType.localNode':
+        return l10n.analysis_step_install_type_local_node;
       default:
         return l10n.analysis_step_install_type_unknown;
     }

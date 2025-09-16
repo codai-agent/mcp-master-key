@@ -96,6 +96,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tooltip_refresh => '刷新服务';
 
   @override
+  String get tooltip_view_mcp_config => '查看MCP配置';
+
+  @override
   String get feedback_dialog_title => '交流反馈';
 
   @override
@@ -783,6 +786,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get analysis_step_install_type_local_executable => '本地可执行文件';
+
+  @override
+  String get analysis_step_install_type_local_node => '本地Node安装包';
 
   @override
   String get analysis_step_install_type_unknown => '未知类型';

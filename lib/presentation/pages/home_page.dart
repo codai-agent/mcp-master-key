@@ -68,99 +68,108 @@ class _HomePageState extends ConsumerState<HomePage> {
               children: [
                 // 顶部Logo区域
                 Container(
-                  padding: const EdgeInsets.all(16),
-                  child: _isSidebarExpanded 
-                    ? Row(
-                        children: [
-                          Container(
-                            width: 32,
-                            height: 32,
+                  padding: const EdgeInsets.all(12),
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      // 如果可用宽度小于100像素，只显示Logo
+                      final showLogoOnly = constraints.maxWidth < 100;
+                      
+                      if (showLogoOnly) {
+                        return Center(
+                          child: Container(
+                            width: 28,
+                            height: 28,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(6),
                             ),
                             child: ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(6),
                               child: Image.asset(
                                 'assets/images/logo.png',
-                                width: 32,
-                                height: 32,
+                                width: 28,
+                                height: 28,
                                 fit: BoxFit.contain,
                                 errorBuilder: (context, error, stackTrace) {
                                   return Container(
-                                    width: 32,
-                                    height: 32,
+                                    width: 28,
+                                    height: 28,
                                     decoration: BoxDecoration(
                                       color: AppTheme.vscodeBlue,
-                                      borderRadius: BorderRadius.circular(8),
+                                      borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: const Icon(
                                       Icons.hub,
                                       color: Colors.white,
-                                      size: 18,
+                                      size: 16,
                                     ),
                                   );
                                 },
                               ),
                             ),
                           ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  l10n.appTitle,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark ? AppTheme.darkText : AppTheme.lightText,
-                                  ),
+                        );
+                      } else {
+                        return Row(
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child: Image.asset(
+                                  'assets/images/logo.png',
+                                  width: 32,
+                                  height: 32,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return Container(
+                                      width: 32,
+                                      height: 32,
+                                      decoration: BoxDecoration(
+                                        color: AppTheme.vscodeBlue,
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: const Icon(
+                                        Icons.hub,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                                    );
+                                  },
                                 ),
-                                Text(
-                                  l10n.appSubtitle,
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
-                                  ),
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
-                        ],
-                      )
-                    : Center(
-                        child: Container(
-                          width: 28,
-                          height: 28,
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(6),
-                            child: Image.asset(
-                              'assets/images/logo.png',
-                              width: 28,
-                              height: 28,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Container(
-                                  width: 28,
-                                  height: 28,
-                                  decoration: BoxDecoration(
-                                    color: AppTheme.vscodeBlue,
-                                    borderRadius: BorderRadius.circular(6),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    l10n.appTitle,
+                                    style: TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600,
+                                      color: isDark ? AppTheme.darkText : AppTheme.lightText,
+                                    ),
                                   ),
-                                  child: const Icon(
-                                    Icons.hub,
-                                    color: Colors.white,
-                                    size: 16,
+                                  Text(
+                                    l10n.appSubtitle,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+                                    ),
                                   ),
-                                );
-                              },
+                                ],
+                              ),
                             ),
-                          ),
-                        ),
-                      ),
+                          ],
+                        );
+                      }
+                    },
+                  ),
                 ),
                 
                 // 分割线
@@ -189,66 +198,64 @@ class _HomePageState extends ConsumerState<HomePage> {
                             ? Border.all(color: AppTheme.vscodeBlue.withOpacity(0.3))
                             : null,
                         ),
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 200),
-                          transitionBuilder: (Widget child, Animation<double> animation) {
-                            return FadeTransition(opacity: animation, child: child);
+                        child: InkWell(
+                          onTap: () {
+                            setState(() {
+                              _selectedIndex = index;
+                            });
                           },
-                          child: _isSidebarExpanded
-                            ? SizedBox(
-                                key: const ValueKey('expanded'),
-                                height: 44,
-                                child: ListTile(
-                                  dense: true,
-                                  leading: Icon(
-                                    item.icon,
-                                    size: 20,
-                                    color: isSelected 
-                                      ? AppTheme.vscodeBlue
-                                      : (isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary),
-                                  ),
-                                  title: Text(
-                                    item.label,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
-                                      color: isSelected 
-                                        ? AppTheme.vscodeBlue
-                                        : (isDark ? AppTheme.darkText : AppTheme.lightText),
+                          borderRadius: BorderRadius.circular(6),
+                          child: Container(
+                            height: 44,
+                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                // 如果可用宽度小于100像素，只显示图标
+                                final showIconOnly = constraints.maxWidth < 100;
+                                
+                                if (showIconOnly) {
+                                  return Tooltip(
+                                    message: item.label,
+                                    child: Center(
+                                      child: Icon(
+                                        item.icon,
+                                        size: 20,
+                                        color: isSelected 
+                                          ? AppTheme.vscodeBlue
+                                          : (isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary),
+                                      ),
                                     ),
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedIndex = index;
-                                    });
-                                  },
-                                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                                ),
-                              )
-                            : Tooltip(
-                                key: const ValueKey('collapsed'),
-                                message: item.label,
-                                child: InkWell(
-                                  onTap: () {
-                                    setState(() {
-                                      _selectedIndex = index;
-                                    });
-                                  },
-                                  borderRadius: BorderRadius.circular(6),
-                                  child: Container(
-                                    height: 44,
-                                    alignment: Alignment.center,
-                                    child: Icon(
-                                      item.icon,
-                                      size: 20,
-                                      color: isSelected 
-                                        ? AppTheme.vscodeBlue
-                                        : (isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary),
-                                    ),
-                                  ),
-                                ),
-                              ),
+                                  );
+                                } else {
+                                  return Row(
+                                    children: [
+                                      Icon(
+                                        item.icon,
+                                        size: 20,
+                                        color: isSelected 
+                                          ? AppTheme.vscodeBlue
+                                          : (isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          item.label,
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: isSelected ? FontWeight.w500 : FontWeight.normal,
+                                            color: isSelected 
+                                              ? AppTheme.vscodeBlue
+                                              : (isDark ? AppTheme.darkText : AppTheme.lightText),
+                                          ),
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }
+                              },
+                            ),
+                          ),
                         ),
                       );
                     },

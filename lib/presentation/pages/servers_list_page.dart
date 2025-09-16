@@ -3,8 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:process_run/process_run.dart';
 import 'dart:io';
 import '../../core/models/mcp_server.dart';
-import '../../infrastructure/repositories/mcp_server_repository.dart';
-import '../../business/managers/mcp_process_manager.dart';
 import '../../l10n/generated/app_localizations.dart';
 import '../providers/servers_provider.dart';
 import '../widgets/server_card.dart';
@@ -22,8 +20,8 @@ class ServersListPage extends ConsumerStatefulWidget {
 
 class _ServersListPageState extends ConsumerState<ServersListPage> {
   String _searchQuery = '';
-  String _sortBy = 'name';
-  bool _sortAscending = true;
+  String _sortBy = 'created';
+  bool _sortAscending = false;
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +33,20 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
         title: Text(l10n.servers_title),
         automaticallyImplyLeading: false,
         actions: [
+          // 查看MCP配置
+          Tooltip(
+            message: l10n.tooltip_view_mcp_config,
+            child: IconButton(
+              icon: const Icon(Icons.view_module),
+              onPressed: () {
+                showDialog(
+                  context: context,
+                  barrierDismissible: true,
+                  builder: (context) => const McpConfigDialog(),
+                );
+              },
+            ),
+          ),
           // GitHub图标
           Tooltip(
             message: l10n.tooltip_github,
@@ -117,55 +129,6 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
       ),
       body: Column(
         children: [
-          // 紧凑的快速操作栏
-          Container(
-            margin: const EdgeInsets.all(8.0),
-            child: Card(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Row(
-                  children: [
-                    Icon(Icons.flash_on, color: Theme.of(context).primaryColor, size: 20),
-                    const SizedBox(width: 8),
-                    Text(l10n.servers_quick_actions, style: TextStyle(fontWeight: FontWeight.w500)),
-                    const Spacer(),
-                    ElevatedButton.icon(
-                      onPressed: () async {
-                        final result = await Navigator.push<bool>(
-                          context,
-                          MaterialPageRoute(builder: (context) => const InstallationWizardPageNew()),
-                        );
-                        // 如果安装成功，刷新服务器列表
-                        if (result == true && mounted) {
-                          ref.refresh(serversListProvider);
-                        }
-                      },
-                      icon: const Icon(Icons.download, size: 18),
-                      label: Text(l10n.servers_install),
-                    ),
-                    const SizedBox(width: 8),
-                    ElevatedButton.icon(
-                      onPressed: () {
-                        showDialog(
-                          context: context,
-                          barrierDismissible: true,
-                          builder: (context) => const McpConfigDialog(),
-                        );
-                      },
-                      icon: const Icon(Icons.view_module, size: 18),
-                      label: const Text('查看MCP配置'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.teal.withOpacity(0.1),
-                        foregroundColor: Colors.teal,
-                      ),
-                    ),
-
-                  ],
-                ),
-              ),
-            ),
-          ),
-          
           // 搜索和筛选栏
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
@@ -191,9 +154,9 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
                 DropdownButton<String>(
                   value: _sortBy,
                   items: [
+                    DropdownMenuItem(value: 'created', child: Text(l10n.servers_sort_by_created)),
                     DropdownMenuItem(value: 'name', child: Text(l10n.servers_sort_by_name)),
                     DropdownMenuItem(value: 'status', child: Text(l10n.servers_sort_by_status)),
-                    DropdownMenuItem(value: 'created', child: Text(l10n.servers_sort_by_created)),
                   ],
                   onChanged: (value) {
                     if (value != null) {
@@ -305,24 +268,6 @@ class _ServersListPageState extends ConsumerState<ServersListPage> {
           ),
         ],
       ),
-      // floatingActionButton: FloatingActionButton.extended(
-      //   onPressed: () async {
-      //     final result = await Navigator.push<bool>(
-      //       context,
-      //       MaterialPageRoute(
-      //         builder: (context) => const InstallationWizardPage(),
-      //       ),
-      //     );
-      //     // 如果安装成功，刷新服务器列表
-      //     if (result == true && mounted) {
-      //       ref.refresh(serversListProvider);
-      //     }
-      //   },
-      //   icon: const Icon(Icons.add_circle),
-      //   label: const Text('添加MCP服务器'),
-      //   tooltip: '安装并添加新的MCP服务器',
-      //   backgroundColor: Theme.of(context).primaryColor,
-      // ),
     );
   }
 

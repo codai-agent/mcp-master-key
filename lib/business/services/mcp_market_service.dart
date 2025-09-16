@@ -4,7 +4,7 @@ import '../../data/models/market_server_model.dart';
 
 /// MCP市场服务类
 class McpMarketService {
-  static const String _baseUrl = 'http://localhost:8000';
+  static const String _baseUrl = 'https://mcp.codai.top'; //'http://localhost:8000';
   static McpMarketService? _instance;
   
   static McpMarketService get instance {

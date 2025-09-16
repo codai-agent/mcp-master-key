@@ -96,6 +96,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tooltip_refresh => 'Refresh Services';
 
   @override
+  String get tooltip_view_mcp_config => 'View MCP Config';
+
+  @override
   String get feedback_dialog_title => 'Communication & Feedback';
 
   @override
@@ -824,6 +827,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get analysis_step_install_type_local_executable => 'Local Executable';
+
+  @override
+  String get analysis_step_install_type_local_node => 'Local Node package';
 
   @override
   String get analysis_step_install_type_unknown => 'Unknown Type';

@@ -30,6 +30,7 @@
   "tooltip_mcp_client": "MCP 客户端",
   "tooltip_feedback": "交友与反馈",
   "tooltip_refresh": "刷新服务",
+  "tooltip_view_mcp_config": "查看MCP配置",
   "feedback_dialog_title": "交流反馈",
   "feedback_report_bug": "报告Bug",
   
@@ -113,6 +114,7 @@
   "install_wizard_github_source_desc": "从GitHub仓库克隆并安装",
   "install_wizard_local_path": "本地路径",
   "install_wizard_local_path_desc": "从本地文件系统安装",
+  "analysis_step_install_type_local_node": "本地Node安装包",
   "install_wizard_auto_analyze_note": "系统将自动分析仓库结构并确定最佳安装命令。",
   
   "install_wizard_step_configure": "配置服务器",

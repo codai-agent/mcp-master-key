@@ -272,6 +272,12 @@ abstract class AppLocalizations {
   /// **'Refresh Services'**
   String get tooltip_refresh;
 
+  /// No description provided for @tooltip_view_mcp_config.
+  ///
+  /// In en, this message translates to:
+  /// **'View MCP Config'**
+  String get tooltip_view_mcp_config;
+
   /// No description provided for @feedback_dialog_title.
   ///
   /// In en, this message translates to:
@@ -1579,6 +1585,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Local Executable'**
   String get analysis_step_install_type_local_executable;
+
+  /// No description provided for @analysis_step_install_type_local_node.
+  ///
+  /// In en, this message translates to:
+  /// **'Local Node package'**
+  String get analysis_step_install_type_local_node;
 
   /// No description provided for @analysis_step_install_type_unknown.
   ///
